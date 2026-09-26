@@ -1,130 +1,274 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Principal - PORTAL INFORTECA</title>
-    <!-- Tailwind CSS para UI/UX moderna e refinada -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-    </style>
-    <!-- SDK do Supabase v2 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SDK do Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Ícones Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
+        /* Scrollbar customizada para um look mais limpo */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex">
+<body class="text-slate-800 h-screen flex overflow-hidden">
 
-    <!-- Barra Lateral de Navegação (Sidebar) -->
-    <aside class="w-64 bg-slate-900 border-r border-slate-800 hidden md:flex flex-col justify-between p-6">
-        <div class="space-y-6">
-            <div>
-                <span class="text-xs font-bold tracking-widest text-blue-500 uppercase">Sistema Profissional</span>
-                <h1 class="text-xl font-bold text-white tracking-tight">INFORTECA</h1>
+    <!-- Sidebar (Azul Marinho TIM) -->
+    <aside class="w-64 bg-[#000033] text-white flex flex-col justify-between hidden md:flex transition-all duration-300 z-20 shadow-xl">
+        <div>
+            <!-- Logo Area -->
+            <div class="h-20 flex items-center px-6 border-b border-white/10">
+                <h1 class="text-xl font-bold tracking-tight flex items-center gap-2">
+                    <span class="text-[#E60000] text-2xl leading-none">==</span> INFORTECA
+                </h1>
             </div>
             
-            <nav class="space-y-1.5">
-                <a href="#" class="flex items-center gap-3 px-4 py-3 bg-blue-600/10 text-blue-400 font-medium rounded-xl border border-blue-500/20 text-sm">
-                    Painel Principal
+            <!-- Navegação -->
+            <nav class="p-4 space-y-1.5 mt-2">
+                <p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Menu Principal</p>
+                
+                <!-- Link Ativo (Cor INFORTECA) -->
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium transition-colors shadow-md shadow-[#0e8890]/20">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="text-sm">Dashboard</span>
                 </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 rounded-xl transition-all text-sm">
-                    Suspensões
+                
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group">
+                    <i data-lucide="phone-off" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-sm font-medium">Suspensões</span>
                 </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 rounded-xl transition-all text-sm">
-                    Faturas e Cobranças
+                
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group">
+                    <i data-lucide="file-text" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-sm font-medium">Faturas</span>
+                </a>
+
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group">
+                    <i data-lucide="users" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-sm font-medium">Prospecção</span>
                 </a>
             </nav>
         </div>
 
-        <div class="pt-6 border-t border-slate-800">
-            <button onclick="terminarSessao()" class="w-full py-2.5 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-medium rounded-xl border border-red-500/20 transition-all text-sm flex items-center justify-center gap-2">
-                <span>Terminar Sessão</span>
+        <!-- Logout Area -->
+        <div class="p-4 border-t border-white/10">
+            <button onclick="terminarSessao()" class="flex items-center gap-3 px-3 py-2.5 w-full text-slate-300 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors text-sm font-medium">
+                <i data-lucide="log-out" class="w-5 h-5"></i>
+                Encerrar Sessão
             </button>
         </div>
     </aside>
 
     <!-- Conteúdo Principal -->
-    <main class="flex-1 flex flex-col min-w-0">
-        <!-- Cabeçalho do Painel -->
-        <header class="h-20 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md px-8 flex items-center justify-between">
-            <div>
-                <h2 class="text-lg font-semibold text-white">Gestão e Apoio ao Pós-Venda</h2>
-                <p class="text-xs text-slate-400">Bem-vindo de volta ao seu painel operacional.</p>
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        
+        <!-- Header Topo -->
+        <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 z-10">
+            <!-- Barra de Pesquisa Rápida -->
+            <div class="relative w-96 hidden lg:block">
+                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                <input type="text" placeholder="Buscar cliente, CPF ou linha..." 
+                    class="w-full bg-slate-50 border border-slate-200 rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-[#0e8890] focus:ring-1 focus:ring-[#0e8890] transition-all">
             </div>
-            <div class="flex items-center gap-4">
-                <span id="userEmail" class="text-xs font-medium bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full text-slate-300">A carregar...</span>
+
+            <!-- Perfil / Notificações -->
+            <div class="flex items-center gap-5 ml-auto">
+                <button class="relative p-2 text-slate-400 hover:text-[#0e8890] transition-colors rounded-full hover:bg-slate-50">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#E60000] rounded-full"></span>
+                </button>
+                <div class="h-8 w-px bg-slate-200"></div>
+                <div class="flex items-center gap-3">
+                    <div class="text-right hidden sm:block">
+                        <p id="userName" class="text-sm font-semibold text-slate-700 leading-none">Carregando...</p>
+                        <p id="userEmail" class="text-xs text-slate-500 mt-1">Carregando...</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-[#0e8890]/10 border border-[#0e8890]/20 flex items-center justify-center text-[#0e8890] font-bold">
+                        <i data-lucide="user" class="w-5 h-5"></i>
+                    </div>
+                </div>
             </div>
         </header>
         
-        <!-- Área de Dados e Métricas -->
-        <div class="p-8 space-y-6 flex-1">
-            <!-- Cartões de Estatísticas -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
-                    <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">Total de Suspensões</p>
-                    <h3 id="countSuspensos" class="text-3xl font-bold text-white">-</h3>
+        <!-- Área de Dados (Scrollable) -->
+        <div class="flex-1 overflow-y-auto p-8">
+            
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Visão Geral</h2>
+                    <p class="text-sm text-slate-500 mt-1">Acompanhe as métricas operacionais de hoje.</p>
                 </div>
-                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
-                    <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">Estado da Base</p>
-                    <h3 class="text-3xl font-bold text-emerald-400">Ativa</h3>
+                <button class="bg-[#0e8890] hover:bg-[#0b6c72] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm shadow-[#0e8890]/20 transition-colors flex items-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    Novo Registro
+                </button>
+            </div>
+
+            <!-- Grid de Cartões de Estatísticas -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Card 1 -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Suspensões Ativas</p>
+                            <h3 id="countSuspensos" class="text-3xl font-bold text-[#000033]">-</h3>
+                        </div>
+                        <div class="p-3 bg-red-50 text-red-500 rounded-xl">
+                            <i data-lucide="phone-off" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center gap-1 text-sm">
+                        <span class="text-emerald-500 font-medium flex items-center"><i data-lucide="trending-down" class="w-4 h-4 mr-1"></i> 12%</span>
+                        <span class="text-slate-400">vs. último mês</span>
+                    </div>
                 </div>
-                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
-                    <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">Servidor</p>
-                    <h3 class="text-3xl font-bold text-blue-400">Supabase Cloud</h3>
+
+                <!-- Card 2 -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Faturas Pendentes</p>
+                            <h3 class="text-3xl font-bold text-[#000033]">142</h3>
+                        </div>
+                        <div class="p-3 bg-amber-50 text-amber-500 rounded-xl">
+                            <i data-lucide="alert-circle" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center gap-1 text-sm">
+                        <span class="text-red-500 font-medium flex items-center"><i data-lucide="trending-up" class="w-4 h-4 mr-1"></i> 4%</span>
+                        <span class="text-slate-400">vs. último mês</span>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Status do Sistema</p>
+                            <h3 class="text-3xl font-bold text-[#000033]">Online</h3>
+                        </div>
+                        <div class="p-3 bg-emerald-50 text-emerald-500 rounded-xl">
+                            <i data-lucide="server" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center gap-1 text-sm">
+                        <span class="text-emerald-500 font-medium flex items-center"><i data-lucide="check-circle-2" class="w-4 h-4 mr-1"></i></span>
+                        <span class="text-slate-400">Supabase Cloud conectado</span>
+                    </div>
                 </div>
             </div>
             
-            <!-- Tabela de Registos Recentes -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-                <h3 class="text-base font-semibold text-white mb-4">Últimas Linhas Suspensas Registadas</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm text-slate-300">
-                        <thead class="bg-slate-950 text-xs uppercase text-slate-400 tracking-wider">
-                            <tr>
-                                <th class="p-3 rounded-l-xl">Titular</th>
-                                <th class="p-3">Linha</th>
-                                <th class="p-3">Plano</th>
-                                <th class="p-3">Estado</th>
-                                <th class="p-3 rounded-r-xl">Consultor</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaCorpo">
-                            <tr>
-                                <td colspan="5" class="p-6 text-center text-slate-500">A carregar dados do Supabase...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <!-- Grid Layout Principal -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Tabela Ocupando 2/3 da tela -->
+                <div class="lg:col-span-2 bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+                    <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-white">
+                        <h3 class="text-base font-semibold text-slate-800">Últimas Suspensões Registradas</h3>
+                        <button class="text-sm font-medium text-[#0e8890] hover:text-[#0b6c72] transition-colors">Ver todas</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-slate-50 text-xs uppercase text-slate-500 tracking-wider">
+                                <tr>
+                                    <th class="px-6 py-4 font-semibold">Cliente / Linha</th>
+                                    <th class="px-6 py-4 font-semibold">Plano</th>
+                                    <th class="px-6 py-4 font-semibold">Status</th>
+                                    <th class="px-6 py-4 font-semibold">Consultor</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaCorpo" class="divide-y divide-slate-100">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-8 text-center text-slate-500">
+                                        <i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto mb-2 text-[#0e8890]"></i>
+                                        Carregando dados...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Painel Lateral de Atividades (1/3 da tela) -->
+                <div class="bg-white border border-slate-100 rounded-2xl shadow-sm p-6">
+                    <h3 class="text-base font-semibold text-slate-800 mb-5">Atividades Recentes</h3>
+                    
+                    <div class="space-y-6 relative before:absolute before:inset-0 before:ml-2.5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
+                        
+                        <!-- Item Atividade -->
+                        <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                            <div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-white bg-[#0e8890] text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                                <i data-lucide="check" class="w-3 h-3"></i>
+                            </div>
+                            <div class="w-[calc(100%-2.5rem)] md:w-[calc(50%-1.5rem)] p-3 rounded-xl border border-slate-100 bg-slate-50 shadow-sm">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="font-semibold text-slate-800 text-xs">Sistema Atualizado</span>
+                                    <span class="text-[10px] text-slate-400">Agora</span>
+                                </div>
+                                <p class="text-xs text-slate-500">Migração para Supabase concluída.</p>
+                            </div>
+                        </div>
+
+                        <!-- Item Atividade -->
+                        <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                            <div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-white bg-slate-200 text-slate-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                                <i data-lucide="user-plus" class="w-3 h-3"></i>
+                            </div>
+                            <div class="w-[calc(100%-2.5rem)] md:w-[calc(50%-1.5rem)] p-3 rounded-xl border border-slate-100 bg-white">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="font-semibold text-slate-700 text-xs">Novo Acesso</span>
+                                    <span class="text-[10px] text-slate-400">2h atrás</span>
+                                </div>
+                                <p class="text-xs text-slate-500">Admin fez login no sistema.</p>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
+
         </div>
     </main>
 
     <script>
-        // Inicialização do Supabase com as suas credenciais
+        // Inicializa Ícones Lucide
+        lucide.createIcons();
+
+        // Credenciais Supabase
         const SUPABASE_URL = 'https://zldugoqlcrzarpqvtaoh.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
-        
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Validar se o utilizador está autenticado ao abrir a página
         async function verificarAutenticacao() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (!session) {
-                window.location.href = 'index.html'; // Redireciona para o login se não houver sessão
+                window.location.href = 'index.html';
                 return;
             }
+            
+            // Exibir Nome e E-mail
+            const userName = session.user.user_metadata?.full_name || 'Usuário';
+            document.getElementById('userName').textContent = userName;
             document.getElementById('userEmail').textContent = session.user.email;
+            
             carregarDadosDashboard();
         }
 
-        // Buscar dados diretamente da tabela 'suspensos' no Supabase
         async function carregarDadosDashboard() {
             try {
                 const { data, error } = await supabaseClient
                     .from('suspensos')
                     .select('*')
                     .order('criado_em', { ascending: false })
-                    .limit(10);
+                    .limit(6);
 
                 if (error) throw error;
 
@@ -132,21 +276,24 @@
 
                 const tbody = document.getElementById('tabelaCorpo');
                 if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Nenhum registo encontrado na base de dados.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-slate-500">Nenhum registro encontrado.</td></tr>`;
                     return;
                 }
 
                 tbody.innerHTML = data.map(item => `
-                    <tr class="border-b border-slate-800/50 hover:bg-slate-800/20 transition-all">
-                        <td class="p-3 font-medium text-white">${item.nome_titular || '---'}</td>
-                        <td class="p-3">${item.numero_linha || '---'}</td>
-                        <td class="p-3">${item.nome_plano || '---'}</td>
-                        <td class="p-3">
-                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <tr class="hover:bg-slate-50/80 transition-colors group">
+                        <td class="px-6 py-4">
+                            <p class="font-semibold text-slate-800">${item.nome_titular || 'Sem Nome'}</p>
+                            <p class="text-xs text-slate-500 mt-0.5">${item.numero_linha || 'Sem Linha'}</p>
+                        </td>
+                        <td class="px-6 py-4 text-slate-600">${item.nome_plano || '---'}</td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-amber-50 text-amber-600 border border-amber-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
                                 ${item.status_cancelamento || 'AGUARDANDO'}
                             </span>
                         </td>
-                        <td class="p-3">${item.consultor_vendas || '---'}</td>
+                        <td class="px-6 py-4 text-slate-600">${item.consultor_vendas || '---'}</td>
                     </tr>
                 `).join('');
 
@@ -155,13 +302,11 @@
             }
         }
 
-        // Terminar Sessão
         async function terminarSessao() {
             await supabaseClient.auth.signOut();
             window.location.href = 'index.html';
         }
 
-        // Executa ao carregar o painel
         window.onload = verificarAutenticacao;
     </script>
 </body>
