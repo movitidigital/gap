@@ -308,35 +308,45 @@ function processarCSV() {
             lucide.createIcons();
             importAlert.classList.add('hidden');
 
+            // Função auxiliar para inverter a data de DD/MM/YYYY para YYYY-MM-DD
+            function converterDataParaBanco(dataString) {
+                if (!dataString) return null;
+                const partes = dataString.trim().split('/');
+                if (partes.length === 3) {
+                    return `${partes[2]}-${partes[1]}-${partes[0]}`; // YYYY-MM-DD
+                }
+                return null;
+            }
+
             Papa.parse(arquivoSelecionado, {
                 header: true,
-                skipEmptyLines: 'greedy', // Pula linhas totalmente vazias do Excel
+                skipEmptyLines: 'greedy',
                 transformHeader: function(header) {
-                    return header.trim(); // Remove espaços invisíveis do cabeçalho
+                    return header.trim();
                 },
                 complete: async function(results) {
                     const dados = results.data;
                     
                     if (dados.length === 0) {
-                        mostrarAlertaImportacao("O arquivo está vazio ou não pôde ser lido.", "red");
+                        mostrarAlertaImportacao("O arquivo está vazio.", "red");
                         return;
                     }
 
-                    // MAPEAMENTO CORRETO BASEADO NO SEU CSV REAL DA LOJA TIM DOM JOSÉ
                     const payloadSupabase = dados.map(linha => ({
                         ano_base: '2026', 
                         nome: linha['NOME DO CLIENTE'] ? linha['NOME DO CLIENTE'].trim() : 'Sem Nome',
                         cpf: linha['CPF CLIENTE'] ? String(linha['CPF CLIENTE']).trim() : '',
                         telefone: linha['NÚMERO DA LINHA'] ? String(linha['NÚMERO DA LINHA']).trim() : '',
                         plano: linha['PLANO'] ? linha['PLANO'].trim() : '',
-                        data_venda: linha['DATA DA VENDA'] ? linha['DATA DA VENDA'].trim() : null, 
+                        // APLICA O CONVERSOR AQUI:
+                        data_venda: converterDataParaBanco(linha['DATA DA VENDA']), 
                         fatura_p: linha['PRIMEIRA FATURA'] ? linha['PRIMEIRA FATURA'].trim() : '---',
                         fatura_q: linha['SEGUNDA FATURA'] ? linha['SEGUNDA FATURA'].trim() : '---',
                         fatura_r: linha['TERCEIRA FATURA'] ? linha['TERCEIRA FATURA'].trim() : '---'
-                    })).filter(item => item.nome !== 'Sem Nome' && item.nome !== ''); // Filtra linhas inválidas
+                    })).filter(item => item.nome !== 'Sem Nome' && item.nome !== '');
 
                     if (payloadSupabase.length === 0) {
-                        mostrarAlertaImportacao("Nenhum dado válido encontrado. Verifique se as colunas estão corretas.", "red");
+                        mostrarAlertaImportacao("Nenhum dado válido encontrado.", "red");
                         return;
                     }
 
