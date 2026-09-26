@@ -300,7 +300,7 @@
             }
         }
 
-        function processarCSV() {
+  function processarCSV() {
             if (!arquivoSelecionado) return;
 
             btnProcessar.disabled = true;
@@ -319,16 +319,18 @@
                         return;
                     }
 
-                    // AQUI FICA O MAPEAMENTO DAS COLUNAS (Ajuste conforme os nomes da sua planilha antiga)
+                    // MAPEAMENTO CORRETO BASEADO NO SEU CSV REAL DA LOJA TIM DOM JOSÉ
                     const payloadSupabase = dados.map(linha => ({
                         ano_base: '2026', 
-                        nome: linha['CLIENTE'] || linha['NOME'] || 'Sem Nome',
-                        cpf: linha['CPF'] || '',
-                        telefone: linha['LINHA'] || linha['TELEFONE'] || '',
-                        plano: linha['PLANO'] || '',
-                        data_venda: linha['VENDA'] || null, 
-                        fatura_p: linha['1ª FATURA'] || linha['VENCIMENTO'] || 'Pendente'
-                    }));
+                        nome: linha['NOME DO CLIENTE'] ? linha['NOME DO CLIENTE'].trim() : 'Sem Nome',
+                        cpf: linha['CPF CLIENTE'] ? String(linha['CPF CLIENTE']).trim() : '',
+                        telefone: linha['NÚMERO DA LINHA'] ? String(linha['NÚMERO DA LINHA']).trim() : '',
+                        plano: linha['PLANO'] ? linha['PLANO'].trim() : '',
+                        data_venda: linha['DATA DA VENDA'] ? linha['DATA DA VENDA'].trim() : null, 
+                        fatura_p: linha['PRIMEIRA FATURA'] ? linha['PRIMEIRA FATURA'].trim() : '---',
+                        fatura_q: linha['SEGUNDA FATURA'] ? linha['SEGUNDA FATURA'].trim() : '---',
+                        fatura_r: linha['TERCEIRA FATURA'] ? linha['TERCEIRA FATURA'].trim() : '---'
+                    })).filter(item => item.nome !== 'Sem Nome' && item.nome !== ''); // Filtra linhas vazias
 
                     try {
                         const { data, error } = await supabaseClient
