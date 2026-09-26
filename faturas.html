@@ -108,10 +108,9 @@
                         <option value="pago">Pagas</option>
                     </select>
 
-                    <button class="bg-slate-900 hover:bg-[#000033] text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm transition-colors flex items-center gap-2 whitespace-nowrap">
-                        <i data-lucide="upload-cloud" class="w-4 h-4"></i>
-                        <span class="hidden sm:inline">Importar Sheets</span>
-                    </button>
+                   <button onclick="abrirModalImportacao()" class="bg-slate-900 hover:bg-[#000033] text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm transition-colors flex items-center gap-2 whitespace-nowrap">
+    <i data-lucide="upload-cloud" class="w-4 h-4"></i> <span class="hidden sm:inline">Importar Sheets</span>
+</button>
                 </div>
             </div>
 
@@ -270,5 +269,44 @@
         // Executar
         window.onload = carregarFaturas;
     </script>
+    <!-- MODAL DE IMPORTAÇÃO (Oculto por padrão) -->
+    <div id="modalImportacao" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300" id="modalContent">
+            
+            <!-- Cabeçalho do Modal -->
+            <div class="bg-[#000033] px-6 py-4 flex justify-between items-center">
+                <h3 class="text-white font-semibold flex items-center gap-2">
+                    <i data-lucide="file-spreadsheet" class="w-5 h-5 text-[#0e8890]"></i> Importar Dados
+                </h3>
+                <button onclick="fecharModalImportacao()" class="text-slate-400 hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Corpo do Modal -->
+            <div class="p-6 space-y-4">
+                <p class="text-sm text-slate-500">Faça o upload do arquivo <b>.CSV</b> exportado do seu Google Sheets. O sistema mapeará os dados automaticamente.</p>
+                
+                <!-- Área de Upload de Arquivo -->
+                <div class="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center hover:border-[#0e8890] hover:bg-slate-50 transition-colors cursor-pointer relative">
+                    <input type="file" id="csvFileInput" accept=".csv" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="verificarArquivo(this)">
+                    <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
+                    <p class="text-sm font-semibold text-slate-700" id="fileNameText">Clique ou arraste o arquivo CSV</p>
+                    <p class="text-xs text-slate-400 mt-1">Apenas arquivos .csv</p>
+                </div>
+
+                <!-- Alerta Dinâmico -->
+                <div id="importAlert" class="hidden text-xs p-3 rounded-xl border font-medium"></div>
+            </div>
+
+            <!-- Rodapé com Botões -->
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="fecharModalImportacao()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors">Cancelar</button>
+                <button id="btnProcessar" onclick="processarCSV()" disabled class="bg-[#0e8890] hover:bg-[#0b6c72] disabled:bg-slate-300 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors flex items-center gap-2">
+                    Processar Importação
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
