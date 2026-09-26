@@ -6,8 +6,12 @@
     <title>PORTAL INFORTECA - Loja TIM Dom José</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bibliotecas Necessárias -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -19,8 +23,11 @@
         .badge-prejuizo { @apply bg-slate-900 text-red-500 border-slate-700 font-bold; }
         .badge-pendente { @apply bg-amber-50 text-amber-600 border-amber-200; }
         .badge-enviada { @apply bg-blue-50 text-blue-600 border-blue-200; }
+
+        /* Animação suave na troca de telas */
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 </head>
 <body class="text-slate-800 h-screen flex overflow-hidden">
 
@@ -103,7 +110,6 @@
             
             <!-- TELA 1: DASHBOARD -->
             <div id="view-dashboard" class="block animate-fade-in">
-                <!-- Grid de Cartões de Estatísticas -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
                         <div class="flex justify-between items-start">
@@ -144,7 +150,8 @@
                         <input type="text" placeholder="Buscar Cliente, CPF ou Linha..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-[#0e8890] transition-all">
                     </div>
                     <div class="flex gap-3 w-full md:w-auto">
-                        <button class="bg-slate-900 hover:bg-[#000033] text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm transition-colors flex items-center gap-2 whitespace-nowrap">
+                        <!-- O ONCLICK ESTÁ AQUI EM BAIXO -->
+                        <button onclick="abrirModalImportacao()" class="bg-slate-900 hover:bg-[#000033] text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm transition-colors flex items-center gap-2 whitespace-nowrap">
                             <i data-lucide="upload-cloud" class="w-4 h-4"></i> <span class="hidden sm:inline">Importar Sheets</span>
                         </button>
                     </div>
@@ -180,7 +187,6 @@
                 <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center text-slate-500">
                     <i data-lucide="phone-off" class="w-12 h-12 mx-auto mb-3 text-slate-300"></i>
                     <h3 class="text-lg font-semibold text-slate-700">Módulo de Suspensões</h3>
-                    <p class="text-sm mt-1">Em desenvolvimento. Será acoplado aqui.</p>
                 </div>
             </div>
 
@@ -189,27 +195,57 @@
                 <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center text-slate-500">
                     <i data-lucide="users" class="w-12 h-12 mx-auto mb-3 text-slate-300"></i>
                     <h3 class="text-lg font-semibold text-slate-700">Módulo de Prospecção</h3>
-                    <p class="text-sm mt-1">Em desenvolvimento. Será acoplado aqui.</p>
                 </div>
             </div>
 
         </div>
     </main>
 
-    <style>
-        /* Animação suave na troca de telas */
-        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+    <!-- MODAL DE IMPORTAÇÃO DE CSV -->
+    <div id="modalImportacao" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300" id="modalContent">
+            
+            <div class="bg-[#000033] px-6 py-4 flex justify-between items-center">
+                <h3 class="text-white font-semibold flex items-center gap-2">
+                    <i data-lucide="file-spreadsheet" class="w-5 h-5 text-[#0e8890]"></i> Importar Dados
+                </h3>
+                <button onclick="fecharModalImportacao()" class="text-slate-400 hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
 
+            <div class="p-6 space-y-4">
+                <p class="text-sm text-slate-500">Faça o upload do arquivo <b>.CSV</b> exportado do seu Google Sheets. O sistema mapeará os dados automaticamente.</p>
+                
+                <div class="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center hover:border-[#0e8890] hover:bg-slate-50 transition-colors cursor-pointer relative">
+                    <input type="file" id="csvFileInput" accept=".csv" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="verificarArquivo(this)">
+                    <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
+                    <p class="text-sm font-semibold text-slate-700" id="fileNameText">Clique ou arraste o arquivo CSV</p>
+                    <p class="text-xs text-slate-400 mt-1">Apenas arquivos .csv</p>
+                </div>
+
+                <div id="importAlert" class="hidden text-xs p-3 rounded-xl border font-medium"></div>
+            </div>
+
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="fecharModalImportacao()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors">Cancelar</button>
+                <button id="btnProcessar" onclick="processarCSV()" disabled class="bg-[#0e8890] hover:bg-[#0b6c72] disabled:bg-slate-300 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors flex items-center gap-2">
+                    Processar Importação
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS DE LÓGICA -->
     <script>
+        // Inicia ícones
         lucide.createIcons();
 
         const SUPABASE_URL = 'https://zldugoqlcrzarpqvtaoh.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // NAVEGAÇÃO SPA (Single Page Application)
+        // --- NAVEGAÇÃO SPA ---
         const paginas = {
             'dashboard': 'Visão Geral',
             'faturas': 'Acompanhamento de Faturas TIM',
@@ -218,31 +254,166 @@
         };
 
         function navegar(destino) {
-            // 1. Esconde todas as views e remove seleção do menu
             Object.keys(paginas).forEach(id => {
                 document.getElementById(`view-${id}`).classList.add('hidden');
-                
-                const btnMenu = document.getElementById(`menu-${id}`);
-                btnMenu.className = "w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer";
+                document.getElementById(`menu-${id}`).className = "w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer";
             });
 
-            // 2. Mostra a view clicada
             document.getElementById(`view-${destino}`).classList.remove('hidden');
             document.getElementById('headerTitle').innerText = paginas[destino];
+            document.getElementById(`menu-${destino}`).className = "w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium transition-colors shadow-md shadow-[#0e8890]/20 cursor-pointer";
 
-            // 3. Pinta o botão do menu clicado (Cor Inforteca)
-            const btnAtivo = document.getElementById(`menu-${destino}`);
-            btnAtivo.className = "w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium transition-colors shadow-md shadow-[#0e8890]/20 cursor-pointer";
-
-            // 4. Carrega os dados específicos da página se necessário
             if(destino === 'faturas') carregarFaturas();
             if(destino === 'dashboard') carregarDadosDashboard();
         }
 
-        // FUNÇÕES DE DADOS (Simulação e Integração)
+        // --- LÓGICA DO MODAL DE IMPORTAÇÃO CSV ---
+        const modalImportacao = document.getElementById('modalImportacao');
+        const modalContent = document.getElementById('modalContent');
+        const btnProcessar = document.getElementById('btnProcessar');
+        const fileNameText = document.getElementById('fileNameText');
+        const importAlert = document.getElementById('importAlert');
+        let arquivoSelecionado = null;
+
+        function abrirModalImportacao() {
+            modalImportacao.classList.remove('hidden');
+            setTimeout(() => modalContent.classList.replace('scale-95', 'scale-100'), 10);
+            
+            document.getElementById('csvFileInput').value = '';
+            arquivoSelecionado = null;
+            fileNameText.textContent = "Clique ou arraste o arquivo CSV";
+            btnProcessar.disabled = true;
+            importAlert.classList.add('hidden');
+        }
+
+        function fecharModalImportacao() {
+            modalContent.classList.replace('scale-100', 'scale-95');
+            setTimeout(() => modalImportacao.classList.add('hidden'), 300);
+        }
+
+        function verificarArquivo(input) {
+            if (input.files && input.files[0]) {
+                arquivoSelecionado = input.files[0];
+                fileNameText.textContent = arquivoSelecionado.name;
+                fileNameText.classList.add('text-[#0e8890]');
+                btnProcessar.disabled = false;
+            }
+        }
+
+        function processarCSV() {
+            if (!arquivoSelecionado) return;
+
+            btnProcessar.disabled = true;
+            btnProcessar.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Processando...`;
+            lucide.createIcons();
+            importAlert.classList.add('hidden');
+
+            Papa.parse(arquivoSelecionado, {
+                header: true,
+                skipEmptyLines: true,
+                complete: async function(results) {
+                    const dados = results.data;
+                    
+                    if (dados.length === 0) {
+                        mostrarAlertaImportacao("O arquivo está vazio.", "red");
+                        return;
+                    }
+
+                    // AQUI FICA O MAPEAMENTO DAS COLUNAS (Ajuste conforme os nomes da sua planilha antiga)
+                    const payloadSupabase = dados.map(linha => ({
+                        ano_base: '2026', 
+                        nome: linha['CLIENTE'] || linha['NOME'] || 'Sem Nome',
+                        cpf: linha['CPF'] || '',
+                        telefone: linha['LINHA'] || linha['TELEFONE'] || '',
+                        plano: linha['PLANO'] || '',
+                        data_venda: linha['VENDA'] || null, 
+                        fatura_p: linha['1ª FATURA'] || linha['VENCIMENTO'] || 'Pendente'
+                    }));
+
+                    try {
+                        const { data, error } = await supabaseClient
+                            .from('clientes_faturas')
+                            .insert(payloadSupabase);
+
+                        if (error) throw error;
+
+                        mostrarAlertaImportacao(`${payloadSupabase.length} clientes importados com sucesso!`, "emerald");
+                        
+                        carregarFaturas();
+                        setTimeout(() => fecharModalImportacao(), 2000);
+
+                    } catch (error) {
+                        mostrarAlertaImportacao("Erro no Banco de Dados: " + error.message, "red");
+                    }
+                },
+                error: function(err) {
+                    mostrarAlertaImportacao("Erro ao ler o arquivo: " + err.message, "red");
+                }
+            });
+        }
+
+        function mostrarAlertaImportacao(mensagem, cor) {
+            importAlert.textContent = mensagem;
+            importAlert.className = `text-xs p-3 rounded-xl border font-medium mt-4 bg-${cor}-50 border-${cor}-200 text-${cor}-600`;
+            importAlert.classList.remove('hidden');
+            
+            if (cor === 'red') {
+                btnProcessar.disabled = false;
+                btnProcessar.innerHTML = `Processar Importação`;
+            }
+        }
+
+        // --- FUNÇÕES DE DADOS ---
         async function carregarFaturas() {
-            // Aqui entra a lógica de buscar do Supabase que fizemos na etapa anterior.
-            // Por enquanto deixamos o feedback visual intacto.
+            try {
+                const { data, error } = await supabaseClient
+                    .from('clientes_faturas')
+                    .select('*')
+                    .order('criado_em', { ascending: false })
+                    .limit(50);
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('tabelaFaturas');
+                
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">Nenhum cliente cadastrado ainda. Use o botão "Importar Sheets".</td></tr>`;
+                    return;
+                }
+
+                function formatarStatusBadge(texto) {
+                    if (!texto || texto === '---' || texto === 'N/A') return `<span class="text-slate-400">---</span>`;
+                    const txt = texto.toUpperCase();
+                    if (txt.includes('PREJUIZO') || txt.includes('PREJUÍZO')) return `<span class="inline-flex items-center px-2 py-1 rounded border text-[10px] uppercase tracking-wider badge-prejuizo"><i data-lucide="alert-triangle" class="w-3 h-3 mr-1"></i> Prejuízo</span>`;
+                    if (txt.includes('PAGO')) return `<span class="inline-flex items-center px-2 py-1 rounded border text-[10px] uppercase tracking-wider badge-pago"><i data-lucide="check-circle-2" class="w-3 h-3 mr-1"></i> Pago</span>`;
+                    return `<span class="inline-flex items-center px-2 py-1 rounded border text-[11px] font-medium badge-pendente"><i data-lucide="calendar" class="w-3 h-3 mr-1"></i> ${texto}</span>`;
+                }
+
+                tbody.innerHTML = data.map(item => `
+                    <tr class="hover:bg-[#0e8890]/5 transition-colors group border-b border-slate-50">
+                        <td class="px-6 py-4">
+                            <span class="inline-block bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs font-bold border border-slate-200 mb-1">${item.ano_base || '2026'}</span>
+                            <div class="text-xs text-slate-500 flex items-center"><i data-lucide="calendar-days" class="w-3 h-3 mr-1"></i> ${item.data_venda || '---'}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="font-bold text-[#000033] truncate max-w-[200px]">${item.nome || 'Sem Nome'}</p>
+                            <p class="text-xs text-slate-500 font-mono mt-0.5">CPF: ${item.cpf || '---'}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="text-sm font-semibold text-slate-700">${item.telefone || '---'}</p>
+                            <p class="text-xs font-bold text-[#E60000] mt-0.5 uppercase">${item.plano || 'TIM CONTROLE'}</p>
+                        </td>
+                        <td class="px-6 py-4 text-center bg-slate-50/30">${formatarStatusBadge(item.fatura_p)}</td>
+                        <td class="px-6 py-4 text-center bg-slate-50/30">${formatarStatusBadge(item.fatura_q)}</td>
+                        <td class="px-6 py-4 text-center bg-slate-50/30">${formatarStatusBadge(item.fatura_r)}</td>
+                    </tr>
+                `).join('');
+                
+                lucide.createIcons();
+
+            } catch (err) {
+                console.error('Erro ao carregar faturas:', err.message);
+            }
         }
 
         async function carregarDadosDashboard() {
@@ -252,7 +423,7 @@
             } catch (err) {}
         }
 
-        // AUTENTICAÇÃO
+        // --- AUTENTICAÇÃO ---
         async function verificarAutenticacao() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (!session) {
@@ -262,7 +433,6 @@
             document.getElementById('userName').textContent = session.user.user_metadata?.full_name || 'Usuário';
             document.getElementById('userEmail').textContent = session.user.email;
             
-            // Inicia na tela de Dashboard
             navegar('dashboard');
         }
 
