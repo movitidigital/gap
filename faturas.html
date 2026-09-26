@@ -268,6 +268,115 @@
 
         // Executar
         window.onload = carregarFaturas;
+
+        // ==========================================
+        // LÓGICA DE IMPORTAÇÃO DE CSV (SHEETS)
+        // ==========================================
+
+        const modalImportacao = document.getElementById('modalImportacao');
+        const modalContent = document.getElementById('modalContent');
+        const btnProcessar = document.getElementById('btnProcessar');
+        const fileNameText = document.getElementById('fileNameText');
+        const importAlert = document.getElementById('importAlert');
+        let arquivoSelecionado = null;
+
+        function abrirModalImportacao() {
+            modalImportacao.classList.remove('hidden');
+            setTimeout(() => modalContent.classList.replace('scale-95', 'scale-100'), 10);
+            
+            // Resetar campos
+            document.getElementById('csvFileInput').value = '';
+            arquivoSelecionado = null;
+            fileNameText.textContent = "Clique ou arraste o arquivo CSV";
+            btnProcessar.disabled = true;
+            importAlert.classList.add('hidden');
+        }
+
+        function fecharModalImportacao() {
+            modalContent.classList.replace('scale-100', 'scale-95');
+            setTimeout(() => modalImportacao.classList.add('hidden'), 300);
+        }
+
+        // Muda o texto quando o usuário escolhe um arquivo
+        function verificarArquivo(input) {
+            if (input.files && input.files[0]) {
+                arquivoSelecionado = input.files[0];
+                fileNameText.textContent = arquivoSelecionado.name;
+                fileNameText.classList.add('text-[#0e8890]');
+                btnProcessar.disabled = false;
+            }
+        }
+
+        // Função que lê o CSV e envia para o Banco de Dados
+        function processarCSV() {
+            if (!arquivoSelecionado) return;
+
+            // Feedback Visual de Carregamento
+            btnProcessar.disabled = true;
+            btnProcessar.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Processando...`;
+            lucide.createIcons();
+            importAlert.classList.add('hidden');
+
+            Papa.parse(arquivoSelecionado, {
+                header: true, // Avisa que a 1ª linha do CSV é o cabeçalho
+                skipEmptyLines: true,
+                complete: async function(results) {
+                    const dados = results.data;
+                    
+                    if (dados.length === 0) {
+                        mostrarAlertaImportacao("O arquivo está vazio.", "red");
+                        return;
+                    }
+
+                    // 1. Mapeamento dos Dados
+                    // ATENÇÃO: Os nomes em colchetes ['NOME DA COLUNA NO CSV']
+                    // devem ser EXATAMENTE iguais ao cabeçalho da sua planilha do Sheets
+                    const payloadSupabase = dados.map(linha => ({
+                        ano_base: '2026', // Pode ser dinâmico no futuro
+                        nome: linha['CLIENTE'] || linha['NOME'] || 'Sem Nome',
+                        cpf: linha['CPF'] || '',
+                        telefone: linha['LINHA'] || linha['TELEFONE'] || '',
+                        plano: linha['PLANO'] || '',
+                        data_venda: linha['VENDA'] || null, 
+                        fatura_p: linha['1ª FATURA'] || linha['VENCIMENTO'] || 'Pendente'
+                    }));
+
+                    try {
+                        // 2. Inserção em Massa no Supabase (MUITO RÁPIDO)
+                        const { data, error } = await supabaseClient
+                            .from('clientes_faturas')
+                            .insert(payloadSupabase);
+
+                        if (error) throw error;
+
+                        // 3. Sucesso!
+                        mostrarAlertaImportacao(`${payloadSupabase.length} clientes importados com sucesso!`, "emerald");
+                        
+                        // Atualiza a tabela por trás do modal e fecha após 2 segundos
+                        carregarFaturas();
+                        setTimeout(() => fecharModalImportacao(), 2000);
+
+                    } catch (error) {
+                        mostrarAlertaImportacao("Erro no Banco de Dados: " + error.message, "red");
+                    }
+                },
+                error: function(err) {
+                    mostrarAlertaImportacao("Erro ao ler o arquivo: " + err.message, "red");
+                }
+            });
+        }
+
+        function mostrarAlertaImportacao(mensagem, cor) {
+            importAlert.textContent = mensagem;
+            importAlert.className = `text-xs p-3 rounded-xl border font-medium mt-4 bg-${cor}-50 border-${cor}-200 text-${cor}-600`;
+            importAlert.classList.remove('hidden');
+            
+            // Restaura o botão se der erro
+            if (cor === 'red') {
+                btnProcessar.disabled = false;
+                btnProcessar.innerHTML = `Processar Importação`;
+            }
+        }
     </script>
     <!-- MODAL DE IMPORTAÇÃO (Oculto por padrão) -->
     <div id="modalImportacao" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
