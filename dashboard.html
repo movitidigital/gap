@@ -332,17 +332,23 @@ function processarCSV() {
                         return;
                     }
 
-                    const payloadSupabase = dados.map(linha => ({
+                   const payloadSupabase = dados.map(linha => ({
                         ano_base: '2026', 
-                        nome: linha['NOME DO CLIENTE'] ? linha['NOME DO CLIENTE'].trim() : 'Sem Nome',
+                        nome: linha['NOME DO CLIENTE'] ? String(linha['NOME DO CLIENTE']).trim() : 'Sem Nome',
                         cpf: linha['CPF CLIENTE'] ? String(linha['CPF CLIENTE']).trim() : '',
                         telefone: linha['NÚMERO DA LINHA'] ? String(linha['NÚMERO DA LINHA']).trim() : '',
-                        plano: linha['PLANO'] ? linha['PLANO'].trim() : '',
-                        // APLICA O CONVERSOR AQUI:
+                        telefone_alt: linha['CONTATO ALTERNATIVO'] ? String(linha['CONTATO ALTERNATIVO']).trim() : '',
+                        modalidade: linha['MODALIDADE'] ? String(linha['MODALIDADE']).trim() : '',
+                        plano: linha['PLANO'] ? String(linha['PLANO']).trim() : '',
+                        consultor: linha['CONSULTOR'] ? String(linha['CONSULTOR']).trim() : '',
+                        vencimento_base: linha['DATA DE VENC.'] ? String(linha['DATA DE VENC.']).trim() : '',
                         data_venda: converterDataParaBanco(linha['DATA DA VENDA']), 
-                        fatura_p: linha['PRIMEIRA FATURA'] ? linha['PRIMEIRA FATURA'].trim() : '---',
-                        fatura_q: linha['SEGUNDA FATURA'] ? linha['SEGUNDA FATURA'].trim() : '---',
-                        fatura_r: linha['TERCEIRA FATURA'] ? linha['TERCEIRA FATURA'].trim() : '---'
+                        fatura_p: linha['PRIMEIRA FATURA'] ? String(linha['PRIMEIRA FATURA']).trim() : '---',
+                        fatura_q: linha['SEGUNDA FATURA'] ? String(linha['SEGUNDA FATURA']).trim() : '---',
+                        fatura_r: linha['TERCEIRA FATURA'] ? String(linha['TERCEIRA FATURA']).trim() : '---',
+                        debito_automatico: linha['DACC'] ? String(linha['DACC']).trim() : 'NÃO',
+                        usuario_linha: linha['USUÁRIO DA LINHA'] ? String(linha['USUÁRIO DA LINHA']).trim() : '',
+                        status_boas_vindas: linha['CONFIRMAÇÃO DE ENVIO DE BOAS VINDAS'] ? String(linha['CONFIRMAÇÃO DE ENVIO DE BOAS VINDAS']).trim() : ''
                     })).filter(item => item.nome !== 'Sem Nome' && item.nome !== '');
 
                     if (payloadSupabase.length === 0) {
