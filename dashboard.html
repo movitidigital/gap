@@ -433,7 +433,13 @@ function filtrarFaturas() {
             }
 
             const dadosFiltrados = cacheFaturasGlobal.filter(item => {
-                // Busca inteligente em múltiplos campos: Nome, CPF, Telefone ou Consultor
+                // 1. REGRA: Ignorar se a modalidade for "TROCA DE APARELHO"
+                const modalidade = (item.modalidade || '').toUpperCase();
+                if (modalidade.includes('TROCA DE APARELHO')) {
+                    return false; 
+                }
+
+                // 2. Filtro por Texto (Nome, CPF, Telefone ou Consultor)
                 const nome = (item.nome || '').toLowerCase();
                 const cpf = (item.cpf || '').toLowerCase();
                 const tel = (item.telefone || '').toLowerCase();
@@ -442,6 +448,7 @@ function filtrarFaturas() {
                 const matchTexto = nome.includes(termoBusca) || cpf.includes(termoBusca) || tel.includes(termoBusca) || consultor.includes(termoBusca);
                 if (!matchTexto) return false;
 
+                // 3. Filtro por Situação (Aberto vs Pagos)
                 const pOk = estaQuitada(item.fatura_p);
                 const qOk = estaQuitada(item.fatura_q);
                 const rOk = estaQuitada(item.fatura_r);
@@ -455,10 +462,10 @@ function filtrarFaturas() {
                 return true;
             });
 
-            document.getElementById('contadorResultados').textContent = `Exibindo ${dadosFiltrados.length} de ${cacheFaturasGlobal.length} registos na base`;
+            document.getElementById('contadorResultados').textContent = `Exibindo ${dadosFiltrados.length} registos ativos (Troca de Aparelho ocultada)`;
 
             if (dadosFiltrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">Nenhum registo encontrado com estes critérios de busca.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">Nenhum registo encontrado com estes critérios.</td></tr>`;
                 return;
             }
 
@@ -480,14 +487,12 @@ function filtrarFaturas() {
             tbody.innerHTML = dadosFiltrados.map(item => `
                 <tr class="hover:bg-[#0e8890]/5 transition-colors group border-b border-slate-100 text-xs">
                     
-                    <!-- Coluna 1: Base & Datas -->
                     <td class="px-4 py-3.5 align-top">
                         <span class="inline-block bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold border border-slate-200 mb-1">${item.ano_base || '2026'}</span>
                         <div class="text-slate-500">Venda: ${formatarDataVisao(item.data_venda)}</div>
                         <div class="text-slate-700 font-semibold mt-0.5">Venc: Dia ${item.vencimento_base || '---'}</div>
                     </td>
 
-                    <!-- Coluna 2: Cliente, CPF e Contatos -->
                     <td class="px-4 py-3.5 align-top">
                         <p class="font-bold text-[#000033] text-sm">${item.nome || 'Sem Nome'}</p>
                         <p class="text-slate-500 font-mono mt-0.5">CPF: ${item.cpf || '---'}</p>
@@ -497,29 +502,24 @@ function filtrarFaturas() {
                         ${item.telefone_alt ? `<p class="text-slate-400 text-[11px] mt-0.5">Alt: ${item.telefone_alt}</p>` : ''}
                     </td>
 
-                    <!-- Coluna 3: Plano, Consultor e Modalidade -->
                     <td class="px-4 py-3.5 align-top">
                         <p class="font-bold text-[#E60000] uppercase text-xs">${item.plano || 'TIM CONTROLE'}</p>
                         <p class="text-slate-700 mt-1"><span class="font-semibold text-slate-500">Consultor:</span> ${item.consultor || '---'}</p>
                         <p class="text-slate-500 text-[11px] mt-0.5"><span class="font-medium">Mod:</span> ${item.modalidade || '---'}</p>
                     </td>
 
-                    <!-- Coluna 4: 1ª Fatura -->
                     <td class="px-4 py-3.5 text-center align-middle bg-slate-50/40">
                         ${formatarBadge(item.fatura_p)}
                     </td>
 
-                    <!-- Coluna 5: 2ª Fatura -->
                     <td class="px-4 py-3.5 text-center align-middle bg-slate-50/40">
                         ${formatarBadge(item.fatura_q)}
                     </td>
 
-                    <!-- Coluna 6: 3ª Fatura & Ações Rápidas -->
                     <td class="px-4 py-3.5 text-center align-middle bg-slate-50/40">
                         <div class="flex flex-col items-center justify-center gap-2">
                             <div>${formatarBadge(item.fatura_r)}</div>
                             
-                            <!-- Botões de Ação na Fila -->
                             <div class="flex items-center gap-1">
                                 <button onclick="abrirModalAcao('${item.id}', '${item.nome}', 'PAGO', '${item.fatura_p}', '${item.fatura_q}', '${item.fatura_r}')" title="Marcar como Pago" class="p-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded border border-emerald-200 transition-colors">
                                     <i data-lucide="dollar-sign" class="w-3.5 h-3.5"></i>
