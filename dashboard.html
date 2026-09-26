@@ -3,85 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Principal - PORTAL INFORTECA</title>
-    <!-- Tailwind CSS -->
+    <title>PORTAL INFORTECA - Loja TIM Dom José</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- SDK do Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Ícones Lucide -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
-        /* Scrollbar customizada para um look mais limpo */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .badge-pago { @apply bg-emerald-100 text-emerald-700 border-emerald-200; }
+        .badge-prejuizo { @apply bg-slate-900 text-red-500 border-slate-700 font-bold; }
+        .badge-pendente { @apply bg-amber-50 text-amber-600 border-amber-200; }
+        .badge-enviada { @apply bg-blue-50 text-blue-600 border-blue-200; }
     </style>
 </head>
 <body class="text-slate-800 h-screen flex overflow-hidden">
 
-    <!-- Sidebar (Azul Marinho TIM) -->
-    <aside class="w-64 bg-[#000033] text-white flex flex-col justify-between hidden md:flex transition-all duration-300 z-20 shadow-xl">
+    <!-- MENU LATERAL FIXO E UNIFICADO -->
+    <aside class="w-64 bg-[#000033] text-white flex flex-col justify-between hidden md:flex transition-all duration-300 z-20 shadow-xl shrink-0">
         <div>
-            <!-- Logo Area -->
-            <div class="h-20 flex items-center px-6 border-b border-white/10">
+            <!-- Branding -->
+            <div class="h-20 flex flex-col justify-center px-6 border-b border-white/10">
                 <h1 class="text-xl font-bold tracking-tight flex items-center gap-2">
                     <span class="text-[#E60000] text-2xl leading-none">==</span> INFORTECA
                 </h1>
+                <p class="text-[10px] text-slate-400 font-medium uppercase tracking-widest mt-1">Loja TIM Dom José</p>
             </div>
             
-            <!-- Navegação -->
+            <!-- Navegação Dinâmica -->
             <nav class="p-4 space-y-1.5 mt-2">
                 <p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Menu Principal</p>
                 
-                <!-- Link Ativo (Cor INFORTECA) -->
-                <a href="#" class="flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium transition-colors shadow-md shadow-[#0e8890]/20">
+                <button id="menu-dashboard" onclick="navegar('dashboard')" class="w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium transition-colors shadow-md shadow-[#0e8890]/20 cursor-pointer">
                     <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
                     <span class="text-sm">Dashboard</span>
-                </a>
+                </button>
                 
-                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group">
-                    <i data-lucide="phone-off" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
-                    <span class="text-sm font-medium">Suspensões</span>
-                </a>
-                
-                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group">
+                <button id="menu-faturas" onclick="navegar('faturas')" class="w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer">
                     <i data-lucide="file-text" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
                     <span class="text-sm font-medium">Faturas</span>
-                </a>
+                </button>
 
-                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group">
+                <button id="menu-suspensoes" onclick="navegar('suspensoes')" class="w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer">
+                    <i data-lucide="phone-off" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-sm font-medium">Suspensões</span>
+                </button>
+
+                <button id="menu-prospeccao" onclick="navegar('prospeccao')" class="w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer">
                     <i data-lucide="users" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
                     <span class="text-sm font-medium">Prospecção</span>
-                </a>
+                </button>
             </nav>
         </div>
 
-        <!-- Logout Area -->
         <div class="p-4 border-t border-white/10">
             <button onclick="terminarSessao()" class="flex items-center gap-3 px-3 py-2.5 w-full text-slate-300 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors text-sm font-medium">
-                <i data-lucide="log-out" class="w-5 h-5"></i>
-                Encerrar Sessão
+                <i data-lucide="log-out" class="w-5 h-5"></i> Encerrar Sessão
             </button>
         </div>
     </aside>
 
-    <!-- Conteúdo Principal -->
-    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+    <!-- CONTAINER PRINCIPAL -->
+    <main class="flex-1 flex flex-col h-screen min-w-0 relative">
         
-        <!-- Header Topo -->
-        <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 z-10">
-            <!-- Barra de Pesquisa Rápida -->
-            <div class="relative w-96 hidden lg:block">
-                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                <input type="text" placeholder="Buscar cliente, CPF ou linha..." 
-                    class="w-full bg-slate-50 border border-slate-200 rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-[#0e8890] focus:ring-1 focus:ring-[#0e8890] transition-all">
+        <!-- CABEÇALHO FIXO -->
+        <header class="h-16 md:h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 z-10 shrink-0">
+            <div class="flex items-center gap-3">
+                <button class="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <h2 id="headerTitle" class="text-lg font-bold text-[#000033]">Visão Geral</h2>
             </div>
 
-            <!-- Perfil / Notificações -->
-            <div class="flex items-center gap-5 ml-auto">
+            <div class="flex items-center gap-4 ml-auto">
                 <button class="relative p-2 text-slate-400 hover:text-[#0e8890] transition-colors rounded-full hover:bg-slate-50">
                     <i data-lucide="bell" class="w-5 h-5"></i>
                     <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#E60000] rounded-full"></span>
@@ -90,7 +88,7 @@
                 <div class="flex items-center gap-3">
                     <div class="text-right hidden sm:block">
                         <p id="userName" class="text-sm font-semibold text-slate-700 leading-none">Carregando...</p>
-                        <p id="userEmail" class="text-xs text-slate-500 mt-1">Carregando...</p>
+                        <p id="userEmail" class="text-xs text-slate-500 mt-1">...</p>
                     </div>
                     <div class="w-10 h-10 rounded-full bg-[#0e8890]/10 border border-[#0e8890]/20 flex items-center justify-center text-[#0e8890] font-bold">
                         <i data-lucide="user" class="w-5 h-5"></i>
@@ -99,207 +97,172 @@
             </div>
         </header>
         
-        <!-- Área de Dados (Scrollable) -->
-        <div class="flex-1 overflow-y-auto p-8">
+        <!-- ÁREA DE NAVEGAÇÃO INTERNA (Onde as telas trocam) -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 relative">
             
-            <div class="flex justify-between items-end mb-8">
-                <div>
-                    <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Visão Geral</h2>
-                    <p class="text-sm text-slate-500 mt-1">Acompanhe as métricas operacionais de hoje.</p>
-                </div>
-                <button class="bg-[#0e8890] hover:bg-[#0b6c72] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm shadow-[#0e8890]/20 transition-colors flex items-center gap-2">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    Novo Registro
-                </button>
-            </div>
-
-            <!-- Grid de Cartões de Estatísticas -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <!-- Card 1 -->
-                <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Suspensões Ativas</p>
-                            <h3 id="countSuspensos" class="text-3xl font-bold text-[#000033]">-</h3>
-                        </div>
-                        <div class="p-3 bg-red-50 text-red-500 rounded-xl">
-                            <i data-lucide="phone-off" class="w-6 h-6"></i>
+            <!-- TELA 1: DASHBOARD -->
+            <div id="view-dashboard" class="block animate-fade-in">
+                <!-- Grid de Cartões de Estatísticas -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Suspensões Ativas</p>
+                                <h3 id="countSuspensos" class="text-3xl font-bold text-[#000033]">-</h3>
+                            </div>
+                            <div class="p-3 bg-red-50 text-red-500 rounded-xl"><i data-lucide="phone-off" class="w-6 h-6"></i></div>
                         </div>
                     </div>
-                    <div class="mt-4 flex items-center gap-1 text-sm">
-                        <span class="text-emerald-500 font-medium flex items-center"><i data-lucide="trending-down" class="w-4 h-4 mr-1"></i> 12%</span>
-                        <span class="text-slate-400">vs. último mês</span>
-                    </div>
-                </div>
-
-                <!-- Card 2 -->
-                <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Faturas Pendentes</p>
-                            <h3 class="text-3xl font-bold text-[#000033]">142</h3>
-                        </div>
-                        <div class="p-3 bg-amber-50 text-amber-500 rounded-xl">
-                            <i data-lucide="alert-circle" class="w-6 h-6"></i>
+                    <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Faturas Pendentes</p>
+                                <h3 class="text-3xl font-bold text-[#000033]">0</h3>
+                            </div>
+                            <div class="p-3 bg-amber-50 text-amber-500 rounded-xl"><i data-lucide="alert-circle" class="w-6 h-6"></i></div>
                         </div>
                     </div>
-                    <div class="mt-4 flex items-center gap-1 text-sm">
-                        <span class="text-red-500 font-medium flex items-center"><i data-lucide="trending-up" class="w-4 h-4 mr-1"></i> 4%</span>
-                        <span class="text-slate-400">vs. último mês</span>
-                    </div>
-                </div>
-
-                <!-- Card 3 -->
-                <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Status do Sistema</p>
-                            <h3 class="text-3xl font-bold text-[#000033]">Online</h3>
+                    <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Status</p>
+                                <h3 class="text-3xl font-bold text-[#000033]">Online</h3>
+                            </div>
+                            <div class="p-3 bg-emerald-50 text-emerald-500 rounded-xl"><i data-lucide="server" class="w-6 h-6"></i></div>
                         </div>
-                        <div class="p-3 bg-emerald-50 text-emerald-500 rounded-xl">
-                            <i data-lucide="server" class="w-6 h-6"></i>
-                        </div>
-                    </div>
-                    <div class="mt-4 flex items-center gap-1 text-sm">
-                        <span class="text-emerald-500 font-medium flex items-center"><i data-lucide="check-circle-2" class="w-4 h-4 mr-1"></i></span>
-                        <span class="text-slate-400">Supabase Cloud conectado</span>
                     </div>
                 </div>
             </div>
-            
-            <!-- Grid Layout Principal -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Tabela Ocupando 2/3 da tela -->
-                <div class="lg:col-span-2 bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden flex flex-col">
-                    <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-white">
-                        <h3 class="text-base font-semibold text-slate-800">Últimas Suspensões Registradas</h3>
-                        <button class="text-sm font-medium text-[#0e8890] hover:text-[#0b6c72] transition-colors">Ver todas</button>
+
+            <!-- TELA 2: FATURAS E COBRANÇAS -->
+            <div id="view-faturas" class="hidden animate-fade-in">
+                
+                <div class="bg-white p-4 md:p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
+                    <div class="relative w-full md:w-96">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                        <input type="text" placeholder="Buscar Cliente, CPF ou Linha..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-[#0e8890] transition-all">
                     </div>
+                    <div class="flex gap-3 w-full md:w-auto">
+                        <button class="bg-slate-900 hover:bg-[#000033] text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm transition-colors flex items-center gap-2 whitespace-nowrap">
+                            <i data-lucide="upload-cloud" class="w-4 h-4"></i> <span class="hidden sm:inline">Importar Sheets</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-slate-50 text-xs uppercase text-slate-500 tracking-wider">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-white border-b border-slate-100 text-xs uppercase text-slate-500 tracking-wider">
                                 <tr>
-                                    <th class="px-6 py-4 font-semibold">Cliente / Linha</th>
+                                    <th class="px-6 py-4 font-semibold">Base / Venda</th>
+                                    <th class="px-6 py-4 font-semibold">Cliente / CPF</th>
                                     <th class="px-6 py-4 font-semibold">Plano</th>
-                                    <th class="px-6 py-4 font-semibold">Status</th>
-                                    <th class="px-6 py-4 font-semibold">Consultor</th>
+                                    <th class="px-6 py-4 font-semibold text-center bg-slate-50/50">1ª Fatura</th>
+                                    <th class="px-6 py-4 font-semibold text-center bg-slate-50/50">2ª Fatura</th>
+                                    <th class="px-6 py-4 font-semibold text-center bg-slate-50/50">3ª Fatura</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabelaCorpo" class="divide-y divide-slate-100">
+                            <tbody id="tabelaFaturas" class="divide-y divide-slate-100">
                                 <tr>
-                                    <td colspan="4" class="px-6 py-8 text-center text-slate-500">
-                                        <i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto mb-2 text-[#0e8890]"></i>
-                                        Carregando dados...
+                                    <td colspan="6" class="px-6 py-12 text-center text-slate-500">
+                                        Clique em "Importar Sheets" para carregar a base de dados.
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
+            </div>
 
-                <!-- Painel Lateral de Atividades (1/3 da tela) -->
-                <div class="bg-white border border-slate-100 rounded-2xl shadow-sm p-6">
-                    <h3 class="text-base font-semibold text-slate-800 mb-5">Atividades Recentes</h3>
-                    
-                    <div class="space-y-6 relative before:absolute before:inset-0 before:ml-2.5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
-                        
-                        <!-- Item Atividade -->
-                        <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                            <div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-white bg-[#0e8890] text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
-                                <i data-lucide="check" class="w-3 h-3"></i>
-                            </div>
-                            <div class="w-[calc(100%-2.5rem)] md:w-[calc(50%-1.5rem)] p-3 rounded-xl border border-slate-100 bg-slate-50 shadow-sm">
-                                <div class="flex items-center justify-between mb-1">
-                                    <span class="font-semibold text-slate-800 text-xs">Sistema Atualizado</span>
-                                    <span class="text-[10px] text-slate-400">Agora</span>
-                                </div>
-                                <p class="text-xs text-slate-500">Migração para Supabase concluída.</p>
-                            </div>
-                        </div>
+            <!-- TELA 3: SUSPENSÕES (Placeholder) -->
+            <div id="view-suspensoes" class="hidden animate-fade-in">
+                <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center text-slate-500">
+                    <i data-lucide="phone-off" class="w-12 h-12 mx-auto mb-3 text-slate-300"></i>
+                    <h3 class="text-lg font-semibold text-slate-700">Módulo de Suspensões</h3>
+                    <p class="text-sm mt-1">Em desenvolvimento. Será acoplado aqui.</p>
+                </div>
+            </div>
 
-                        <!-- Item Atividade -->
-                        <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                            <div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-white bg-slate-200 text-slate-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
-                                <i data-lucide="user-plus" class="w-3 h-3"></i>
-                            </div>
-                            <div class="w-[calc(100%-2.5rem)] md:w-[calc(50%-1.5rem)] p-3 rounded-xl border border-slate-100 bg-white">
-                                <div class="flex items-center justify-between mb-1">
-                                    <span class="font-semibold text-slate-700 text-xs">Novo Acesso</span>
-                                    <span class="text-[10px] text-slate-400">2h atrás</span>
-                                </div>
-                                <p class="text-xs text-slate-500">Admin fez login no sistema.</p>
-                            </div>
-                        </div>
-
-                    </div>
+            <!-- TELA 4: PROSPECÇÃO (Placeholder) -->
+            <div id="view-prospeccao" class="hidden animate-fade-in">
+                <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center text-slate-500">
+                    <i data-lucide="users" class="w-12 h-12 mx-auto mb-3 text-slate-300"></i>
+                    <h3 class="text-lg font-semibold text-slate-700">Módulo de Prospecção</h3>
+                    <p class="text-sm mt-1">Em desenvolvimento. Será acoplado aqui.</p>
                 </div>
             </div>
 
         </div>
     </main>
 
+    <style>
+        /* Animação suave na troca de telas */
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+
     <script>
-        // Inicializa Ícones Lucide
         lucide.createIcons();
 
-        // Credenciais Supabase
         const SUPABASE_URL = 'https://zldugoqlcrzarpqvtaoh.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // NAVEGAÇÃO SPA (Single Page Application)
+        const paginas = {
+            'dashboard': 'Visão Geral',
+            'faturas': 'Acompanhamento de Faturas TIM',
+            'suspensoes': 'Gestão de Suspensões',
+            'prospeccao': 'Prospecção de Clientes'
+        };
+
+        function navegar(destino) {
+            // 1. Esconde todas as views e remove seleção do menu
+            Object.keys(paginas).forEach(id => {
+                document.getElementById(`view-${id}`).classList.add('hidden');
+                
+                const btnMenu = document.getElementById(`menu-${id}`);
+                btnMenu.className = "w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer";
+            });
+
+            // 2. Mostra a view clicada
+            document.getElementById(`view-${destino}`).classList.remove('hidden');
+            document.getElementById('headerTitle').innerText = paginas[destino];
+
+            // 3. Pinta o botão do menu clicado (Cor Inforteca)
+            const btnAtivo = document.getElementById(`menu-${destino}`);
+            btnAtivo.className = "w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium transition-colors shadow-md shadow-[#0e8890]/20 cursor-pointer";
+
+            // 4. Carrega os dados específicos da página se necessário
+            if(destino === 'faturas') carregarFaturas();
+            if(destino === 'dashboard') carregarDadosDashboard();
+        }
+
+        // FUNÇÕES DE DADOS (Simulação e Integração)
+        async function carregarFaturas() {
+            // Aqui entra a lógica de buscar do Supabase que fizemos na etapa anterior.
+            // Por enquanto deixamos o feedback visual intacto.
+        }
+
+        async function carregarDadosDashboard() {
+            try {
+                const { data, error } = await supabaseClient.from('suspensos').select('*');
+                if (!error) document.getElementById('countSuspensos').textContent = data.length;
+            } catch (err) {}
+        }
+
+        // AUTENTICAÇÃO
         async function verificarAutenticacao() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (!session) {
                 window.location.href = 'index.html';
                 return;
             }
-            
-            // Exibir Nome e E-mail
-            const userName = session.user.user_metadata?.full_name || 'Usuário';
-            document.getElementById('userName').textContent = userName;
+            document.getElementById('userName').textContent = session.user.user_metadata?.full_name || 'Usuário';
             document.getElementById('userEmail').textContent = session.user.email;
             
-            carregarDadosDashboard();
-        }
-
-        async function carregarDadosDashboard() {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('suspensos')
-                    .select('*')
-                    .order('criado_em', { ascending: false })
-                    .limit(6);
-
-                if (error) throw error;
-
-                document.getElementById('countSuspensos').textContent = data.length;
-
-                const tbody = document.getElementById('tabelaCorpo');
-                if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-slate-500">Nenhum registro encontrado.</td></tr>`;
-                    return;
-                }
-
-                tbody.innerHTML = data.map(item => `
-                    <tr class="hover:bg-slate-50/80 transition-colors group">
-                        <td class="px-6 py-4">
-                            <p class="font-semibold text-slate-800">${item.nome_titular || 'Sem Nome'}</p>
-                            <p class="text-xs text-slate-500 mt-0.5">${item.numero_linha || 'Sem Linha'}</p>
-                        </td>
-                        <td class="px-6 py-4 text-slate-600">${item.nome_plano || '---'}</td>
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-amber-50 text-amber-600 border border-amber-200">
-                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
-                                ${item.status_cancelamento || 'AGUARDANDO'}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-slate-600">${item.consultor_vendas || '---'}</td>
-                    </tr>
-                `).join('');
-
-            } catch (err) {
-                console.error('Erro ao carregar dados:', err.message);
-            }
+            // Inicia na tela de Dashboard
+            navegar('dashboard');
         }
 
         async function terminarSessao() {
