@@ -300,7 +300,7 @@
             }
         }
 
-  function processarCSV() {
+function processarCSV() {
             if (!arquivoSelecionado) return;
 
             btnProcessar.disabled = true;
@@ -310,12 +310,15 @@
 
             Papa.parse(arquivoSelecionado, {
                 header: true,
-                skipEmptyLines: true,
+                skipEmptyLines: 'greedy', // Pula linhas totalmente vazias do Excel
+                transformHeader: function(header) {
+                    return header.trim(); // Remove espaços invisíveis do cabeçalho
+                },
                 complete: async function(results) {
                     const dados = results.data;
                     
                     if (dados.length === 0) {
-                        mostrarAlertaImportacao("O arquivo está vazio.", "red");
+                        mostrarAlertaImportacao("O arquivo está vazio ou não pôde ser lido.", "red");
                         return;
                     }
 
@@ -330,7 +333,12 @@
                         fatura_p: linha['PRIMEIRA FATURA'] ? linha['PRIMEIRA FATURA'].trim() : '---',
                         fatura_q: linha['SEGUNDA FATURA'] ? linha['SEGUNDA FATURA'].trim() : '---',
                         fatura_r: linha['TERCEIRA FATURA'] ? linha['TERCEIRA FATURA'].trim() : '---'
-                    })).filter(item => item.nome !== 'Sem Nome' && item.nome !== ''); // Filtra linhas vazias
+                    })).filter(item => item.nome !== 'Sem Nome' && item.nome !== ''); // Filtra linhas inválidas
+
+                    if (payloadSupabase.length === 0) {
+                        mostrarAlertaImportacao("Nenhum dado válido encontrado. Verifique se as colunas estão corretas.", "red");
+                        return;
+                    }
 
                     try {
                         const { data, error } = await supabaseClient
