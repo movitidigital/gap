@@ -200,6 +200,17 @@
               </tbody>
             </table>
           </div>
+
+     <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex flex-wrap items-center gap-4 text-[11px] text-slate-500">
+            <span class="font-semibold uppercase tracking-wider">Legenda:</span>
+            <span class="flex items-center gap-1"><span class="badge badge-pendente">dd/mm</span> Pendente</span>
+            <span class="flex items-center gap-1"><span class="badge badge-enviada">Enviada</span> Cobrança enviada</span>
+            <span class="flex items-center gap-1"><span class="badge badge-atraso"><i data-lucide="alert-triangle" class="w-3 h-3"></i> · RISCO</span> 30+ dias (zona de prejuízo)</span>
+            <span class="flex items-center gap-1"><span class="badge badge-pago">Pago</span> Quitada</span>
+            <span class="flex items-center gap-1"><span class="badge badge-prejuizo">Prejuízo</span> Registrada</span>
+            <span class="flex items-center gap-1"><span class="badge badge-cc">CC</span> Débito automático</span>
+          </div>
+          
         </div>
       </div>
 
@@ -330,7 +341,7 @@
     };
 
     const REGRA_RENOVACAO = { 1:7, 7:14, 10:19, 12:19, 15:25, 20:1, 25:1 };
-
+  const DIAS_PREJUIZO = 30; // A partir de 30 dias de atraso, fatura entra em zona de prejuízo
     /* ==========================================================
        HELPERS
        ========================================================== */
