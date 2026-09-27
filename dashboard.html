@@ -345,6 +345,30 @@
     /* ==========================================================
        HELPERS
        ========================================================== */
+    // ═══════════════════════════════════════════════════════════
+// EMOJIS SEGUROS — sempre como escape Unicode.
+// NUNCA use emoji literal no código (corrompe em copy/paste).
+// ═══════════════════════════════════════════════════════════
+const EMOJI = {
+  sparkles:  '\u2728',          // ✨ (BMP)
+  wave:      '\u{1F44B}',       // 👋
+  bill:      '\u{1F4D1}',       // 📑
+  phone:     '\u{1F4F1}',       // 📱
+  warning:   '\u26A0\uFE0F',    // ⚠️ (com variation selector)
+  pray:      '\u{1F64F}',       // 🙏
+  rocket:    '\u{1F680}',       // 🚀
+  check:     '\u2705',          // ✅
+  gift:      '\u{1F381}',       // 🎁
+  party:     '\u{1F389}',       // 🎉
+  cake:      '\u{1F382}',       // 🎂
+  heart:     '\u{1F499}',       // 💙
+  thumbsUp:  '\u{1F44D}',       // 👍
+  calendar:  '\u{1F4C5}',       // 📅
+  moneyBag:  '\u{1F4B0}',       // 💰
+  ticket:    '\u{1F3AB}',       // 🎫
+  handshake: '\u{1F91D}',       // 🤝
+  fire:      '\u{1F525}',       // 🔥
+};
     const $ = (id) => document.getElementById(id);
     const escapeHTML = (s) => String(s || '').replace(/[&<>"']/g,
       m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -899,50 +923,50 @@ function abrirModalFatura(clienteId, mes) {
     /* ==========================================================
        AÇÕES SOBRE A FATURA
        ========================================================== */
-    function cobrarWhatsAppCliente(cliente, mes, dataVenc, enviar = true) {
-      const nomeCompleto = capitalizar(cliente.nome);
-      const usuarioLinha = String(cliente.usuario_linha || '').trim();
-      const nomeSaudacao = (usuarioLinha && usuarioLinha.toUpperCase() !== 'MESMO')
-        ? capitalizar(usuarioLinha)
-        : nomeCompleto;
-      const primeiroNome = (nomeSaudacao.split(' ')[0] || 'Cliente').toUpperCase();
+function cobrarWhatsAppCliente(cliente, mes, dataVenc, enviar = true) {
+  const nomeCompleto = capitalizar(cliente.nome);
+  const usuarioLinha = String(cliente.usuario_linha || '').trim();
+  const nomeSaudacao = (usuarioLinha && usuarioLinha.toUpperCase() !== 'MESMO')
+    ? capitalizar(usuarioLinha)
+    : nomeCompleto;
+  const primeiroNome = (nomeSaudacao.split(' ')[0] || 'Cliente').toUpperCase();
 
-      const atendente = (state.perfil?.nome_completo || 'Consultor').split(' ')[0];
-      const greeting = (() => {
-        const h = new Date().getHours();
-        if (h < 12) return 'bom dia';
-        if (h < 18) return 'boa tarde';
-        return 'boa noite';
-      })();
+  const atendente = (state.perfil?.nome_completo || 'Consultor').split(' ')[0];
+  const greeting = (() => {
+    const h = new Date().getHours();
+    if (h < 12) return 'bom dia';
+    if (h < 18) return 'boa tarde';
+    return 'boa noite';
+  })();
 
-      const atrasada = diasAtraso(dataVenc) > 0;
-      const rotulo = mes === 'P' ? 'primeira' : mes === 'Q' ? 'segunda' : 'terceira';
+  const atrasada = diasAtraso(dataVenc) > 0;
+  const rotulo = mes === 'P' ? 'primeira' : mes === 'Q' ? 'segunda' : 'terceira';
 
-      let msg = '';
-      if (atrasada) {
-        msg = `Olá, ${primeiroNome}! ✨\n\n` +
-              `Passando para lembrar da sua ${rotulo} fatura TIM com vencimento em *${dataVenc}*.\n` +
-              `Identificamos que ela ainda consta em aberto. 📑\n\n` +
-              `Evite a suspensão dos serviços pagando pelo *App Meu TIM* via PIX ou cartão.\n\n` +
-              `Se já pagou, por favor desconsidere. 🙏`;
-      } else {
-        msg = `Olá, ${primeiroNome}, ${greeting}! ✨\n\n` +
-              `Aqui é o ${atendente}, da Inforteca TIM.\n\n` +
-              `Sua *${rotulo} fatura* TIM já está disponível com vencimento em *${dataVenc}*. 📑\n\n` +
-              `Qualquer dúvida, estou à disposição! 🚀`;
-      }
+  let msg = '';
+  if (atrasada) {
+    msg = `Olá, ${primeiroNome}! ${EMOJI.sparkles}\n\n` +
+          `${EMOJI.wave} Tudo bem?\n\n` +
+          `Não identificamos o pagamento da sua ${rotulo} fatura TIM que venceu no dia *${dataVenc}*. ${EMOJI.bill}\n\n` +
+          `Caso precise, você pode efetuar o pagamento via cartão de crédito ou PIX pelo *App Meu TIM*. ${EMOJI.phone}\n\n` +
+          `${EMOJI.warning} Evite a suspensão dos seus benefícios mantendo o pagamento em dia. Se já pagou, por favor desconsidere! ${EMOJI.pray}`;
+  } else {
+    msg = `Olá, ${primeiroNome}, ${greeting}! ${EMOJI.sparkles}\n\n` +
+          `Aqui é o ${atendente}, da Inforteca TIM.\n\n` +
+          `Sua *${rotulo} fatura* TIM já está disponível com vencimento em *${dataVenc}*. ${EMOJI.bill}\n\n` +
+          `Qualquer dúvida, estou à disposição! ${EMOJI.rocket}`;
+  }
 
-      const telefone = normalizarTelefone(
-        cliente.telefone_alt && cliente.telefone_alt.replace(/\D/g, '').length >= 10
-          ? cliente.telefone_alt
-          : cliente.telefone
-      );
-      if (!telefone) { alert('Cliente sem telefone cadastrado.'); return null; }
+  const telefone = normalizarTelefone(
+    cliente.telefone_alt && cliente.telefone_alt.replace(/\D/g, '').length >= 10
+      ? cliente.telefone_alt
+      : cliente.telefone
+  );
+  if (!telefone) { alert('Cliente sem telefone cadastrado.'); return null; }
 
-      const url = `https://wa.me/55${telefone}?text=${encodeURIComponent(msg)}`;
-      if (enviar) window.open(url, '_blank');
-      return url;
-    }
+  const url = `https://wa.me/55${telefone}?text=${encodeURIComponent(msg)}`;
+  if (enviar) window.open(url, '_blank');
+  return url;
+}
 
     async function acaoCobrar() {
       const f = state.faturaEmEdicao; if (!f) return;
