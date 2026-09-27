@@ -564,8 +564,15 @@ function atualizarStats() {
           <td class="px-4 py-4 align-top">
             <span class="inline-block bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold border border-slate-200 mb-1">${escapeHTML(c.ano_base || '—')}</span>
             <div class="text-slate-500">Venda: ${c.data_venda ? fmtBR(c.data_venda) : '—'}</div>
-            <div class="text-slate-700 font-semibold mt-0.5">Venc: Dia ${escapeHTML(c.data_vencimento_base ? String(new Date(c.data_vencimento_base).getUTCDate()) : '—')}</div>
-          </td>
+<div class="text-slate-700 font-semibold mt-0.5">
+  ${(() => {
+    const v = String(c.data_vencimento_base || '').trim();
+    if (!v) return 'Venc: Dia —';
+    if (v.toUpperCase() === 'CC') return 'Venc: <span class="text-sky-600">CC (Débito)</span>';
+    return `Venc: Dia ${v}`;
+  })()}
+</div>
+</td>
 
           <td class="px-4 py-4 align-top">
             <p class="font-bold text-[#000033] text-sm">${escapeHTML(capitalizar(c.nome) || 'Sem Nome')}</p>
@@ -875,8 +882,13 @@ async function processarCSV() {
         const dtNasc  = parseBR(row['DATA DE NASCIMENTO'] || row['NASCIMENTO'] || '');
         return {
           ano_base: String(new Date().getFullYear()), // dinâmico
-          data_vencimento_base: null,
-          data_nascimento: dtNasc ? dtNasc.toISOString().slice(0,10) : null,
+data_vencimento_base: (() => {
+  const fp = (row['PRIMEIRA FATURA'] || row['1ª FATURA'] || '').trim();
+  if (!fp || fp === '---' || fp === 'N/A') return null;
+  if (fp.toUpperCase() === 'CC') return 'CC';
+  const m = fp.match(/^(\d{2})\/\d{2}\/\d{4}/);
+  return m ? String(parseInt(m[1], 10)) : null; // "12/11/2026" → "12"
+})(),          data_nascimento: dtNasc ? dtNasc.toISOString().slice(0,10) : null,
           status_thales: (row['STATUS'] || row['STATUS THALES'] || '').trim() || null,
           data_venda: dtVenda ? dtVenda.toISOString().slice(0,10) : null,
           imei: (row['IMEI'] || '').trim() || null,
