@@ -1,551 +1,837 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PORTAL INFORTECA - Loja TIM Dom José</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PORTAL INFORTECA — Loja TIM Dom José</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        .badge-pago { @apply bg-emerald-100 text-emerald-700 border-emerald-200; }
-        .badge-prejuizo { @apply bg-slate-900 text-red-500 border-slate-700 font-bold; }
-        .badge-pendente { @apply bg-amber-50 text-amber-600 border-amber-200; }
-        .badge-enviada { @apply bg-blue-50 text-blue-600 border-blue-200; }
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+    /* Badges — CSS puro (o CDN do Tailwind NÃO suporta @apply) */
+    .badge { display:inline-flex; align-items:center; gap:4px;
+             padding:3px 8px; border-radius:6px; border-width:1px;
+             font-size:10px; text-transform:uppercase;
+             letter-spacing:0.04em; font-weight:700; }
+    .badge-pago      { background:#d1fae5; color:#047857; border-color:#a7f3d0; }
+    .badge-prejuizo  { background:#0f172a; color:#ef4444; border-color:#334155; }
+    .badge-pendente  { background:#fffbeb; color:#d97706; border-color:#fde68a; }
+    .badge-enviada   { background:#fff7ed; color:#ea580c; border-color:#fed7aa; }
+    .badge-cc        { background:#f0f9ff; color:#0369a1; border-color:#bae6fd; }
+    .badge-atraso    { background:#fef2f2; color:#dc2626; border-color:#fecaca; }
+
+    .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
 </head>
 <body class="text-slate-800 h-screen flex overflow-hidden">
 
-    <!-- MENU LATERAL -->
-    <aside class="w-64 bg-[#000033] text-white flex flex-col justify-between hidden md:flex transition-all duration-300 z-20 shadow-xl shrink-0">
-        <div>
-            <div class="h-20 flex flex-col justify-center px-6 border-b border-white/10">
-                <h1 class="text-xl font-bold tracking-tight flex items-center gap-2">
-                    <span class="text-[#E60000] text-2xl leading-none">==</span> INFORTECA
-                </h1>
-                <p class="text-[10px] text-slate-400 font-medium uppercase tracking-widest mt-1">Loja TIM Dom José</p>
-            </div>
-            
-            <nav class="p-4 space-y-1.5 mt-2">
-                <p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Menu Principal</p>
-                <button id="menu-dashboard" onclick="navegar('dashboard')" class="w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium transition-colors shadow-md shadow-[#0e8890]/20 cursor-pointer">
-                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span class="text-sm">Dashboard</span>
-                </button>
-                <button id="menu-faturas" onclick="navegar('faturas')" class="w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer">
-                    <i data-lucide="file-text" class="w-5 h-5 group-hover:scale-110 transition-transform"></i><span class="text-sm font-medium">Faturas</span>
-                </button>
-                <button id="menu-suspensoes" onclick="navegar('suspensoes')" class="w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer">
-                    <i data-lucide="phone-off" class="w-5 h-5 group-hover:scale-110 transition-transform"></i><span class="text-sm font-medium">Suspensões</span>
-                </button>
-                <button id="menu-prospeccao" onclick="navegar('prospeccao')" class="w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer">
-                    <i data-lucide="users" class="w-5 h-5 group-hover:scale-110 transition-transform"></i><span class="text-sm font-medium">Prospecção</span>
-                </button>
-            </nav>
+  <!-- ============ SIDEBAR ============ -->
+  <aside id="sidebar"
+    class="w-64 bg-[#000033] text-white flex flex-col justify-between hidden md:flex transition-all duration-300 z-30 shadow-xl shrink-0">
+    <div>
+      <div class="h-20 flex flex-col justify-center px-6 border-b border-white/10">
+        <h1 class="text-xl font-bold tracking-tight flex items-center gap-2">
+          <span class="text-[#E60000] text-2xl leading-none">==</span> INFORTECA
+        </h1>
+        <p class="text-[10px] text-slate-400 font-medium uppercase tracking-widest mt-1">Loja TIM Dom José</p>
+      </div>
+
+      <nav class="p-4 space-y-1.5 mt-2">
+        <p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Menu Principal</p>
+        <button onclick="navegar('dashboard')" data-nav="dashboard"
+          class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer">
+          <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span class="text-sm font-medium">Dashboard</span>
+        </button>
+        <button onclick="navegar('faturas')" data-nav="faturas"
+          class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer">
+          <i data-lucide="file-text" class="w-5 h-5"></i><span class="text-sm font-medium">Faturas</span>
+        </button>
+        <button onclick="navegar('suspensoes')" data-nav="suspensoes"
+          class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer">
+          <i data-lucide="phone-off" class="w-5 h-5"></i><span class="text-sm font-medium">Suspensões</span>
+        </button>
+        <button onclick="navegar('prospeccao')" data-nav="prospeccao"
+          class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer">
+          <i data-lucide="users" class="w-5 h-5"></i><span class="text-sm font-medium">Prospecção</span>
+        </button>
+      </nav>
+    </div>
+    <div class="p-4 border-t border-white/10">
+      <button onclick="terminarSessao()"
+        class="flex items-center gap-3 px-3 py-2.5 w-full text-slate-300 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors text-sm font-medium">
+        <i data-lucide="log-out" class="w-5 h-5"></i> Encerrar Sessão
+      </button>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="flex-1 flex flex-col h-screen min-w-0 relative">
+
+    <!-- HEADER -->
+    <header class="h-16 md:h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 z-10 shrink-0">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+        <h2 id="headerTitle" class="text-lg font-bold text-[#000033]">Visão Geral</h2>
+      </div>
+      <div class="flex items-center gap-4 ml-auto">
+        <button class="relative p-2 text-slate-400 hover:text-[#0e8890] transition-colors rounded-full hover:bg-slate-50">
+          <i data-lucide="bell" class="w-5 h-5"></i>
+        </button>
+        <div class="h-8 w-px bg-slate-200"></div>
+        <div class="flex items-center gap-3">
+          <div class="text-right hidden sm:block">
+            <p id="userName" class="text-sm font-semibold text-slate-700 leading-none">Carregando...</p>
+            <p id="userPerm" class="text-xs text-slate-500 mt-1">...</p>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-[#0e8890]/10 border border-[#0e8890]/20 flex items-center justify-center text-[#0e8890] font-bold">
+            <i data-lucide="user" class="w-5 h-5"></i>
+          </div>
         </div>
-        <div class="p-4 border-t border-white/10">
-            <button onclick="terminarSessao()" class="flex items-center gap-3 px-3 py-2.5 w-full text-slate-300 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors text-sm font-medium">
-                <i data-lucide="log-out" class="w-5 h-5"></i> Encerrar Sessão
+      </div>
+    </header>
+
+    <!-- VIEWS -->
+    <div class="flex-1 overflow-y-auto p-4 md:p-8 relative">
+
+      <!-- ===== DASHBOARD ===== -->
+      <div id="view-dashboard" class="animate-fade-in">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex justify-between items-start">
+            <div>
+              <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Clientes na Base</p>
+              <h3 id="statTotal" class="text-3xl font-bold text-[#000033]">—</h3>
+            </div>
+            <div class="p-3 bg-blue-50 text-blue-500 rounded-xl"><i data-lucide="users" class="w-6 h-6"></i></div>
+          </div>
+          <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex justify-between items-start">
+            <div>
+              <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Faturas Pendentes</p>
+              <h3 id="statPendentes" class="text-3xl font-bold text-[#000033]">—</h3>
+            </div>
+            <div class="p-3 bg-amber-50 text-amber-500 rounded-xl"><i data-lucide="alert-circle" class="w-6 h-6"></i></div>
+          </div>
+          <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex justify-between items-start">
+            <div>
+              <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Status</p>
+              <h3 class="text-3xl font-bold text-emerald-500">Online</h3>
+            </div>
+            <div class="p-3 bg-emerald-50 text-emerald-500 rounded-xl"><i data-lucide="server" class="w-6 h-6"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== FATURAS ===== -->
+      <div id="view-faturas" class="hidden animate-fade-in">
+
+        <!-- Filtros -->
+        <div class="bg-white p-4 md:p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
+          <div class="relative w-full md:w-80">
+            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+            <input type="text" id="inputBusca" oninput="filtrar()" placeholder="Buscar Cliente, CPF ou Linha..."
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-[#0e8890] transition-all">
+          </div>
+
+          <div class="flex flex-wrap gap-3 w-full md:w-auto items-center">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold text-slate-500 uppercase">Situação:</span>
+              <select id="selectSituacao" onchange="filtrar()"
+                class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#0e8890]">
+                <option value="aberto">Em Aberto</option>
+                <option value="todos">Todos</option>
+                <option value="pagos">Pagos / CC</option>
+              </select>
+            </div>
+
+            <button onclick="abrirModalImportacao()"
+              class="bg-slate-900 hover:bg-[#000033] text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm transition-colors flex items-center gap-2">
+              <i data-lucide="upload-cloud" class="w-4 h-4"></i><span class="hidden sm:inline">Importar</span>
             </button>
+          </div>
         </div>
-    </aside>
 
-    <!-- CONTAINER PRINCIPAL -->
-    <main class="flex-1 flex flex-col h-screen min-w-0 relative">
-        <!-- CABEÇALHO -->
-        <header class="h-16 md:h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 z-10 shrink-0">
-            <div class="flex items-center gap-3">
-                <button class="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg"><i data-lucide="menu" class="w-6 h-6"></i></button>
-                <h2 id="headerTitle" class="text-lg font-bold text-[#000033]">Visão Geral</h2>
-            </div>
-            <div class="flex items-center gap-4 ml-auto">
-                <button class="relative p-2 text-slate-400 hover:text-[#0e8890] transition-colors rounded-full hover:bg-slate-50">
-                    <i data-lucide="bell" class="w-5 h-5"></i><span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#E60000] rounded-full"></span>
-                </button>
-                <div class="h-8 w-px bg-slate-200"></div>
-                <div class="flex items-center gap-3">
-                    <div class="text-right hidden sm:block">
-                        <p id="userName" class="text-sm font-semibold text-slate-700 leading-none">Carregando...</p>
-                        <p id="userEmail" class="text-xs text-slate-500 mt-1">...</p>
-                    </div>
-                    <div class="w-10 h-10 rounded-full bg-[#0e8890]/10 border border-[#0e8890]/20 flex items-center justify-center text-[#0e8890] font-bold">
-                        <i data-lucide="user" class="w-5 h-5"></i>
-                    </div>
-                </div>
-            </div>
-        </header>
-        
-        <!-- NAVEGAÇÃO INTERNA -->
-        <div class="flex-1 overflow-y-auto p-4 md:p-8 relative">
-            <!-- TELA: DASHBOARD -->
-            <div id="view-dashboard" class="block animate-fade-in">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex justify-between items-start">
-                        <div>
-                            <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Suspensões Ativas</p>
-                            <h3 id="countSuspensos" class="text-3xl font-bold text-[#000033]">-</h3>
-                        </div>
-                        <div class="p-3 bg-red-50 text-red-500 rounded-xl"><i data-lucide="phone-off" class="w-6 h-6"></i></div>
-                    </div>
-                    <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex justify-between items-start">
-                        <div>
-                            <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Faturas Pendentes</p>
-                            <h3 class="text-3xl font-bold text-[#000033]">0</h3>
-                        </div>
-                        <div class="p-3 bg-amber-50 text-amber-500 rounded-xl"><i data-lucide="alert-circle" class="w-6 h-6"></i></div>
-                    </div>
-                    <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex justify-between items-start">
-                        <div>
-                            <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Status</p>
-                            <h3 class="text-3xl font-bold text-[#000033]">Online</h3>
-                        </div>
-                        <div class="p-3 bg-emerald-50 text-emerald-500 rounded-xl"><i data-lucide="server" class="w-6 h-6"></i></div>
-                    </div>
-                </div>
-            </div>
-
-        <!-- TELA 2: FATURAS E COBRANÇAS -->
-            <div id="view-faturas" class="hidden animate-fade-in">
-                
-                <!-- Barra de Pesquisa e Filtros (Estilo GAP Inteligente) -->
-                <div class="bg-white p-4 md:p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
-                    <div class="relative w-full md:w-80">
-                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                        <input type="text" id="inputBuscaFatura" oninput="filtrarFaturas()" placeholder="Buscar Cliente, CPF ou Linha..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-[#0e8890] transition-all">
-                    </div>
-
-                    <div class="flex flex-wrap gap-3 w-full md:w-auto items-center">
-                        <!-- Filtro de Situação -->
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs font-semibold text-slate-500 uppercase">Situação:</span>
-                            <select id="selectSituacao" onchange="filtrarFaturas()" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#0e8890]">
-                                <option value="aberto">Em Aberto (Pendentes)</option>
-                                <option value="todos">Todos os Registros</option>
-                                <option value="pagos">Apenas Pagos / Quitados</option>
-                            </select>
-                        </div>
-
-                        <button onclick="abrirModalImportacao()" class="bg-slate-900 hover:bg-[#000033] text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm transition-colors flex items-center gap-2">
-                            <i data-lucide="upload-cloud" class="w-4 h-4"></i> <span class="hidden sm:inline">Importar Sheets</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
-                    <div class="px-6 py-3 bg-slate-50 border-b border-slate-100 text-xs font-semibold text-slate-500 flex justify-between items-center">
-                        <span id="contadorResultados">A carregar registos...</span>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm whitespace-nowrap">
-                            <thead class="bg-white border-b border-slate-100 text-xs uppercase text-slate-500 tracking-wider">
-                                <tr>
-                                    <th class="px-6 py-4 font-semibold">Base / Venda</th>
-                                    <th class="px-6 py-4 font-semibold">Cliente / CPF</th>
-                                    <th class="px-6 py-4 font-semibold">Plano</th>
-                                    <th class="px-6 py-4 font-semibold text-center bg-slate-50/50">1ª Fatura</th>
-                                    <th class="px-6 py-4 font-semibold text-center bg-slate-50/50">2ª Fatura</th>
-                                    <th class="px-6 py-4 font-semibold text-center bg-slate-50/50">3ª Fatura</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabelaFaturas" class="divide-y divide-slate-100">
-                                <tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">A carregar faturas...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TELA: SUSPENSÕES -->
-            <div id="view-suspensoes" class="hidden animate-fade-in">
-                <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center text-slate-500">
-                    <i data-lucide="phone-off" class="w-12 h-12 mx-auto mb-3 text-slate-300"></i><h3 class="text-lg font-semibold text-slate-700">Módulo de Suspensões</h3>
-                </div>
-            </div>
-
-            <!-- TELA: PROSPECÇÃO -->
-            <div id="view-prospeccao" class="hidden animate-fade-in">
-                <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center text-slate-500">
-                    <i data-lucide="users" class="w-12 h-12 mx-auto mb-3 text-slate-300"></i><h3 class="text-lg font-semibold text-slate-700">Módulo de Prospecção</h3>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- MODAL DE SELEÇÃO DE FATURA (PAGO / PREJUÍZO) -->
-    <div id="modalAcaoFatura" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300" id="modalAcaoContent">
-            
-            <div id="modalAcaoHeader" class="bg-[#000033] px-6 py-4 flex justify-between items-center">
-                <h3 class="text-white font-semibold flex items-center gap-2" id="modalAcaoTitulo">
-                    <i data-lucide="check-circle" class="w-5 h-5 text-[#0e8890]"></i> Atualizar Fatura
-                </h3>
-                <button onclick="fecharModalAcao()" class="text-slate-400 hover:text-white transition-colors">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <div class="p-6 space-y-4">
-                <p class="text-sm text-slate-500">Selecione qual fatura do cliente <strong id="modalAcaoNome" class="text-slate-800"></strong> deseja marcar como <strong id="modalAcaoTipo" class="text-slate-800 uppercase"></strong>:</p>
-                
-                <!-- Opções de Faturas -->
-                <div class="space-y-3" id="listaFaturasAcao">
-                    <!-- Gerado via Javascript -->
-                </div>
-
-                <div id="acaoAlert" class="hidden text-xs p-3 rounded-xl border font-medium mt-2"></div>
-            </div>
-
-            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
-                <button onclick="fecharModalAcao()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors">Cancelar</button>
-                <button id="btnConfirmarAcao" onclick="confirmarAcaoFatura()" disabled class="bg-[#0e8890] hover:bg-[#0b6c72] disabled:bg-slate-300 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors flex items-center gap-2">
-                    Confirmar
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL DE IMPORTAÇÃO CSV (Oculto) -->
-    <div id="modalImportacao" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300" id="modalImportContent">
-            <div class="bg-[#000033] px-6 py-4 flex justify-between items-center">
-                <h3 class="text-white font-semibold flex items-center gap-2"><i data-lucide="file-spreadsheet" class="w-5 h-5 text-[#0e8890]"></i> Importar Dados</h3>
-                <button onclick="fecharModalImportacao()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            <div class="p-6 space-y-4">
-                <div class="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center hover:border-[#0e8890] hover:bg-slate-50 transition-colors cursor-pointer relative">
-                    <input type="file" id="csvFileInput" accept=".csv" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="verificarArquivo(this)">
-                    <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
-                    <p class="text-sm font-semibold text-slate-700" id="fileNameText">Clique ou arraste o arquivo CSV</p>
-                </div>
-                <div id="importAlert" class="hidden text-xs p-3 rounded-xl border font-medium"></div>
-            </div>
-            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
-                <button onclick="fecharModalImportacao()" class="px-4 py-2 text-sm font-medium text-slate-600">Cancelar</button>
-                <button id="btnProcessar" onclick="processarCSV()" disabled class="bg-[#0e8890] hover:bg-[#0b6c72] disabled:bg-slate-300 text-white px-5 py-2 rounded-lg text-sm font-medium">Processar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- SCRIPTS -->
-    <script>
-        lucide.createIcons();
-        const SUPABASE_URL = 'https://zldugoqlcrzarpqvtaoh.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // --- NAVEGAÇÃO SPA ---
-        const paginas = { 'dashboard': 'Visão Geral', 'faturas': 'Acompanhamento de Faturas TIM', 'suspensoes': 'Gestão de Suspensões', 'prospeccao': 'Prospecção de Clientes' };
-        function navegar(destino) {
-            Object.keys(paginas).forEach(id => {
-                document.getElementById(`view-${id}`).classList.add('hidden');
-                document.getElementById(`menu-${id}`).className = "w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer";
-            });
-            document.getElementById(`view-${destino}`).classList.remove('hidden');
-            document.getElementById('headerTitle').innerText = paginas[destino];
-            document.getElementById(`menu-${destino}`).className = "w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium transition-colors shadow-md shadow-[#0e8890]/20 cursor-pointer";
-            if(destino === 'faturas') carregarFaturas();
-        }
-
-        // --- LÓGICA DO NOVO MODAL DE AÇÃO (PAGO/PREJUÍZO) ---
-        let acaoConfig = { id_cliente: null, nome: '', status: '', coluna_selecionada: null };
-
-        function abrirModalAcao(id, nome, status, valP, valQ, valR) {
-            acaoConfig = { id_cliente: id, nome: nome, status: status, coluna_selecionada: null };
-            
-            document.getElementById('modalAcaoFatura').classList.remove('hidden');
-            setTimeout(() => document.getElementById('modalAcaoContent').classList.replace('scale-95', 'scale-100'), 10);
-            
-            document.getElementById('modalAcaoNome').innerText = nome;
-            document.getElementById('modalAcaoTipo').innerText = status;
-            document.getElementById('modalAcaoTipo').className = status === 'PAGO' ? 'text-emerald-600 font-bold uppercase' : 'text-red-600 font-bold uppercase';
-            document.getElementById('btnConfirmarAcao').disabled = true;
-            document.getElementById('acaoAlert').classList.add('hidden');
-
-            // Header dinâmico baseado na cor da ação
-            const header = document.getElementById('modalAcaoHeader');
-            header.className = status === 'PAGO' ? 'bg-emerald-600 px-6 py-4 flex justify-between items-center' : 'bg-slate-900 px-6 py-4 flex justify-between items-center';
-
-            // Gerar Opções (Cards selecionáveis)
-            const faturas = [
-                { col: 'fatura_p', label: '1ª Fatura', valor: valP },
-                { col: 'fatura_q', label: '2ª Fatura', valor: valQ },
-                { col: 'fatura_r', label: '3ª Fatura', valor: valR }
-            ];
-
-            const container = document.getElementById('listaFaturasAcao');
-            container.innerHTML = faturas.map(f => `
-                <div id="card_${f.col}" onclick="selecionarFatura('${f.col}')" class="border border-slate-200 rounded-xl p-4 cursor-pointer hover:border-[#0e8890] hover:bg-slate-50 transition-all flex justify-between items-center">
-                    <div>
-                        <p class="text-sm font-semibold text-slate-700">${f.label}</p>
-                        <p class="text-xs text-slate-500 mt-0.5">Status Atual: <span class="font-medium">${f.valor || '---'}</span></p>
-                    </div>
-                    <div id="check_${f.col}" class="w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center transition-colors">
-                        <i data-lucide="check" class="w-3 h-3 text-transparent transition-colors"></i>
-                    </div>
-                </div>
-            `).join('');
-            lucide.createIcons();
-        }
-
-        function selecionarFatura(coluna) {
-            acaoConfig.coluna_selecionada = coluna;
-            document.getElementById('btnConfirmarAcao').disabled = false;
-
-            // Resetar todos os cards
-            ['fatura_p', 'fatura_q', 'fatura_r'].forEach(col => {
-                const card = document.getElementById(`card_${col}`);
-                const check = document.getElementById(`check_${col}`);
-                if (col === coluna) {
-                    card.classList.add('ring-2', 'ring-[#0e8890]', 'bg-[#0e8890]/5', 'border-transparent');
-                    card.classList.remove('border-slate-200', 'hover:bg-slate-50');
-                    check.classList.add('bg-[#0e8890]', 'border-[#0e8890]');
-                    check.querySelector('i').classList.replace('text-transparent', 'text-white');
-                } else {
-                    card.classList.remove('ring-2', 'ring-[#0e8890]', 'bg-[#0e8890]/5', 'border-transparent');
-                    card.classList.add('border-slate-200', 'hover:bg-slate-50');
-                    check.classList.remove('bg-[#0e8890]', 'border-[#0e8890]');
-                    check.querySelector('i').classList.replace('text-white', 'text-transparent');
-                }
-            });
-        }
-
-        function fecharModalAcao() {
-            document.getElementById('modalAcaoContent').classList.replace('scale-100', 'scale-95');
-            setTimeout(() => document.getElementById('modalAcaoFatura').classList.add('hidden'), 300);
-        }
-
-        async function confirmarAcaoFatura() {
-            if (!acaoConfig.coluna_selecionada) return;
-
-            const btn = document.getElementById('btnConfirmarAcao');
-            const alertBox = document.getElementById('acaoAlert');
-            btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Atualizando...`;
-            lucide.createIcons();
-
-            // Lógica para adicionar a data atual junto ao PAGO, caso prefira
-            const hoje = new Date();
-            const dataHojeStr = `${hoje.getDate().toString().padStart(2, '0')}/${(hoje.getMonth()+1).toString().padStart(2, '0')}/${hoje.getFullYear()}`;
-            const valorFinal = acaoConfig.status === 'PAGO' ? `PAGO | ${dataHojeStr}` : `PREJUÍZO`;
-
-            try {
-                const updateData = {};
-                updateData[acaoConfig.coluna_selecionada] = valorFinal;
-
-                const { error } = await supabaseClient
-                    .from('clientes_faturas')
-                    .update(updateData)
-                    .eq('id', acaoConfig.id_cliente);
-
-                if (error) throw error;
-                
-                carregarFaturas();
-                fecharModalAcao();
-            } catch (error) {
-                alertBox.textContent = "Erro ao atualizar: " + error.message;
-                alertBox.className = "text-xs p-3 rounded-xl border font-medium mt-2 bg-red-50 border-red-200 text-red-600";
-                alertBox.classList.remove('hidden');
-                btn.disabled = false;
-                btn.innerHTML = `Confirmar`;
-            }
-        }
-
-
-        // --- IMPORTAÇÃO CSV E CARREGAMENTO DA TABELA (RESUMO) ---
-        function abrirModalImportacao() { document.getElementById('modalImportacao').classList.remove('hidden'); setTimeout(() => document.getElementById('modalImportContent').classList.replace('scale-95', 'scale-100'), 10); }
-        function fecharModalImportacao() { document.getElementById('modalImportContent').classList.replace('scale-100', 'scale-95'); setTimeout(() => document.getElementById('modalImportacao').classList.add('hidden'), 300); }
-        function verificarArquivo(input) { if (input.files && input.files[0]) { arquivoSelecionado = input.files[0]; document.getElementById('fileNameText').textContent = arquivoSelecionado.name; document.getElementById('btnProcessar').disabled = false; } }
-
-        function processarCSV() {
-            if (!arquivoSelecionado) return;
-            Papa.parse(arquivoSelecionado, {
-                header: true, skipEmptyLines: 'greedy', transformHeader: h => h.trim(),
-                complete: async function(results) {
-                    const dados = results.data;
-                    const payloadSupabase = dados.map(linha => ({
-                        ano_base: '2026', nome: linha['NOME DO CLIENTE'] ? linha['NOME DO CLIENTE'].trim() : 'Sem Nome',
-                        cpf: linha['CPF CLIENTE'] ? String(linha['CPF CLIENTE']).trim() : '',
-                        telefone: linha['NÚMERO DA LINHA'] ? String(linha['NÚMERO DA LINHA']).trim() : '',
-                        plano: linha['PLANO'] ? linha['PLANO'].trim() : '',
-                        data_venda: (linha['DATA DA VENDA'] && linha['DATA DA VENDA'].includes('/')) ? `${linha['DATA DA VENDA'].split('/')[2]}-${linha['DATA DA VENDA'].split('/')[1]}-${linha['DATA DA VENDA'].split('/')[0]}` : null, 
-                        fatura_p: linha['PRIMEIRA FATURA'] ? linha['PRIMEIRA FATURA'].trim() : '---',
-                        fatura_q: linha['SEGUNDA FATURA'] ? linha['SEGUNDA FATURA'].trim() : '---',
-                        fatura_r: linha['TERCEIRA FATURA'] ? linha['TERCEIRA FATURA'].trim() : '---'
-                    })).filter(item => item.nome !== 'Sem Nome' && item.nome !== '');
-
-                    try {
-                        const { error } = await supabaseClient.from('clientes_faturas').insert(payloadSupabase);
-                        if (error) throw error;
-                        carregarFaturas();
-                        fecharModalImportacao();
-                    } catch (error) { alert("Erro: " + error.message); }
-                }
-            });
-        }
-let cacheFaturasGlobal = []; // Guarda os dados na memória para filtro instantâneo
-
-async function carregarFaturas() {
-            try {
-                // Removemos o .limit(50) para carregar TODOS os clientes da base de dados
-                const { data, error } = await supabaseClient
-                    .from('clientes_faturas')
-                    .select('*')
-                    .order('criado_em', { ascending: false });
-
-                if (error) throw error;
-
-                cacheFaturasGlobal = data || [];
-                filtrarFaturas(); // Aplica o filtro visual imediato
-
-            } catch (err) {
-                console.error('Erro ao carregar faturas:', err.message);
-            }
-        }
-
-        // Função inteligente que decide o que exibir com base nos filtros
-function filtrarFaturas() {
-            const termoBusca = document.getElementById('inputBuscaFatura').value.toLowerCase().trim();
-            const situacaoFiltro = document.getElementById('selectSituacao').value; // 'aberto', 'todos', 'pagos'
-            
-            const tbody = document.getElementById('tabelaFaturas');
-
-            if (!cacheFaturasGlobal || cacheFaturasGlobal.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">Nenhum cliente cadastrado. Use o botão "Importar Sheets".</td></tr>`;
-                document.getElementById('contadorResultados').textContent = `0 registos encontrados`;
-                return;
-            }
-
-            function estaQuitada(statusStr) {
-                if (!statusStr) return false;
-                const s = statusStr.toUpperCase();
-                return s.includes('PAGO') || s.includes('CC');
-            }
-
-            const dadosFiltrados = cacheFaturasGlobal.filter(item => {
-                // 1. REGRA: Ignorar se a modalidade for "TROCA DE APARELHO"
-                const modalidade = (item.modalidade || '').toUpperCase();
-                if (modalidade.includes('TROCA DE APARELHO')) {
-                    return false; 
-                }
-
-                // 2. Filtro por Texto (Nome, CPF, Telefone ou Consultor)
-                const nome = (item.nome || '').toLowerCase();
-                const cpf = (item.cpf || '').toLowerCase();
-                const tel = (item.telefone || '').toLowerCase();
-                const consultor = (item.consultor || '').toLowerCase();
-                
-                const matchTexto = nome.includes(termoBusca) || cpf.includes(termoBusca) || tel.includes(termoBusca) || consultor.includes(termoBusca);
-                if (!matchTexto) return false;
-
-                // 3. Filtro por Situação (Aberto vs Pagos)
-                const pOk = estaQuitada(item.fatura_p);
-                const qOk = estaQuitada(item.fatura_q);
-                const rOk = estaQuitada(item.fatura_r);
-                const clienteQuitadoTotal = pOk && qOk && rOk;
-
-                if (situacaoFiltro === 'aberto') {
-                    return !clienteQuitadoTotal;
-                } else if (situacaoFiltro === 'pagos') {
-                    return clienteQuitadoTotal;
-                }
-                return true;
-            });
-
-            document.getElementById('contadorResultados').textContent = `Exibindo ${dadosFiltrados.length} registos ativos (Troca de Aparelho ocultada)`;
-
-            if (dadosFiltrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">Nenhum registo encontrado com estes critérios.</td></tr>`;
-                return;
-            }
-
-            function formatarBadge(texto) {
-                if (!texto || texto === '---' || texto === 'N/A') return `<span class="text-slate-400">---</span>`;
-                const txt = texto.toUpperCase();
-                if (txt.includes('PREJUIZO') || txt.includes('PREJUÍZO')) return `<span class="inline-flex items-center px-2 py-1 rounded border text-[10px] uppercase tracking-wider badge-prejuizo"><i data-lucide="alert-triangle" class="w-3 h-3 mr-1"></i> Prejuízo</span>`;
-                if (txt.includes('PAGO')) return `<span class="inline-flex items-center px-2 py-1 rounded border text-[10px] uppercase tracking-wider badge-pago"><i data-lucide="check-circle-2" class="w-3 h-3 mr-1"></i> Pago</span>`;
-                return `<span class="inline-flex items-center px-2 py-1 rounded border text-[11px] font-medium badge-pendente"><i data-lucide="calendar" class="w-3 h-3 mr-1"></i> ${texto}</span>`;
-            }
-
-            function formatarDataVisao(dataSQL) {
-                if (!dataSQL) return '---';
-                const partes = dataSQL.split('-');
-                if (partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
-                return dataSQL;
-            }
-
-            tbody.innerHTML = dadosFiltrados.map(item => `
-                <tr class="hover:bg-[#0e8890]/5 transition-colors group border-b border-slate-100 text-xs">
-                    
-                    <td class="px-4 py-3.5 align-top">
-                        <span class="inline-block bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold border border-slate-200 mb-1">${item.ano_base || '2026'}</span>
-                        <div class="text-slate-500">Venda: ${formatarDataVisao(item.data_venda)}</div>
-                        <div class="text-slate-700 font-semibold mt-0.5">Venc: Dia ${item.vencimento_base || '---'}</div>
-                    </td>
-
-                    <td class="px-4 py-3.5 align-top">
-                        <p class="font-bold text-[#000033] text-sm">${item.nome || 'Sem Nome'}</p>
-                        <p class="text-slate-500 font-mono mt-0.5">CPF: ${item.cpf || '---'}</p>
-                        <p class="text-slate-700 font-medium mt-1 flex items-center gap-1">
-                            <i data-lucide="phone" class="w-3 h-3 text-[#0e8890]"></i> ${item.telefone || '---'}
-                        </p>
-                        ${item.telefone_alt ? `<p class="text-slate-400 text-[11px] mt-0.5">Alt: ${item.telefone_alt}</p>` : ''}
-                    </td>
-
-                    <td class="px-4 py-3.5 align-top">
-                        <p class="font-bold text-[#E60000] uppercase text-xs">${item.plano || 'TIM CONTROLE'}</p>
-                        <p class="text-slate-700 mt-1"><span class="font-semibold text-slate-500">Consultor:</span> ${item.consultor || '---'}</p>
-                        <p class="text-slate-500 text-[11px] mt-0.5"><span class="font-medium">Mod:</span> ${item.modalidade || '---'}</p>
-                    </td>
-
-                    <td class="px-4 py-3.5 text-center align-middle bg-slate-50/40">
-                        ${formatarBadge(item.fatura_p)}
-                    </td>
-
-                    <td class="px-4 py-3.5 text-center align-middle bg-slate-50/40">
-                        ${formatarBadge(item.fatura_q)}
-                    </td>
-
-                    <td class="px-4 py-3.5 text-center align-middle bg-slate-50/40">
-                        <div class="flex flex-col items-center justify-center gap-2">
-                            <div>${formatarBadge(item.fatura_r)}</div>
-                            
-                            <div class="flex items-center gap-1">
-                                <button onclick="abrirModalAcao('${item.id}', '${item.nome}', 'PAGO', '${item.fatura_p}', '${item.fatura_q}', '${item.fatura_r}')" title="Marcar como Pago" class="p-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded border border-emerald-200 transition-colors">
-                                    <i data-lucide="dollar-sign" class="w-3.5 h-3.5"></i>
-                                </button>
-                                <button onclick="abrirModalAcao('${item.id}', '${item.nome}', 'PREJUÍZO', '${item.fatura_p}', '${item.fatura_q}', '${item.fatura_r}')" title="Marcar Prejuízo" class="p-1 bg-slate-900 text-white hover:bg-black rounded transition-colors">
-                                    <i data-lucide="alert-octagon" class="w-3.5 h-3.5"></i>
-                                </button>
-                                <button onclick="cobrarWhatsApp('${item.telefone}', '${item.nome}')" title="Cobrar no WhatsApp" class="p-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded border border-blue-200 transition-colors">
-                                    <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </td>
+        <!-- Tabela -->
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+          <div class="px-6 py-3 bg-slate-50 border-b border-slate-100 text-xs font-semibold text-slate-500 flex justify-between items-center">
+            <span id="contadorResultados">Carregando registros…</span>
+            <button onclick="carregarClientes()" class="text-[#0e8890] hover:text-[#0b6c72] font-semibold flex items-center gap-1">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Atualizar
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+              <thead class="bg-white border-b border-slate-100 text-xs uppercase text-slate-500 tracking-wider">
+                <tr>
+                  <th class="px-4 py-4 font-semibold">Base / Venda</th>
+                  <th class="px-4 py-4 font-semibold">Cliente</th>
+                  <th class="px-4 py-4 font-semibold">Linha / Plano</th>
+                  <th class="px-4 py-4 font-semibold text-center bg-slate-50/50">1ª Fatura</th>
+                  <th class="px-4 py-4 font-semibold text-center bg-slate-50/50">2ª Fatura</th>
+                  <th class="px-4 py-4 font-semibold text-center bg-slate-50/50">3ª Fatura</th>
                 </tr>
-            `).join('');
-            lucide.createIcons();
+              </thead>
+              <tbody id="tabelaFaturas" class="divide-y divide-slate-100">
+                <tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">A carregar faturas…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SUSPENSÕES (placeholder) ===== -->
+      <div id="view-suspensoes" class="hidden animate-fade-in">
+        <div class="bg-white p-12 rounded-2xl border border-slate-200 shadow-sm text-center text-slate-500">
+          <i data-lucide="phone-off" class="w-12 h-12 mx-auto mb-3 text-slate-300"></i>
+          <h3 class="text-lg font-semibold text-slate-700">Módulo de Suspensões</h3>
+          <p class="text-sm mt-1">Em construção — próximo passo.</p>
+        </div>
+      </div>
+
+      <!-- ===== PROSPECÇÃO (placeholder) ===== -->
+      <div id="view-prospeccao" class="hidden animate-fade-in">
+        <div class="bg-white p-12 rounded-2xl border border-slate-200 shadow-sm text-center text-slate-500">
+          <i data-lucide="users" class="w-12 h-12 mx-auto mb-3 text-slate-300"></i>
+          <h3 class="text-lg font-semibold text-slate-700">Módulo de Prospecção</h3>
+          <p class="text-sm mt-1">Em construção.</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ============ MODAL IMPORT ============ -->
+  <div id="modalImport" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+      <div class="bg-[#000033] px-6 py-4 flex justify-between items-center">
+        <h3 class="text-white font-semibold flex items-center gap-2">
+          <i data-lucide="file-spreadsheet" class="w-5 h-5 text-[#0e8890]"></i> Importar Faturas
+        </h3>
+        <button onclick="fecharModalImportacao()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div class="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center hover:border-[#0e8890] hover:bg-slate-50 transition-colors cursor-pointer relative">
+          <input type="file" id="csvFileInput" accept=".csv" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="onFileSelected(this)">
+          <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
+          <p class="text-sm font-semibold text-slate-700" id="fileNameText">Clique ou arraste o CSV</p>
+          <p class="text-xs text-slate-400 mt-1">Cabeçalho obrigatório: NOME DO CLIENTE, CPF CLIENTE, NÚMERO DA LINHA, PRIMEIRA FATURA…</p>
+        </div>
+        <div id="importAlert" class="hidden text-xs p-3 rounded-xl border font-medium"></div>
+      </div>
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+        <button onclick="fecharModalImportacao()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800">Cancelar</button>
+        <button id="btnProcessar" onclick="processarCSV()" disabled
+          class="bg-[#0e8890] hover:bg-[#0b6c72] disabled:bg-slate-300 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+          Processar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL GERENCIAR FATURA ============ -->
+  <div id="modalFatura" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+      <div class="bg-[#000033] px-6 py-4 flex justify-between items-center">
+        <h3 class="text-white font-semibold flex items-center gap-2">
+          <i data-lucide="receipt" class="w-5 h-5 text-[#0e8890]"></i>
+          <span id="modalFaturaTitle">Gerenciar Fatura</span>
+        </h3>
+        <button onclick="fecharModalFatura()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-6 space-y-3">
+        <div class="bg-slate-50 rounded-xl p-3 text-sm">
+          <p class="font-semibold text-slate-800" id="mfCliente">—</p>
+          <p class="text-xs text-slate-500 mt-1">
+            <span id="mfLinha">—</span> · <span id="mfFatura">—</span> · venc. <strong id="mfVenc">—</strong>
+          </p>
+        </div>
+
+        <button id="mfBtnCobrar" onclick="acaoCobrar()"
+          class="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold text-sm transition-colors">
+          <i data-lucide="message-circle" class="w-4 h-4"></i> Enviar Cobrança (WhatsApp)
+        </button>
+
+        <button id="mfBtnPagar" onclick="acaoPagar()"
+          class="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold text-sm transition-colors">
+          <i data-lucide="check-circle-2" class="w-4 h-4"></i> Marcar como PAGA
+        </button>
+
+        <button id="mfBtnPrejuizo" onclick="acaoPrejuizo()"
+          class="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-black text-white py-3 rounded-xl font-semibold text-sm transition-colors">
+          <i data-lucide="alert-octagon" class="w-4 h-4"></i> Marcar como PREJUÍZO
+        </button>
+
+        <div id="mfAlert" class="hidden text-xs p-3 rounded-xl border font-medium"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCRIPTS ============ -->
+  <script>
+    /* ==========================================================
+       CONFIG
+       ========================================================== */
+    const SUPABASE_URL = 'https://zldugoqlcrzarpqvtaoh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    /* ==========================================================
+       STATE
+       ========================================================== */
+    const state = {
+      user: null,
+      perfil: null,
+      clientes: [],
+      filtros: { texto: '', situacao: 'aberto' },
+      arquivoSelecionado: null,
+      faturaEmEdicao: null, // { id, mes, valorAtual, cliente }
+    };
+
+    const REGRA_RENOVACAO = { 1:7, 7:14, 10:19, 12:19, 15:25, 20:1, 25:1 };
+
+    /* ==========================================================
+       HELPERS
+       ========================================================== */
+    const $ = (id) => document.getElementById(id);
+    const escapeHTML = (s) => String(s || '').replace(/[&<>"']/g,
+      m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    const normalizarCPF = (v) => String(v || '').replace(/\D/g, '').padStart(11, '0');
+    const normalizarTelefone = (v) => String(v || '').replace(/\D/g, '');
+    const capitalizar = (s) => String(s || '').toLowerCase()
+      .split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+    // "dd/mm/yyyy" → Date (ou null)
+    function parseBR(str) {
+      if (!str) return null;
+      const m = String(str).match(/(\d{2})\/(\d{2})\/(\d{4})/);
+      if (!m) return null;
+      return new Date(+m[3], +m[2] - 1, +m[1]);
+    }
+    function fmtBR(date) {
+      if (!date) return '—';
+      const d = new Date(date);
+      return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    }
+
+    // Classificação do conteúdo da fatura
+    function statusFatura(txt) {
+      const t = String(txt || '').toUpperCase();
+      if (!t || t === '---' || t === 'N/A') return 'vazio';
+      if (t.includes('PAGO')) return 'pago';
+      if (t === 'CC' || t.includes('CC')) return 'cc';
+      if (t.includes('PREJU')) return 'prejuizo';
+      if (t.includes('ENVIADA')) return 'enviada';
+      if (/\d{2}\/\d{2}\/\d{4}/.test(t)) return 'pendente';
+      return 'vazio';
+    }
+
+    // Extrai a data "pura" (dd/mm/yyyy) do conteúdo
+    function extrairDataFatura(txt) {
+      const m = String(txt || '').match(/(\d{2}\/\d{2}\/\d{4})/);
+      return m ? m[1] : null;
+    }
+
+    // Dias de atraso em relação a hoje
+    function diasAtraso(dataStr) {
+      const d = parseBR(dataStr);
+      if (!d) return 0;
+      const hoje = new Date(); hoje.setHours(0,0,0,0);
+      return Math.floor((hoje - d) / 86400000);
+    }
+
+    // Cliente está totalmente quitado (P, Q, R = pago/cc)?
+    function clienteQuitado(c) {
+      const st = [statusFatura(c.fatura_p), statusFatura(c.fatura_q), statusFatura(c.fatura_r)];
+      return st.every(s => s === 'pago' || s === 'cc');
+    }
+
+    // Deve ocultar da listagem principal?
+    function deveOcultar(c) {
+      return String(c.modalidade || '').toUpperCase().includes('TROCA DE APARELHO');
+    }
+
+    /* ==========================================================
+       AUTH / NAVEGAÇÃO
+       ========================================================== */
+    async function verificarAuth() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) { window.location.href = 'index.html'; return; }
+
+      state.user = session.user;
+
+      // Carrega perfil (permissao)
+      const { data: perfil } = await supabaseClient
+        .from('perfis').select('*').eq('id', session.user.id).single();
+      state.perfil = perfil || { nome_completo: session.user.email, permissao: 'Operador' };
+
+      $('userName').textContent = state.perfil.nome_completo || session.user.email;
+      $('userPerm').textContent = state.perfil.permissao;
+
+      navegar('dashboard');
+      carregarClientes(); // pré-carrega dados para os stats
+    }
+
+    async function terminarSessao() {
+      await supabaseClient.auth.signOut();
+      window.location.href = 'index.html';
+    }
+
+    const TITULOS = {
+      dashboard: 'Visão Geral',
+      faturas: 'Acompanhamento de Faturas TIM',
+      suspensoes: 'Gestão de Suspensões',
+      prospeccao: 'Prospecção de Clientes',
+    };
+
+    function navegar(destino) {
+      Object.keys(TITULOS).forEach(id => {
+        const view = $(`view-${id}`);
+        if (view) view.classList.toggle('hidden', id !== destino);
+      });
+      // Realce do menu
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        const ativo = btn.dataset.nav === destino;
+        btn.className = ativo
+          ? 'nav-item w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium transition-colors shadow-md shadow-[#0e8890]/20 cursor-pointer'
+          : 'nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer';
+      });
+      $('headerTitle').textContent = TITULOS[destino];
+      if (destino === 'faturas') carregarClientes();
+    }
+
+    function toggleSidebar() {
+      const s = $('sidebar');
+      s.classList.toggle('hidden');
+      s.classList.toggle('absolute');
+      s.classList.toggle('inset-y-0');
+      s.classList.toggle('z-40');
+    }
+
+    /* ==========================================================
+       CARREGAR CLIENTES DO SUPABASE
+       ========================================================== */
+    async function carregarClientes() {
+      $('tabelaFaturas').innerHTML =
+        `<tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">
+          <i data-lucide="loader-2" class="w-6 h-6 animate-spin inline-block mr-2 text-[#0e8890]"></i>
+          A carregar faturas…
+        </td></tr>`;
+      lucide.createIcons();
+
+      const { data, error } = await supabaseClient
+        .from('clientes_faturas')
+        .select('*')
+        .order('data_venda', { ascending: false })
+        .limit(2000);
+
+      if (error) {
+        console.error(error);
+        $('tabelaFaturas').innerHTML =
+          `<tr><td colspan="6" class="px-6 py-12 text-center text-red-500">Erro: ${escapeHTML(error.message)}</td></tr>`;
+        return;
+      }
+
+      state.clientes = (data || []).filter(c => !deveOcultar(c));
+      atualizarStats();
+      filtrar();
+    }
+
+    function atualizarStats() {
+      const total = state.clientes.length;
+      const pendentes = state.clientes.filter(c => !clienteQuitado(c)).length;
+      $('statTotal').textContent = total;
+      $('statPendentes').textContent = pendentes;
+    }
+
+    /* ==========================================================
+       FILTRO + RENDER
+       ========================================================== */
+    function filtrar() {
+      state.filtros.texto = $('inputBusca').value.toLowerCase().trim();
+      state.filtros.situacao = $('selectSituacao').value;
+
+      const termo = state.filtros.texto;
+      const termoNum = termo.replace(/\D/g, '');
+
+      const filtrados = state.clientes.filter(c => {
+        // Texto (nome / cpf / telefone / consultor)
+        if (termo) {
+          const nome = String(c.nome || '').toLowerCase();
+          const cpf = normalizarCPF(c.cpf);
+          const tel = normalizarTelefone(c.telefone);
+          const alt = normalizarTelefone(c.telefone_alt);
+          const cons = String(c.consultor || '').toLowerCase();
+          const matchTexto = nome.includes(termo) || cons.includes(termo);
+          const matchNum = termoNum && (cpf.includes(termoNum) || tel.includes(termoNum) || alt.includes(termoNum));
+          if (!matchTexto && !matchNum) return false;
         }
-        async function verificarAutenticacao() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) { window.location.href = 'index.html'; return; }
-            document.getElementById('userName').textContent = session.user.user_metadata?.full_name || 'Usuário';
-            document.getElementById('userEmail').textContent = session.user.email;
-            navegar('dashboard');
+        // Situação
+        const quitado = clienteQuitado(c);
+        if (state.filtros.situacao === 'aberto' && quitado) return false;
+        if (state.filtros.situacao === 'pagos' && !quitado) return false;
+        return true;
+      });
+
+      $('contadorResultados').textContent =
+        `Exibindo ${filtrados.length} de ${state.clientes.length} registros (Troca de Aparelho oculta)`;
+
+      renderTabela(filtrados);
+    }
+
+    function renderTabela(lista) {
+      const tbody = $('tabelaFaturas');
+      if (!lista.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">Nenhum registro encontrado.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = lista.map(c => linhaHTML(c)).join('');
+      lucide.createIcons();
+    }
+
+    function linhaHTML(c) {
+      const telefone = normalizarTelefone(c.telefone);
+      const ehDebito = String(c.debito_automatico || '').toUpperCase() === 'SIM';
+      const cpfFmt = normalizarCPF(c.cpf);
+
+      return `
+        <tr class="hover:bg-[#0e8890]/5 transition-colors border-b border-slate-100 text-xs">
+          <td class="px-4 py-4 align-top">
+            <span class="inline-block bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold border border-slate-200 mb-1">${escapeHTML(c.ano_base || '—')}</span>
+            <div class="text-slate-500">Venda: ${c.data_venda ? fmtBR(c.data_venda) : '—'}</div>
+            <div class="text-slate-700 font-semibold mt-0.5">Venc: Dia ${escapeHTML(c.data_vencimento_base ? String(new Date(c.data_vencimento_base).getUTCDate()) : '—')}</div>
+          </td>
+
+          <td class="px-4 py-4 align-top">
+            <p class="font-bold text-[#000033] text-sm">${escapeHTML(capitalizar(c.nome) || 'Sem Nome')}</p>
+            <p class="text-slate-500 font-mono mt-0.5">CPF: ${escapeHTML(cpfFmt)}</p>
+          </td>
+
+          <td class="px-4 py-4 align-top">
+            <p class="text-slate-700 font-medium flex items-center gap-1">
+              <i data-lucide="phone" class="w-3 h-3 text-[#0e8890]"></i> ${escapeHTML(telefone || '—')}
+            </p>
+            ${c.telefone_alt ? `<p class="text-slate-400 text-[11px] mt-0.5">Alt: ${escapeHTML(c.telefone_alt)}</p>` : ''}
+            <p class="text-[#E60000] uppercase font-bold text-[11px] mt-1">${escapeHTML(c.plano || '—')}</p>
+            ${ehDebito ? `<span class="badge badge-cc mt-1">Débito Automático</span>` : ''}
+          </td>
+
+          ${renderCelulaFatura(c, 'P', c.fatura_p)}
+          ${renderCelulaFatura(c, 'Q', c.fatura_q)}
+          ${renderCelulaFatura(c, 'R', c.fatura_r)}
+        </tr>
+      `;
+    }
+
+    function renderCelulaFatura(cliente, mes, valor) {
+      const st = statusFatura(valor);
+      const data = extrairDataFatura(valor);
+      const dias = data ? diasAtraso(data) : 0;
+
+      let inner = '';
+
+      if (st === 'pago') {
+        inner = `<span class="badge badge-pago"><i data-lucide="check-circle-2" class="w-3 h-3"></i> Pago</span>`;
+      } else if (st === 'cc') {
+        inner = `<span class="badge badge-cc">CC · Débito</span>`;
+      } else if (st === 'prejuizo') {
+        inner = `<span class="badge badge-prejuizo"><i data-lucide="alert-triangle" class="w-3 h-3"></i> Prejuízo</span>`;
+      } else if (st === 'enviada') {
+        const cor = dias >= 5 ? 'badge-atraso' : 'badge-enviada';
+        inner = `<button onclick="abrirModalFatura(${cliente.id}, '${mes}')" class="badge ${cor} cursor-pointer hover:opacity-80 transition">
+          <i data-lucide="send" class="w-3 h-3"></i> Enviada${dias > 0 ? ` (${dias}d)` : ''}
+        </button>`;
+      } else if (st === 'pendente') {
+        const cor = dias >= 32 ? 'badge-atraso' : 'badge-pendente';
+        inner = `<button onclick="abrirModalFatura(${cliente.id}, '${mes}')" class="badge ${cor} cursor-pointer hover:opacity-80 transition">
+          <i data-lucide="calendar" class="w-3 h-3"></i> ${data}${dias > 0 ? ` (${dias}d)` : ''}
+        </button>`;
+      } else {
+        inner = `<span class="text-slate-400">—</span>`;
+      }
+
+      return `<td class="px-4 py-4 text-center align-middle bg-slate-50/40">${inner}</td>`;
+    }
+
+    /* ==========================================================
+       MODAL GERENCIAR FATURA
+       ========================================================== */
+    function abrirModalFatura(clienteId, mes) {
+      const cliente = state.clientes.find(c => c.id === clienteId);
+      if (!cliente) return;
+
+      const valor = mes === 'P' ? cliente.fatura_p
+                  : mes === 'Q' ? cliente.fatura_q
+                  : cliente.fatura_r;
+      const data = extrairDataFatura(valor) || '—';
+      const st = statusFatura(valor);
+      const dias = data !== '—' ? diasAtraso(data) : 0;
+
+      state.faturaEmEdicao = { clienteId, mes, valor, data, cliente };
+
+      $('modalFaturaTitle').textContent = `Fatura ${mes === 'P' ? '1ª' : mes === 'Q' ? '2ª' : '3ª'}`;
+      $('mfCliente').textContent = capitalizar(cliente.nome);
+      $('mfLinha').textContent = `Linha: ${cliente.telefone || '—'}`;
+      $('mfFatura').textContent = `${mes === 'P' ? '1ª' : mes === 'Q' ? '2ª' : '3ª'} fatura`;
+      $('mfVenc').textContent = data;
+
+      // Estado dos botões conforme situação
+      const btnCobrar = $('mfBtnCobrar');
+      const btnPagar = $('mfBtnPagar');
+      const btnPrej = $('mfBtnPrejuizo');
+
+      const mostrarAcoes = (st === 'pendente' || st === 'enviada');
+      btnCobrar.classList.toggle('hidden', !mostrarAcoes);
+      btnPagar.classList.toggle('hidden', !mostrarAcoes || st === 'prejuizo');
+      btnPrej.classList.toggle('hidden', !mostrarAcoes || dias < 32);
+
+      $('mfAlert').classList.add('hidden');
+      $('modalFatura').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function fecharModalFatura() {
+      $('modalFatura').classList.add('hidden');
+      state.faturaEmEdicao = null;
+    }
+
+    /* ==========================================================
+       AÇÕES SOBRE A FATURA
+       ========================================================== */
+    function cobrarWhatsAppCliente(cliente, mes, dataVenc, enviar = true) {
+      const nomeCompleto = capitalizar(cliente.nome);
+      const usuarioLinha = String(cliente.usuario_linha || '').trim();
+      const nomeSaudacao = (usuarioLinha && usuarioLinha.toUpperCase() !== 'MESMO')
+        ? capitalizar(usuarioLinha)
+        : nomeCompleto;
+      const primeiroNome = (nomeSaudacao.split(' ')[0] || 'Cliente').toUpperCase();
+
+      const atendente = (state.perfil?.nome_completo || 'Consultor').split(' ')[0];
+      const greeting = (() => {
+        const h = new Date().getHours();
+        if (h < 12) return 'bom dia';
+        if (h < 18) return 'boa tarde';
+        return 'boa noite';
+      })();
+
+      const atrasada = diasAtraso(dataVenc) > 0;
+      const rotulo = mes === 'P' ? 'primeira' : mes === 'Q' ? 'segunda' : 'terceira';
+
+      let msg = '';
+      if (atrasada) {
+        msg = `Olá, ${primeiroNome}! ✨\n\n` +
+              `Passando para lembrar da sua ${rotulo} fatura TIM com vencimento em *${dataVenc}*.\n` +
+              `Identificamos que ela ainda consta em aberto. 📑\n\n` +
+              `Evite a suspensão dos serviços pagando pelo *App Meu TIM* via PIX ou cartão.\n\n` +
+              `Se já pagou, por favor desconsidere. 🙏`;
+      } else {
+        msg = `Olá, ${primeiroNome}, ${greeting}! ✨\n\n` +
+              `Aqui é o ${atendente}, da Inforteca TIM.\n\n` +
+              `Sua *${rotulo} fatura* TIM já está disponível com vencimento em *${dataVenc}*. 📑\n\n` +
+              `Qualquer dúvida, estou à disposição! 🚀`;
+      }
+
+      const telefone = normalizarTelefone(
+        cliente.telefone_alt && cliente.telefone_alt.replace(/\D/g, '').length >= 10
+          ? cliente.telefone_alt
+          : cliente.telefone
+      );
+      if (!telefone) { alert('Cliente sem telefone cadastrado.'); return null; }
+
+      const url = `https://wa.me/55${telefone}?text=${encodeURIComponent(msg)}`;
+      if (enviar) window.open(url, '_blank');
+      return url;
+    }
+
+    async function acaoCobrar() {
+      const f = state.faturaEmEdicao; if (!f) return;
+      cobrarWhatsAppCliente(f.cliente, f.mes, f.data);
+
+      // Registra ENVIADA mantendo a data original
+      const novoValor = `${f.data} (FATURA ENVIADA)`;
+      await atualizarFatura(f.clienteId, f.mes, novoValor, 'cobrar');
+    }
+
+    async function acaoPagar() {
+      const f = state.faturaEmEdicao; if (!f) return;
+      const hoje = fmtBR(new Date());
+      const novoValor = `PAGO | ${f.data !== '—' ? f.data : hoje}`;
+      await atualizarFatura(f.clienteId, f.mes, novoValor, 'pagar');
+    }
+
+    async function acaoPrejuizo() {
+      const f = state.faturaEmEdicao; if (!f) return;
+      const novoValor = `${f.data} PREJUIZO`;
+      await atualizarFatura(f.clienteId, f.mes, novoValor, 'prejuizo');
+    }
+
+    async function atualizarFatura(clienteId, mes, novoValor, acao) {
+      const coluna = mes === 'P' ? 'fatura_p' : mes === 'Q' ? 'fatura_q' : 'fatura_r';
+      const alertBox = $('mfAlert');
+
+      try {
+        const { error } = await supabaseClient
+          .from('clientes_faturas')
+          .update({ [coluna]: novoValor })
+          .eq('id', clienteId);
+        if (error) throw error;
+
+        // Log de auditoria (opcional mas recomendado)
+        try {
+          await supabaseClient.rpc('registrar_log', {
+            p_tabela: 'clientes_faturas',
+            p_registro: clienteId,
+            p_acao: acao,
+            p_antes: null,
+            p_depois: { [coluna]: novoValor }
+          });
+        } catch (_) { /* silencioso */ }
+
+        // Atualiza cache local
+        const c = state.clientes.find(x => x.id === clienteId);
+        if (c) c[coluna] = novoValor;
+
+        fecharModalFatura();
+        filtrar();
+        atualizarStats();
+      } catch (err) {
+        alertBox.textContent = 'Erro: ' + err.message;
+        alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+        alertBox.classList.remove('hidden');
+      }
+    }
+
+    /* ==========================================================
+       IMPORTAÇÃO CSV
+       ========================================================== */
+    function abrirModalImportacao() {
+      $('modalImport').classList.remove('hidden');
+      $('csvFileInput').value = '';
+      $('fileNameText').textContent = 'Clique ou arraste o CSV';
+      $('btnProcessar').disabled = true;
+      $('importAlert').classList.add('hidden');
+      state.arquivoSelecionado = null;
+    }
+    function fecharModalImportacao() {
+      $('modalImport').classList.add('hidden');
+    }
+    function onFileSelected(input) {
+      if (input.files && input.files[0]) {
+        state.arquivoSelecionado = input.files[0];
+        $('fileNameText').textContent = input.files[0].name;
+        $('btnProcessar').disabled = false;
+      }
+    }
+
+    async function processarCSV() {
+      const arquivo = state.arquivoSelecionado;
+      if (!arquivo) return;
+
+      const btn = $('btnProcessar');
+      const alertBox = $('importAlert');
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Processando…`;
+      lucide.createIcons();
+
+      Papa.parse(arquivo, {
+        header: true,
+        skipEmptyLines: 'greedy',
+        transformHeader: (h) => h.trim(),
+        complete: async ({ data }) => {
+          // Mapeamento completo da planilha
+          const payload = data.map(row => {
+            const dtVenda = parseBR(row['DATA DA VENDA'] || row['DATA VENDA'] || '');
+            const dtNasc  = parseBR(row['DATA DE NASCIMENTO'] || row['NASCIMENTO'] || '');
+            return {
+              ano_base: '2026',
+              data_vencimento_base: null,
+              data_nascimento: dtNasc ? dtNasc.toISOString().slice(0,10) : null,
+              status_thales: (row['STATUS'] || row['STATUS THALES'] || '').trim() || null,
+              data_venda: dtVenda ? dtVenda.toISOString().slice(0,10) : null,
+              imei: (row['IMEI'] || '').trim() || null,
+              telefone: normalizarTelefone(row['NÚMERO DA LINHA'] || row['LINHA'] || row['TELEFONE'] || ''),
+              telefone_provisorio: (row['NÚMERO PROVISÓRIO'] || row['PROVISORIO'] || '').trim() || null,
+              fidel_ap: (row['FIDELIZAÇÃO AP'] || row['FIDEL AP'] || '').trim() || null,
+              fidel_pl: (row['FIDELIZAÇÃO PLANO'] || row['FIDEL PL'] || '').trim() || null,
+              modalidade: (row['MODALIDADE'] || '').trim() || null,
+              plano: (row['PLANO'] || '').trim() || null,
+              consultor: (row['CONSULTOR'] || '').trim() || null,
+              cpf: normalizarCPF(row['CPF CLIENTE'] || row['CPF'] || ''),
+              nome: (row['NOME DO CLIENTE'] || row['CLIENTE'] || row['NOME'] || '').trim() || null,
+              nota_o: null,
+              fatura_p: (row['PRIMEIRA FATURA'] || row['1ª FATURA'] || '---').trim(),
+              fatura_q: (row['SEGUNDA FATURA'] || row['2ª FATURA'] || '---').trim(),
+              fatura_r: (row['TERCEIRA FATURA'] || row['3ª FATURA'] || '---').trim(),
+              telefone_alt: normalizarTelefone(row['TELEFONE ALTERNATIVO'] || row['TEL ALT'] || '') || null,
+              status_boas_vindas: null,
+              usuario_linha: null,
+              debito_automatico: 'NÃO',
+              status_saneamento: 'SANEADO',
+            };
+          }).filter(r => r.nome && r.cpf && r.telefone);
+
+          if (!payload.length) {
+            alertBox.textContent = 'Nenhum registro válido encontrado no CSV.';
+            alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+            alertBox.classList.remove('hidden');
+            btn.disabled = false;
+            btn.innerHTML = 'Processar';
+            return;
+          }
+
+          // Insert em massa
+          const { error } = await supabaseClient
+            .from('clientes_faturas')
+            .insert(payload);
+
+          if (error) {
+            alertBox.textContent = 'Erro ao inserir: ' + error.message;
+            alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+            alertBox.classList.remove('hidden');
+            btn.disabled = false;
+            btn.innerHTML = 'Processar';
+            return;
+          }
+
+          alertBox.textContent = `✅ ${payload.length} clientes importados com sucesso!`;
+          alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-emerald-50 border-emerald-200 text-emerald-700';
+          alertBox.classList.remove('hidden');
+
+          setTimeout(() => {
+            fecharModalImportacao();
+            carregarClientes();
+          }, 1200);
+        },
+        error: (err) => {
+          alertBox.textContent = 'Erro ao ler o CSV: ' + err.message;
+          alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+          alertBox.classList.remove('hidden');
+          btn.disabled = false;
+          btn.innerHTML = 'Processar';
         }
-        async function terminarSessao() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
-        window.onload = verificarAutenticacao;
-    </script>
+      });
+    }
+
+    /* ==========================================================
+       BOOT
+       ========================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      verificarAuth();
+    });
+
+    // Recria ícones após renderização dinâmica
+    const _originalCreate = lucide.createIcons;
+    lucide.createIcons = function() { try { _originalCreate(); } catch(e) {} };
+  </script>
 </body>
 </html>
