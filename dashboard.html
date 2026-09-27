@@ -950,6 +950,17 @@ function abrirModalFatura(clienteId, mes) {
        AÇÕES SOBRE A FATURA
        ========================================================== */
 function cobrarWhatsAppCliente(cliente, mes, dataVenc, enviar = true) {
+  // -------- Emojis com fallback tripla (BMP + astral + fromCodePoint) --------
+  const E = (window.EMOJI && window.EMOJI.sparkles) ? window.EMOJI : {
+    sparkles: String.fromCodePoint(0x2728),          // ✨
+    wave:     String.fromCodePoint(0x1F44B),         // 👋
+    bill:     String.fromCodePoint(0x1F4D1),         // 📑
+    phone:    String.fromCodePoint(0x1F4F1),         // 📱
+    warning:  String.fromCodePoint(0x26A0, 0xFE0F),  // ⚠️
+    pray:     String.fromCodePoint(0x1F64F),         // 🙏
+    rocket:   String.fromCodePoint(0x1F680),         // 🚀
+  };
+
   const nomeCompleto = capitalizar(cliente.nome);
   const usuarioLinha = String(cliente.usuario_linha || '').trim();
   const nomeSaudacao = (usuarioLinha && usuarioLinha.toUpperCase() !== 'MESMO')
@@ -970,16 +981,16 @@ function cobrarWhatsAppCliente(cliente, mes, dataVenc, enviar = true) {
 
   let msg = '';
   if (atrasada) {
-    msg = `Olá, ${primeiroNome}! ${EMOJI.sparkles}\n\n` +
-          `${EMOJI.wave} Tudo bem?\n\n` +
-          `Não identificamos o pagamento da sua ${rotulo} fatura TIM que venceu no dia *${dataVenc}*. ${EMOJI.bill}\n\n` +
-          `Caso precise, você pode efetuar o pagamento via cartão de crédito ou PIX pelo *App Meu TIM*. ${EMOJI.phone}\n\n` +
-          `${EMOJI.warning} Evite a suspensão dos seus benefícios mantendo o pagamento em dia. Se já pagou, por favor desconsidere! ${EMOJI.pray}`;
+    msg = `Olá, ${primeiroNome}! ${E.sparkles}\n\n` +
+          `${E.wave} Tudo bem?\n\n` +
+          `Não identificamos o pagamento da sua ${rotulo} fatura TIM que venceu no dia *${dataVenc}*. ${E.bill}\n\n` +
+          `Caso precise, você pode efetuar o pagamento via cartão de crédito ou PIX pelo *App Meu TIM*. ${E.phone}\n\n` +
+          `${E.warning} Evite a suspensão dos seus benefícios mantendo o pagamento em dia. Se já pagou, por favor desconsidere! ${E.pray}`;
   } else {
-    msg = `Olá, ${primeiroNome}, ${greeting}! ${EMOJI.sparkles}\n\n` +
+    msg = `Olá, ${primeiroNome}, ${greeting}! ${E.sparkles}\n\n` +
           `Aqui é o ${atendente}, da Inforteca TIM.\n\n` +
-          `Sua *${rotulo} fatura* TIM já está disponível com vencimento em *${dataVenc}*. ${EMOJI.bill}\n\n` +
-          `Qualquer dúvida, estou à disposição! ${EMOJI.rocket}`;
+          `Sua *${rotulo} fatura* TIM já está disponível com vencimento em *${dataVenc}*. ${E.bill}\n\n` +
+          `Qualquer dúvida, estou à disposição! ${E.rocket}`;
   }
 
   const telefone = normalizarTelefone(
@@ -990,6 +1001,11 @@ function cobrarWhatsAppCliente(cliente, mes, dataVenc, enviar = true) {
   if (!telefone) { alert('Cliente sem telefone cadastrado.'); return null; }
 
   const url = `https://wa.me/55${telefone}?text=${encodeURIComponent(msg)}`;
+
+  // DEBUG — abre o console e confira
+  console.log('[WHATSAPP] Mensagem construída:\n' + msg);
+  console.log('[WHATSAPP] URL final:', url);
+
   if (enviar) window.open(url, '_blank');
   return url;
 }
