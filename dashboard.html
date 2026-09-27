@@ -248,31 +248,49 @@
         </h3>
         <button onclick="fecharModalFatura()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-      <div class="p-6 space-y-3">
-        <div class="bg-slate-50 rounded-xl p-3 text-sm">
-          <p class="font-semibold text-slate-800" id="mfCliente">—</p>
-          <p class="text-xs text-slate-500 mt-1">
-            <span id="mfLinha">—</span> · <span id="mfFatura">—</span> · venc. <strong id="mfVenc">—</strong>
-          </p>
-        </div>
+    <div class="p-6 space-y-3">
 
-        <button id="mfBtnCobrar" onclick="acaoCobrar()"
-          class="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold text-sm transition-colors">
-          <i data-lucide="message-circle" class="w-4 h-4"></i> Enviar Cobrança (WhatsApp)
-        </button>
+  <!-- Info básica -->
+  <div class="bg-slate-50 rounded-xl p-3 text-sm">
+    <p class="font-semibold text-slate-800" id="mfCliente">—</p>
+    <p class="text-xs text-slate-500 mt-1">
+      <span id="mfLinha">—</span> · <span id="mfFatura">—</span> · venc. <strong id="mfVenc">—</strong>
+    </p>
+  </div>
 
-        <button id="mfBtnPagar" onclick="acaoPagar()"
-          class="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold text-sm transition-colors">
-          <i data-lucide="check-circle-2" class="w-4 h-4"></i> Marcar como PAGA
-        </button>
+  <!-- Banner de risco (só aparece quando 30+ dias) -->
+  <div id="mfAlertaRisco" class="hidden bg-red-50 border-2 border-red-200 rounded-xl p-3">
+    <p class="font-bold text-red-700 flex items-center gap-2 text-sm">
+      <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+      Fatura em zona de PREJUÍZO
+    </p>
+    <p class="text-xs text-red-600 mt-1 leading-relaxed">
+      Esta fatura está em atraso há <strong id="mfDiasAtraso" class="text-red-700">—</strong>.
+      A partir de <strong>30 dias</strong> de atraso, o valor impacta negativamente os indicadores da loja.
+    </p>
+    <p class="text-[11px] text-red-500 mt-2 italic">
+      Escolha abaixo: receber pagamento (com atraso) ou registrar como prejuízo contábil.
+    </p>
+  </div>
 
-        <button id="mfBtnPrejuizo" onclick="acaoPrejuizo()"
-          class="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-black text-white py-3 rounded-xl font-semibold text-sm transition-colors">
-          <i data-lucide="alert-octagon" class="w-4 h-4"></i> Marcar como PREJUÍZO
-        </button>
+  <!-- AÇÕES -->
+  <button id="mfBtnCobrar" onclick="acaoCobrar()"
+    class="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold text-sm transition-colors">
+    <i data-lucide="message-circle" class="w-4 h-4"></i> Enviar Cobrança (WhatsApp)
+  </button>
 
-        <div id="mfAlert" class="hidden text-xs p-3 rounded-xl border font-medium"></div>
-      </div>
+  <button id="mfBtnPagar" onclick="acaoPagar()"
+    class="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold text-sm transition-colors">
+    <i data-lucide="check-circle-2" class="w-4 h-4"></i> Marcar como PAGA
+  </button>
+
+  <button id="mfBtnPrejuizo" onclick="acaoPrejuizo()"
+    class="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-red-700 text-white py-3 rounded-xl font-semibold text-sm transition-all">
+    <i data-lucide="alert-octagon" class="w-4 h-4"></i> Registrar PREJUÍZO
+  </button>
+
+  <div id="mfAlert" class="hidden text-xs p-3 rounded-xl border font-medium"></div>
+</div>
     </div>
   </div>
 
@@ -532,72 +550,128 @@
       `;
     }
 
-    function renderCelulaFatura(cliente, mes, valor) {
-      const st = statusFatura(valor);
-      const data = extrairDataFatura(valor);
-      const dias = data ? diasAtraso(data) : 0;
+function renderCelulaFatura(cliente, mes, valor) {
+  const st = statusFatura(valor);
+  const data = extrairDataFatura(valor);
+  const dias = data ? diasAtraso(data) : 0;
 
-      let inner = '';
+  // 🚨 Fatura em ZONA DE PREJUÍZO: pendente/enviada + 30 dias ou mais
+  const emRisco = dias >= DIAS_PREJUIZO && (st === 'pendente' || st === 'enviada');
 
-      if (st === 'pago') {
-        inner = `<span class="badge badge-pago"><i data-lucide="check-circle-2" class="w-3 h-3"></i> Pago</span>`;
-      } else if (st === 'cc') {
-        inner = `<span class="badge badge-cc">CC · Débito</span>`;
-      } else if (st === 'prejuizo') {
-        inner = `<span class="badge badge-prejuizo"><i data-lucide="alert-triangle" class="w-3 h-3"></i> Prejuízo</span>`;
-      } else if (st === 'enviada') {
-        const cor = dias >= 5 ? 'badge-atraso' : 'badge-enviada';
-        inner = `<button onclick="abrirModalFatura(${cliente.id}, '${mes}')" class="badge ${cor} cursor-pointer hover:opacity-80 transition">
-          <i data-lucide="send" class="w-3 h-3"></i> Enviada${dias > 0 ? ` (${dias}d)` : ''}
-        </button>`;
-      } else if (st === 'pendente') {
-        const cor = dias >= 32 ? 'badge-atraso' : 'badge-pendente';
-        inner = `<button onclick="abrirModalFatura(${cliente.id}, '${mes}')" class="badge ${cor} cursor-pointer hover:opacity-80 transition">
-          <i data-lucide="calendar" class="w-3 h-3"></i> ${data}${dias > 0 ? ` (${dias}d)` : ''}
-        </button>`;
-      } else {
-        inner = `<span class="text-slate-400">—</span>`;
-      }
+  let inner = '';
+  let cellClass = 'bg-slate-50/40';
 
-      return `<td class="px-4 py-4 text-center align-middle bg-slate-50/40">${inner}</td>`;
-    }
+  // Célula inteira ganha fundo vermelho sutil + borda lateral quando em risco
+  if (emRisco) {
+    cellClass = 'bg-red-50/70 border-l-4 border-red-400';
+  }
+
+  if (st === 'pago') {
+    inner = `<span class="badge badge-pago">
+      <i data-lucide="check-circle-2" class="w-3 h-3"></i> Pago
+    </span>`;
+
+  } else if (st === 'cc') {
+    inner = `<span class="badge badge-cc">CC · Débito</span>`;
+
+  } else if (st === 'prejuizo') {
+    inner = `<span class="badge badge-prejuizo">
+      <i data-lucide="alert-triangle" class="w-3 h-3"></i> Prejuízo
+    </span>`;
+
+  } else if (st === 'enviada') {
+    const classeCor = emRisco
+      ? 'badge-atraso animate-pulse'
+      : (dias >= 5 ? 'badge-atraso' : 'badge-enviada');
+    const icone = emRisco ? 'alert-triangle' : 'send';
+
+    inner = `<button onclick="abrirModalFatura(${cliente.id}, '${mes}')"
+      class="badge ${classeCor} cursor-pointer hover:opacity-80 transition"
+      title="${emRisco ? 'Fatura em zona de prejuízo — clique para decidir' : 'Fatura enviada'}">
+      <i data-lucide="${icone}" class="w-3 h-3"></i>
+      Enviada${dias > 0 ? ` (${dias}d)` : ''}${emRisco ? ' · RISCO' : ''}
+    </button>`;
+
+  } else if (st === 'pendente') {
+    const classeCor = emRisco
+      ? 'badge-atraso animate-pulse'
+      : 'badge-pendente';
+    const icone = emRisco ? 'alert-triangle' : 'calendar';
+
+    inner = `<button onclick="abrirModalFatura(${cliente.id}, '${mes}')"
+      class="badge ${classeCor} cursor-pointer hover:opacity-80 transition"
+      title="${emRisco ? 'Fatura em zona de prejuízo — clique para decidir' : 'Fatura pendente'}">
+      <i data-lucide="${icone}" class="w-3 h-3"></i>
+      ${data}${dias > 0 ? ` (${dias}d)` : ''}${emRisco ? ' · RISCO' : ''}
+    </button>`;
+
+  } else {
+    inner = `<span class="text-slate-400">—</span>`;
+  }
+
+  return `<td class="px-4 py-4 text-center align-middle ${cellClass}">${inner}</td>`;
+}
 
     /* ==========================================================
        MODAL GERENCIAR FATURA
        ========================================================== */
-    function abrirModalFatura(clienteId, mes) {
-      const cliente = state.clientes.find(c => c.id === clienteId);
-      if (!cliente) return;
+function abrirModalFatura(clienteId, mes) {
+  const cliente = state.clientes.find(c => c.id === clienteId);
+  if (!cliente) return;
 
-      const valor = mes === 'P' ? cliente.fatura_p
-                  : mes === 'Q' ? cliente.fatura_q
-                  : cliente.fatura_r;
-      const data = extrairDataFatura(valor) || '—';
-      const st = statusFatura(valor);
-      const dias = data !== '—' ? diasAtraso(data) : 0;
+  const valor = mes === 'P' ? cliente.fatura_p
+              : mes === 'Q' ? cliente.fatura_q
+              : cliente.fatura_r;
+  const data = extrairDataFatura(valor) || '—';
+  const st = statusFatura(valor);
+  const dias = data !== '—' ? diasAtraso(data) : 0;
+  const emRisco = dias >= DIAS_PREJUIZO && (st === 'pendente' || st === 'enviada');
 
-      state.faturaEmEdicao = { clienteId, mes, valor, data, cliente };
+  state.faturaEmEdicao = { clienteId, mes, valor, data, cliente, dias, emRisco };
 
-      $('modalFaturaTitle').textContent = `Fatura ${mes === 'P' ? '1ª' : mes === 'Q' ? '2ª' : '3ª'}`;
-      $('mfCliente').textContent = capitalizar(cliente.nome);
-      $('mfLinha').textContent = `Linha: ${cliente.telefone || '—'}`;
-      $('mfFatura').textContent = `${mes === 'P' ? '1ª' : mes === 'Q' ? '2ª' : '3ª'} fatura`;
-      $('mfVenc').textContent = data;
+  // Cabeçalho
+  $('modalFaturaTitle').textContent = `Fatura ${mes === 'P' ? '1ª' : mes === 'Q' ? '2ª' : '3ª'}`;
+  $('mfCliente').textContent = capitalizar(cliente.nome);
+  $('mfLinha').textContent = `Linha: ${cliente.telefone || '—'}`;
+  $('mfFatura').textContent = `${mes === 'P' ? '1ª' : mes === 'Q' ? '2ª' : '3ª'} fatura`;
+  $('mfVenc').textContent = data;
 
-      // Estado dos botões conforme situação
-      const btnCobrar = $('mfBtnCobrar');
-      const btnPagar = $('mfBtnPagar');
-      const btnPrej = $('mfBtnPrejuizo');
+  // ---------- Banner de risco ----------
+  const bannerRisco = $('mfAlertaRisco');
+  if (emRisco) {
+    bannerRisco.classList.remove('hidden');
+    $('mfDiasAtraso').textContent = `${dias} dias`;
+  } else {
+    bannerRisco.classList.add('hidden');
+  }
 
-      const mostrarAcoes = (st === 'pendente' || st === 'enviada');
-      btnCobrar.classList.toggle('hidden', !mostrarAcoes);
-      btnPagar.classList.toggle('hidden', !mostrarAcoes || st === 'prejuizo');
-      btnPrej.classList.toggle('hidden', !mostrarAcoes || dias < 32);
+  // ---------- Botões ----------
+  const btnCobrar = $('mfBtnCobrar');
+  const btnPagar = $('mfBtnPagar');
+  const btnPrej = $('mfBtnPrejuizo');
 
-      $('mfAlert').classList.add('hidden');
-      $('modalFatura').classList.remove('hidden');
-      lucide.createIcons();
-    }
+  const mostrarAcoes = (st === 'pendente' || st === 'enviada');
+
+  // Cobrar WhatsApp: sempre que ainda pode ser cobrado
+  btnCobrar.classList.toggle('hidden', !mostrarAcoes);
+
+  // Pagar: cliente ainda pode quitar (mesmo atrasado). Só esconde se já é prejuízo.
+  btnPagar.classList.toggle('hidden', !mostrarAcoes || st === 'prejuizo');
+
+  // Prejuízo: SÓ aparece quando cruza o limiar de 30 dias
+  btnPrej.classList.toggle('hidden', !emRisco);
+
+  // Realce visual: se em risco, o botão de prejuízo ganha animação e destaque
+  if (emRisco) {
+    btnPrej.classList.add('ring-2', 'ring-red-400', 'ring-offset-2', 'animate-pulse');
+  } else {
+    btnPrej.classList.remove('ring-2', 'ring-red-400', 'ring-offset-2', 'animate-pulse');
+  }
+
+  $('mfAlert').classList.add('hidden');
+  $('modalFatura').classList.remove('hidden');
+  lucide.createIcons();
+}
 
     function fecharModalFatura() {
       $('modalFatura').classList.add('hidden');
