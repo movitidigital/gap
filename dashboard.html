@@ -967,9 +967,8 @@ function abrirModalFatura(clienteId, mes) {
        AÇÕES SOBRE A FATURA
        ========================================================== */
 function cobrarWhatsAppCliente(cliente, mes, dataVenc, enviar = true) {
-  // -------- Emojis com fallback tripla (BMP + astral + fromCodePoint) --------
- const E = window.EMOJI_SAFE;
-
+  // -------- Emojis com fallback --------
+  const E = window.EMOJI_SAFE;
 
   const nomeCompleto = capitalizar(cliente.nome);
   const usuarioLinha = String(cliente.usuario_linha || '').trim();
@@ -1010,14 +1009,40 @@ function cobrarWhatsAppCliente(cliente, mes, dataVenc, enviar = true) {
   );
   if (!telefone) { alert('Cliente sem telefone cadastrado.'); return null; }
 
-  const url = `https://web.whatsapp.com/send?phone=55${telefone}&text=${encodeURIComponent(msg)}`;
+  const msgEnc = encodeURIComponent(msg);
+  const appUrl = `whatsapp://send?phone=55${telefone}&text=${msgEnc}`;
+  const webUrl = `https://wa.me/55${telefone}?text=${msgEnc}`;
 
-  // DEBUG — abre o console e confira
-  console.log('[WHATSAPP] Mensagem construída:\n' + msg);
-  console.log('[WHATSAPP] URL final:', url);
+  console.log('[WHATSAPP] Mensagem:\n' + msg);
 
-  if (enviar) window.open(url, '_blank');
-  return url;
+  if (enviar) {
+    let appAbriu = false;
+    const marcarAberto = () => { appAbriu = true; };
+
+    // Detecta se a página perdeu o foco (= app abriu por cima)
+    window.addEventListener('blur', marcarAberto, { once: true });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) appAbriu = true;
+    }, { once: true });
+
+    // 1) Tenta o app desktop
+    try {
+      window.location.href = appUrl;
+    } catch (_) { /* alguns browsers bloqueiam protocolos custom */ }
+
+    // 2) Fallback: se nada aconteceu em 900ms, vai para wa.me
+    setTimeout(() => {
+      window.removeEventListener('blur', marcarAberto);
+      if (!appAbriu) {
+        console.log('[WHATSAPP] App não abriu — fallback para wa.me');
+        window.open(webUrl, '_blank', 'noopener');
+      } else {
+        console.log('[WHATSAPP] App desktop aberto com sucesso.');
+      }
+    }, 900);
+  }
+
+  return appUrl;
 }
 
     async function acaoCobrar() {
