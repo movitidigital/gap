@@ -1010,7 +1010,7 @@ function cobrarWhatsAppCliente(cliente, mes, dataVenc, enviar = true) {
   );
   if (!telefone) { alert('Cliente sem telefone cadastrado.'); return null; }
 
-  const url = `https://wa.me/55${telefone}?text=${encodeURIComponent(msg)}`;
+  const url = `https://web.whatsapp.com/send?phone=55${telefone}&text=${encodeURIComponent(msg)}`;
 
   // DEBUG — abre o console e confira
   console.log('[WHATSAPP] Mensagem construída:\n' + msg);
