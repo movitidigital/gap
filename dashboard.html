@@ -368,6 +368,23 @@ window.EMOJI = {
   handshake: '\u{1F91D}',
   fire:      '\u{1F525}',
 };
+    /* Fallback: se o navegador/SO não renderizar o emoji, troca por texto.
+   Não afeta a maioria dos usuários — só quem tem fontes limitadas. */
+window.EMOJI_SAFE = (() => {
+  // Testa suporte a emoji astral
+  const teste = '👋';
+  const suporta = teste.length === 2; // surrogate pair OK
+  if (suporta) return window.EMOJI;
+
+  // Fallback textual
+  return {
+    sparkles: ':)', wave: 'Oi', bill: '[fatura]', phone: '[TIM]',
+    warning: '!', pray: 'obrigado', rocket: '>>', check: 'OK',
+    gift: '[presente]', party: '*', cake: '*', heart: '<3',
+    thumbsUp: 'OK', calendar: '[data]', moneyBag: 'R$',
+    ticket: '[cupom]', handshake: ':)', fire: '*',
+  };
+})();
     /* ==========================================================
        HELPERS
        ========================================================== */
@@ -951,15 +968,8 @@ function abrirModalFatura(clienteId, mes) {
        ========================================================== */
 function cobrarWhatsAppCliente(cliente, mes, dataVenc, enviar = true) {
   // -------- Emojis com fallback tripla (BMP + astral + fromCodePoint) --------
-  const E = (window.EMOJI && window.EMOJI.sparkles) ? window.EMOJI : {
-    sparkles: String.fromCodePoint(0x2728),          // ✨
-    wave:     String.fromCodePoint(0x1F44B),         // 👋
-    bill:     String.fromCodePoint(0x1F4D1),         // 📑
-    phone:    String.fromCodePoint(0x1F4F1),         // 📱
-    warning:  String.fromCodePoint(0x26A0, 0xFE0F),  // ⚠️
-    pray:     String.fromCodePoint(0x1F64F),         // 🙏
-    rocket:   String.fromCodePoint(0x1F680),         // 🚀
-  };
+ const E = window.EMOJI_SAFE;
+
 
   const nomeCompleto = capitalizar(cliente.nome);
   const usuarioLinha = String(cliente.usuario_linha || '').trim();
