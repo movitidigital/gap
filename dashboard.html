@@ -397,6 +397,57 @@
       const st = [statusFatura(c.fatura_p), statusFatura(c.fatura_q), statusFatura(c.fatura_r)];
       return st.every(s => s === 'pago' || s === 'cc');
     }
+    // Calcula prioridade operacional — retorna { score, tier, label, cor }
+function prioridadeInfo(c) {
+  const faturas = [
+    { v: c.fatura_p, st: statusFatura(c.fatura_p) },
+    { v: c.fatura_q, st: statusFatura(c.fatura_q) },
+    { v: c.fatura_r, st: statusFatura(c.fatura_r) },
+  ];
+
+  // Considera somente faturas em aberto (pendente / enviada)
+  const abertas = faturas.filter(f => f.st === 'pendente' || f.st === 'enviada');
+
+  // Tudo resolvido → prioridade baixíssima
+  if (abertas.length === 0) {
+    return { score: -1, tier: 0, label: '', cor: '#94a3b8' };
+  }
+
+  let melhor = { score: 0, tier: 5, label: '', cor: '#3b82f6' };
+
+  abertas.forEach(f => {
+    const data = extrairDataFatura(f.v);
+    const dias = data ? diasAtraso(data) : 0;
+
+    let score, tier, label, cor;
+
+    if (dias >= DIAS_PREJUIZO) {
+      score = 9000 + dias;
+      tier = 1;
+      label = `${dias}d atraso`;
+      cor = '#dc2626';
+    } else if (dias > 0) {
+      score = 8000 + dias;
+      tier = 2;
+      label = `${dias}d atraso`;
+      cor = '#f97316';
+    } else if (f.st === 'enviada') {
+      score = 1000 + (100 - Math.abs(dias));
+      tier = 3;
+      label = `enviada · vence ${Math.abs(dias)}d`;
+      cor = '#eab308';
+    } else {
+      score = 500 + (100 - Math.abs(dias));
+      tier = 4;
+      label = `vence em ${Math.abs(dias)}d`;
+      cor = '#3b82f6';
+    }
+
+    if (score > melhor.score) melhor = { score, tier, label, cor };
+  });
+
+  return melhor;
+}
 
     // Deve ocultar da listagem principal?
     function deveOcultar(c) {
@@ -538,11 +589,20 @@ function atualizarStats() {
         return true;
       });
 
-      $('contadorResultados').textContent =
-        `Exibindo ${filtrados.length} de ${state.clientes.length} registros (Troca de Aparelho oculta)`;
+    $('contadorResultados').textContent =
+    `Exibindo ${filtrados.length} de ${state.clientes.length} registros (ordenados por prioridade)`;
 
-      renderTabela(filtrados);
-    }
+  // 🎯 Ordena por prioridade operacional
+  const ordenados = [...filtrados].sort((a, b) => {
+    const pa = prioridadeInfo(a).score;
+    const pb = prioridadeInfo(b).score;
+    if (pa !== pb) return pb - pa;                       // maior score no topo
+    // Desempate: venda mais recente primeiro
+    return new Date(b.data_venda || 0) - new Date(a.data_venda || 0);
+  });
+
+  renderTabela(ordenados);
+}
 
     function renderTabela(lista) {
       const tbody = $('tabelaFaturas');
@@ -558,7 +618,14 @@ function atualizarStats() {
       const telefone = normalizarTelefone(c.telefone);
       const ehDebito = String(c.debito_automatico || '').toUpperCase() === 'SIM';
       const cpfFmt = normalizarCPF(c.cpf);
-
+const prio = prioridadeInfo(c);
+const prioBadge = prio.tier > 0 ? `
+  <span class="inline-flex items-center gap-1 text-[9px] font-black uppercase px-1.5 py-0.5 rounded ml-2 border"
+        style="background:${prio.cor}1A; color:${prio.cor}; border-color:${prio.cor}40;"
+        title="Prioridade ${prio.tier}">
+    <span class="inline-block w-1.5 h-1.5 rounded-full" style="background:${prio.cor};"></span>
+    ${prio.label}
+  </span>` : '';
       return `
         <tr class="hover:bg-[#0e8890]/5 transition-colors border-b border-slate-100 text-xs">
           <td class="px-4 py-4 align-top">
@@ -575,8 +642,7 @@ function atualizarStats() {
 </td>
 
           <td class="px-4 py-4 align-top">
-            <p class="font-bold text-[#000033] text-sm">${escapeHTML(capitalizar(c.nome) || 'Sem Nome')}</p>
-            <p class="text-slate-500 font-mono mt-0.5">CPF: ${escapeHTML(cpfFmt)}</p>
+<td class="px-4 py-4 align-top"> <div class="flex items-center flex-wrap gap-1"> <p class="font-bold text-[#000033] text-sm">${escapeHTML(capitalizar(c.nome) || 'Sem Nome')}</p> ${prioBadge} </div> <p class="text-slate-500 font-mono mt-1">CPF: ${escapeHTML(cpfFmt)}</p> </td>            <p class="text-slate-500 font-mono mt-0.5">CPF: ${escapeHTML(cpfFmt)}</p>
           </td>
 
           <td class="px-4 py-4 align-top">
