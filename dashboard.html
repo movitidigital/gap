@@ -342,6 +342,32 @@
 
     const REGRA_RENOVACAO = { 1:7, 7:14, 10:19, 12:19, 15:25, 20:1, 25:1 };
   const DIAS_PREJUIZO = 30; // A partir de 30 dias de atraso, fatura entra em zona de prejuízo
+    /* ═══════════════════════════════════════════════════════════
+   EMOJIS SEGUROS — sempre como escape Unicode.
+   Definidos em window.EMOJI para ficarem acessíveis
+   globalmente (console, qualquer função, qualquer script).
+   NUNCA use emoji literal no código (corrompe em copy/paste).
+   ═══════════════════════════════════════════════════════════ */
+window.EMOJI = {
+  sparkles:  '\u2728',
+  wave:      '\u{1F44B}',
+  bill:      '\u{1F4D1}',
+  phone:     '\u{1F4F1}',
+  warning:   '\u26A0\uFE0F',
+  pray:      '\u{1F64F}',
+  rocket:    '\u{1F680}',
+  check:     '\u2705',
+  gift:      '\u{1F381}',
+  party:     '\u{1F389}',
+  cake:      '\u{1F382}',
+  heart:     '\u{1F499}',
+  thumbsUp:  '\u{1F44D}',
+  calendar:  '\u{1F4C5}',
+  moneyBag:  '\u{1F4B0}',
+  ticket:    '\u{1F3AB}',
+  handshake: '\u{1F91D}',
+  fire:      '\u{1F525}',
+};
     /* ==========================================================
        HELPERS
        ========================================================== */
