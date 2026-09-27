@@ -353,6 +353,77 @@
     const capitalizar = (s) => String(s || '').toLowerCase()
       .split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
+// Copia texto para o clipboard + feedback visual
+async function copiarTexto(texto, elemento) {
+  if (!texto || texto === '—' || texto === '---') return;
+
+  try {
+    // Tenta API moderna primeiro (funciona em HTTPS)
+    await navigator.clipboard.writeText(texto);
+  } catch (err) {
+    // Fallback para navegadores antigos / HTTP
+    const ta = document.createElement('textarea');
+    ta.value = texto;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+
+  // Feedback visual no elemento clicado
+  if (elemento) {
+    const original = elemento.style.cssText;
+    elemento.style.transition = 'all 0.15s ease';
+    elemento.style.background = '#d1fae5';
+    elemento.style.color = '#047857';
+    elemento.style.transform = 'scale(1.05)';
+    setTimeout(() => {
+      elemento.style.cssText = original;
+    }, 400);
+  }
+
+  // Toast flutuante
+  mostrarToastCopy(texto);
+}
+
+// Toast auto-destrutivo no canto inferior direito
+let _toastCopyTimer = null;
+function mostrarToastCopy(texto) {
+  let toast = document.getElementById('_toastCopy');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = '_toastCopy';
+    toast.className = 'fixed bottom-6 right-6 z-[9999] bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 text-sm font-medium pointer-events-none';
+    toast.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(20px)';
+    document.body.appendChild(toast);
+  }
+
+  const textoCurto = texto.length > 20 ? texto.slice(0, 20) + '…' : texto;
+  toast.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+    <span>Copiado: <strong class="font-mono">${textoCurto}</strong></span>
+  `;
+
+  // Reset + fade in
+  clearTimeout(_toastCopyTimer);
+  requestAnimationFrame(() => {
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateY(0)';
+  });
+
+  // Auto-hide
+  _toastCopyTimer = setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(20px)';
+  }, 1800);
+}
+    
     // "dd/mm/yyyy" → Date (ou null)
     function parseBR(str) {
       if (!str) return null;
@@ -658,16 +729,32 @@ function linhaHTML(c) {
           <p class="font-bold text-[#000033] text-sm">${escapeHTML(capitalizar(c.nome) || 'Sem Nome')}</p>
           ${prioBadge}
         </div>
-        <p class="text-slate-500 font-mono mt-1">CPF: ${escapeHTML(cpfFmt)}</p>
-      </td>
+<p class="text-slate-500 font-mono mt-1 flex items-center gap-1 group/cpf cursor-pointer select-none"
+   onclick="copiarTexto('${cpfFmt}', this)"
+   title="Clique para copiar o CPF">
+  <span class="text-slate-400">CPF:</span>
+  <span class="rounded px-1 transition-all group-hover/cpf:bg-emerald-50 group-hover/cpf:text-emerald-700">${escapeHTML(cpfFmt)}</span>
+  <i data-lucide="copy" class="w-3 h-3 text-slate-300 opacity-0 group-hover/cpf:opacity-100 transition-opacity"></i>
+</p>
+              </td>
 
       <!-- ═══ COLUNA 3: Linha / Plano / Consultor ═══ -->
       <td class="px-4 py-4 align-top">
-        <p class="text-slate-700 font-medium flex items-center gap-1">
-          <i data-lucide="phone" class="w-3 h-3 text-[#0e8890]"></i> ${escapeHTML(telefone || '—')}
-        </p>
-        ${c.telefone_alt ? `<p class="text-slate-400 text-[11px] mt-0.5">Alt: ${escapeHTML(c.telefone_alt)}</p>` : ''}
-        <p class="text-[#E60000] uppercase font-bold text-[11px] mt-1">${escapeHTML(c.plano || '—')}</p>
+        <p class="text-slate-700 font-medium flex items-center gap-1 group/tel cursor-pointer select-none"
+   onclick="copiarTexto('${telefone}', this)"
+   title="Clique para copiar o número da linha">
+  <i data-lucide="phone" class="w-3 h-3 text-[#0e8890]"></i>
+  <span class="rounded px-1 transition-all group-hover/tel:bg-emerald-50 group-hover/tel:text-emerald-700">${escapeHTML(telefone || '—')}</span>
+  <i data-lucide="copy" class="w-3 h-3 text-slate-300 opacity-0 group-hover/tel:opacity-100 transition-opacity"></i>
+</p>
+${c.telefone_alt ? `
+  <p class="text-slate-400 text-[11px] mt-0.5 flex items-center gap-1 group/alt cursor-pointer select-none"
+     onclick="copiarTexto('${normalizarTelefone(c.telefone_alt)}', this)"
+     title="Clique para copiar o telefone alternativo">
+    <span>Alt:</span>
+    <span class="rounded px-1 transition-all group-hover/alt:bg-emerald-50 group-hover/alt:text-emerald-700">${escapeHTML(c.telefone_alt)}</span>
+  </p>` : ''}
+                <p class="text-[#E60000] uppercase font-bold text-[11px] mt-1">${escapeHTML(c.plano || '—')}</p>
         ${c.consultor ? `<p class="text-slate-500 text-[11px] mt-1 flex items-center gap-1">
           <i data-lucide="user-check" class="w-3 h-3"></i> ${escapeHTML(c.consultor)}
         </p>` : ''}
