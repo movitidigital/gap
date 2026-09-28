@@ -2839,8 +2839,8 @@ async function processarDatasys(input) {
       const cpf = String(r[37] || '').replace(/\D/g, '').padStart(11, '0');
 
       registros.push({
-        ano_base: String(dtVenda.getFullYear()),
-        data_venda: dtVenda.toISOString().slice(0, 10),
+        ano_base: dtVendaISO.slice(0, 4),
+        data_venda: dtVendaISO,
         imei: String(r[10] || '').trim() || null,
         telefone: normalizarTelefone(r[12]),
         telefone_provisorio: normalizarTelefone(r[13]) || null,
