@@ -9,7 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -547,6 +547,232 @@
     </div>
   </div>
 
+  <!-- ============ MODAL SANEAMENTO (THALES) ============ -->
+<div id="modalSaneamento" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden max-h-[92vh] flex flex-col">
+    <div class="bg-[#000033] px-6 py-4 flex justify-between items-center shrink-0">
+      <div>
+        <h3 class="text-white font-black text-xs uppercase tracking-widest">Gestão Thales</h3>
+        <p id="nomeClienteModal" class="text-[10px] text-indigo-300 font-bold mt-1 uppercase">—</p>
+      </div>
+      <button onclick="fecharModalSaneamento()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+
+    <div class="p-6 space-y-5 overflow-y-auto flex-1">
+      <input type="hidden" id="modalAba">
+      <input type="hidden" id="modalRow">
+
+      <div class="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+        <div>
+          <label class="block text-[9px] uppercase font-black text-slate-400 mb-1">Linha para Consulta</label>
+          <div class="flex items-center justify-between bg-white p-2 rounded-lg border border-slate-200">
+            <span id="modalInfoLinha" class="text-[11px] font-mono font-bold text-slate-700">---</span>
+            <button onclick="copiarTexto(document.getElementById('modalInfoLinha').textContent, this)" class="text-indigo-500 hover:text-indigo-700 p-1">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-[9px] uppercase font-black text-slate-400 mb-1">CPF do Cliente</label>
+          <div class="flex items-center justify-between bg-white p-2 rounded-lg border border-slate-200">
+            <span id="modalInfoCpf" class="text-[11px] font-mono font-bold text-slate-700">---</span>
+            <button onclick="copiarTexto(document.getElementById('modalInfoCpf').textContent, this)" class="text-indigo-500 hover:text-indigo-700 p-1">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seção padrão -->
+      <div id="camposPadraoModal" class="space-y-4">
+        <div>
+          <label class="text-[10px] font-black text-slate-400 uppercase mb-1.5 block">Dia de Vencimento</label>
+          <select id="modalVencimento" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:outline-none focus:border-indigo-500">
+            <option value="">Selecione…</option>
+            <option value="1">Dia 1</option><option value="7">Dia 7</option>
+            <option value="10">Dia 10</option><option value="12">Dia 12</option>
+            <option value="15">Dia 15</option><option value="20">Dia 20</option>
+            <option value="25">Dia 25</option><option value="CC">CC</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[10px] font-black text-slate-400 uppercase mb-1.5 block">Data de Nascimento</label>
+          <input type="text" id="modalNascimento" placeholder="00/00/0000" maxlength="10" oninput="mascaraData(this)"
+            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="text-[10px] font-black text-slate-400 uppercase mb-1.5 block">Status</label>
+          <select id="modalStatus" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:outline-none focus:border-indigo-500">
+            <option value="">Selecione…</option>
+            <option value="LIBERADO">LIBERADO</option>
+            <option value="ANOMALIA TEMPORARIA">ANOMALIA TEMPORÁRIA</option>
+            <option value="ANOMALIA DEFINITIVA">ANOMALIA DEFINITIVA</option>
+            <option value="EM ANALISE">EM ANÁLISE</option>
+            <option value="FRAUDE">FRAUDE</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Combo -->
+      <div id="secaoCombo" class="hidden space-y-4 p-4 bg-indigo-50 border-2 border-indigo-200 rounded-2xl">
+        <div class="flex items-center gap-2">
+          <span class="text-indigo-500 text-lg">📦</span>
+          <label class="text-[10px] font-black text-indigo-600 uppercase">Combo (Plano + Aparelho)</label>
+        </div>
+        <div id="alertaImeiCombo"></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Vencimento</label>
+            <select id="comboVencimento" class="w-full bg-white border rounded-lg px-2 py-1.5 text-xs font-bold">
+              <option value="">Selecione…</option>
+              <option value="1">1</option><option value="7">7</option><option value="10">10</option>
+              <option value="12">12</option><option value="15">15</option><option value="20">20</option>
+              <option value="25">25</option><option value="CC">CC</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Nascimento</label>
+            <input type="text" id="comboNascimento" placeholder="dd/mm/aaaa" maxlength="10" oninput="mascaraData(this)"
+              class="w-full bg-white border rounded-lg px-2 py-1.5 text-xs font-bold">
+          </div>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-slate-700 mb-1.5">Fidelizado no CBCF?</p>
+          <div class="flex gap-2">
+            <label class="flex-1 flex items-center justify-center gap-2 p-2 bg-white border rounded-lg cursor-pointer">
+              <input type="radio" name="comboCbcf" value="SIM"> <span class="text-xs font-bold">SIM</span>
+            </label>
+            <label class="flex-1 flex items-center justify-center gap-2 p-2 bg-white border rounded-lg cursor-pointer">
+              <input type="radio" name="comboCbcf" value="NAO"> <span class="text-xs font-bold">NÃO</span>
+            </label>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 pt-2 border-t border-indigo-100">
+          <div>
+            <label class="text-[9px] font-black text-indigo-400 uppercase mb-1 block">Status Plano</label>
+            <select id="comboStatusPlano" class="w-full bg-white border rounded-lg px-2 py-1.5 text-[11px] font-bold">
+              <option value="">Selecione…</option>
+              <option value="LIBERADO">LIBERADO</option>
+              <option value="ANOMALIA TEMPORARIA">ANOMALIA TEMP.</option>
+              <option value="ANOMALIA DEFINITIVA">ANOMALIA DEF.</option>
+              <option value="EM ANALISE">EM ANÁLISE</option>
+              <option value="FRAUDE">FRAUDE</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[9px] font-black text-indigo-400 uppercase mb-1 block">Status Thales</label>
+            <select id="comboStatusThales" class="w-full bg-white border rounded-lg px-2 py-1.5 text-[11px] font-bold">
+              <option value="">Selecione…</option>
+              <option value="LIBERADO">LIBERADO</option>
+              <option value="ANOMALIA TEMPORARIA">ANOMALIA TEMP.</option>
+              <option value="ANOMALIA DEFINITIVA">ANOMALIA DEF.</option>
+              <option value="EM ANALISE">EM ANÁLISE</option>
+              <option value="FRAUDE">FRAUDE</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Troca -->
+      <div id="secaoTroca" class="hidden space-y-4 p-4 bg-emerald-50 border-2 border-emerald-200 rounded-2xl">
+        <div class="flex items-center gap-2">
+          <span class="text-emerald-500 text-lg">📱</span>
+          <label class="text-[10px] font-black text-emerald-600 uppercase">Troca de Aparelho</label>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-slate-600 mb-1.5">1. Fidelizado no CBCF?</p>
+          <div class="flex gap-2">
+            <label class="flex-1 flex items-center justify-center gap-2 p-2 bg-white border rounded-lg cursor-pointer"><input type="radio" name="checkCbcf" value="SIM"> <span class="text-[10px] font-bold">SIM</span></label>
+            <label class="flex-1 flex items-center justify-center gap-2 p-2 bg-white border rounded-lg cursor-pointer"><input type="radio" name="checkCbcf" value="NAO"> <span class="text-[10px] font-bold">NÃO</span></label>
+          </div>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-slate-600 mb-1.5">2. Pacote Thales?</p>
+          <div class="flex gap-2">
+            <label class="flex-1 flex items-center justify-center gap-2 p-2 bg-white border rounded-lg cursor-pointer"><input type="radio" name="checkThales" value="SIM"> <span class="text-[10px] font-bold">SIM</span></label>
+            <label class="flex-1 flex items-center justify-center gap-2 p-2 bg-white border rounded-lg cursor-pointer"><input type="radio" name="checkThales" value="NAO"> <span class="text-[10px] font-bold">NÃO</span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Martim -->
+      <div id="secaoMartim" class="hidden space-y-4 p-4 bg-orange-50 border-2 border-orange-200 rounded-2xl">
+        <div class="flex items-center gap-2">
+          <span class="text-orange-500 text-lg">⚠️</span>
+          <label class="text-[10px] font-black text-orange-600 uppercase">Validação MARTIM</label>
+        </div>
+        <p class="text-[11px] text-slate-700 font-bold">A linha está no nome do cliente?</p>
+        <div class="flex gap-2">
+          <label class="flex-1 flex items-center justify-center gap-2 p-2 bg-white border rounded-lg cursor-pointer"><input type="radio" name="checkMartim" value="SIM"> <span class="text-[10px] font-bold">SIM</span></label>
+          <label class="flex-1 flex items-center justify-center gap-2 p-2 bg-white border rounded-lg cursor-pointer"><input type="radio" name="checkMartim" value="NAO"> <span class="text-[10px] font-bold">NÃO</span></label>
+        </div>
+      </div>
+
+      <div id="saneamentoAlert" class="hidden text-xs p-3 rounded-xl border font-medium"></div>
+    </div>
+
+    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 shrink-0">
+      <button onclick="fecharModalSaneamento()" class="px-4 py-2 text-sm font-medium text-slate-600">Cancelar</button>
+      <button id="btnSalvarSaneamento" onclick="salvarSaneamento()"
+        class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
+        <i data-lucide="save" class="w-4 h-4"></i> Gravar Dados
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL USUÁRIO DA LINHA ============ -->
+<div id="modalUserLine" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+    <div class="bg-teal-600 px-6 py-4 flex justify-between items-center">
+      <h3 class="text-white font-bold text-sm">Preencher Usuário da Linha</h3>
+      <button onclick="fecharModalUserLine()" class="text-white/70 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="p-6 space-y-4">
+      <div class="bg-slate-50 rounded-lg p-3 text-sm">
+        <p class="font-semibold text-slate-800" id="ulCliente">—</p>
+        <p class="text-xs text-slate-500 mt-1">Tel: <strong id="ulTelefone">—</strong></p>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Usuário da linha</label>
+        <input type="text" id="ulNome" placeholder="Nome do usuário (se diferente do titular)"
+          class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-teal-500">
+        <label class="flex items-center gap-2 mt-2 cursor-pointer">
+          <input type="checkbox" id="ulMesmoTitular" checked class="w-4 h-4 accent-teal-600">
+          <span class="text-xs text-slate-600 font-medium">Usuário é o próprio titular</span>
+        </label>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Telefone Alternativo</label>
+        <input type="text" id="ulTelefoneAlt" maxlength="11" placeholder="DDD + número (opcional)"
+          class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-teal-500">
+      </div>
+
+      <div class="p-3 bg-blue-50 rounded-lg border border-blue-100">
+        <label class="flex items-center cursor-pointer">
+          <input type="checkbox" id="ulDebito" class="w-4 h-4 accent-blue-600">
+          <div class="ml-2">
+            <span class="block text-xs font-bold text-blue-800">Pagamento em Débito Automático?</span>
+            <span class="block text-[10px] text-blue-600 uppercase mt-0.5">Marque SIM se cliente optou por DACC</span>
+          </div>
+        </label>
+      </div>
+
+      <input type="hidden" id="ulRowId">
+
+      <div id="ulAlert" class="hidden text-xs p-3 rounded-xl border font-medium"></div>
+    </div>
+    <div class="px-6 py-4 bg-slate-50 border-t flex justify-end gap-3">
+      <button onclick="fecharModalUserLine()" class="px-4 py-2 text-sm text-slate-600">Cancelar</button>
+      <button onclick="salvarUserLine()" class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
+        <i data-lucide="check" class="w-4 h-4"></i> Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+  
   <!-- ============ MODAL PORTABILIDADE ============ -->
 <div id="modalPortabilidade" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
@@ -865,6 +1091,7 @@ function maiorAtraso(c) {
 
       navegar('dashboard');
       carregarClientes();
+      atualizarBadgeGestao();
     }
 
     async function terminarSessao() {
@@ -889,7 +1116,7 @@ function maiorAtraso(c) {
       });
 
       if (destino === 'portabilidades') carregarPortabilidades();
-      if (destino === 'gestao') carregarGestao();
+      if (destino === 'gestao') { carregarGestao(); atualizarBadgeGestao(); }
       
       document.querySelectorAll('.nav-item').forEach(btn => {
         const ativo = btn.dataset.nav === destino;
@@ -2255,6 +2482,152 @@ async function salvarSaneamento() {
     btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Gravar Dados';
     lucide.createIcons();
   }
+}
+/* ==========================================================
+   MODAL USER LINE (Boas-Vindas)
+   ========================================================== */
+let _userLineAtual = null;
+
+function abrirModalUserLine(id) {
+  const c = (state.boasVindas || []).find(x => x.id === id);
+  if (!c) return;
+  _userLineAtual = c;
+
+  $('ulRowId').value = c.id;
+  $('ulCliente').textContent = capitalizar(c.nome);
+  $('ulTelefone').textContent = c.telefone || '—';
+  $('ulNome').value = '';
+  $('ulTelefoneAlt').value = c.telefone_alt || '';
+  $('ulMesmoTitular').checked = true;
+  $('ulDebito').checked = String(c.debito_automatico || '').toUpperCase() === 'SIM';
+  $('ulAlert').classList.add('hidden');
+
+  const toggle = () => {
+    const checked = $('ulMesmoTitular').checked;
+    $('ulNome').disabled = checked;
+    if (checked) $('ulNome').value = '';
+  };
+  $('ulMesmoTitular').onchange = toggle;
+  toggle();
+
+  $('modalUserLine').classList.remove('hidden');
+}
+
+function fecharModalUserLine() {
+  $('modalUserLine').classList.add('hidden');
+  _userLineAtual = null;
+}
+
+async function salvarUserLine() {
+  const c = _userLineAtual;
+  if (!c) return;
+
+  const mesmo = $('ulMesmoTitular').checked;
+  const nome = $('ulNome').value.trim();
+  const alt = normalizarTelefone($('ulTelefoneAlt').value);
+  const debito = $('ulDebito').checked ? 'SIM' : 'NÃO';
+  const alertBox = $('ulAlert');
+
+  if (!mesmo && !nome) {
+    alertBox.textContent = 'Informe o nome ou marque "mesmo titular".';
+    alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+    alertBox.classList.remove('hidden');
+    return;
+  }
+
+  const usuarioLinha = mesmo ? 'MESMO' : nome;
+
+  try {
+    const { error } = await supabaseClient
+      .from('clientes_faturas')
+      .update({
+        usuario_linha: usuarioLinha,
+        telefone_alt: alt || null,
+        debito_automatico: debito,
+        status_boas_vindas: 'USUARIO DEFINIDO',
+      })
+      .eq('id', c.id);
+    if (error) throw error;
+
+    fecharModalUserLine();
+    await carregarBoasVindas();
+  } catch (err) {
+    alertBox.textContent = 'Erro: ' + err.message;
+    alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+    alertBox.classList.remove('hidden');
+  }
+}
+
+/* ==========================================================
+   ENVIO WHATSAPP BOAS-VINDAS
+   ========================================================== */
+async function enviarBoasVindas(id) {
+  const c = (state.boasVindas || []).find(x => x.id === id);
+  if (!c) return;
+
+  const E = window.EMOJI_SAFE;
+  const titular = capitalizar(c.nome);
+  const userLine = String(c.usuario_linha || '').trim();
+  const nomeSaudacao = (userLine && userLine.toUpperCase() !== 'MESMO') ? capitalizar(userLine) : titular;
+  const primeiroNome = nomeSaudacao.split(' ')[0];
+
+  const telDestino = normalizarTelefone(
+    c.telefone_alt && c.telefone_alt.replace(/\D/g,'').length >= 10 ? c.telefone_alt : c.telefone
+  );
+  if (!telDestino) { alert('Cliente sem telefone.'); return; }
+
+  const isDebito = String(c.debito_automatico || '').toUpperCase() === 'SIM';
+  const vencRaw = String(c.data_vencimento_base || '').toUpperCase().trim();
+  const diaExibicao = vencRaw.includes('/') ? vencRaw.split('/')[0] : vencRaw;
+
+  let msg = `Olá, *${primeiroNome}*! ${E.sparkles}\n\n` +
+    `Se possível, avalie nosso atendimento no Google: https://g.co/kgs/R13nQ4g\n\n` +
+    `Estamos passando para te desejar boas-vindas e parabenizar por ter adquirido sua promoção TIM. ${E.party}\n\n` +
+    `Através deste WhatsApp você poderá tirar dúvidas e tratar diversos assuntos.\n\n`;
+
+  if (isDebito) {
+    msg += `Como você escolheu débito em conta, lembre-se que todo dia *${diaExibicao}* acontecerá o débito automático. ${E.moneyBag}\n\n`;
+  } else if (vencRaw !== 'CC') {
+    msg += `Será por aqui que enviaremos suas primeiras 3 faturas, com vencimento todo dia *${diaExibicao}*. ${E.bill}\n\n`;
+  }
+
+  msg += `Atenciosamente,\n*Equipe INFORTECA BY TIM*`;
+
+  const msgEnc = encodeURIComponent(msg);
+  const appUrl = `whatsapp://send?phone=55${telDestino}&text=${msgEnc}`;
+  const webUrl = `https://wa.me/55${telDestino}?text=${msgEnc}`;
+
+  let appAbriu = false;
+  window.addEventListener('blur', () => { appAbriu = true; }, { once: true });
+  try { window.location.href = appUrl; } catch (_) {}
+  setTimeout(() => {
+    if (!appAbriu) window.open(webUrl, '_blank', 'noopener');
+  }, 900);
+
+  try {
+    await supabaseClient
+      .from('clientes_faturas')
+      .update({ status_boas_vindas: 'ENVIADO' })
+      .eq('id', c.id);
+    setTimeout(() => carregarBoasVindas(), 1200);
+    atualizarBadgeGestao();
+  } catch (err) {
+    console.error('Erro ao marcar enviado:', err);
+  }
+}
+
+function filtrarBoasVindas() {
+  const termo = $('inputBuscaBoasVindas').value.toLowerCase().trim();
+  const tbody = $('tabelaBoasVindas');
+  if (!tbody) return;
+  const filtrados = (state.boasVindas || []).filter(c => {
+    if (!termo) return true;
+    return String(c.nome || '').toLowerCase().includes(termo)
+      || String(c.telefone || '').includes(termo)
+      || String(c.consultor || '').toLowerCase().includes(termo);
+  });
+  tbody.innerHTML = filtrados.map(b => linhaBoasVindasHTML(b)).join('');
+  lucide.createIcons();
 }
     
     /* ==========================================================
