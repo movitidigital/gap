@@ -362,7 +362,25 @@
             <textarea id="suspObservacao" rows="3" placeholder="Insira detalhes importantes…"
               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0e8890]"></textarea>
           </div>
+<div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+  <div>
+    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">
+      Fatura do Cliente
+    </label>
+    <input type="file" id="suspFileFatura" accept="image/*,.pdf"
+      class="block w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#0e8890] file:text-white hover:file:bg-[#0b6c72] file:cursor-pointer cursor-pointer">
+    <p class="text-[10px] text-slate-400 mt-1">Uma fatura em PDF ou imagem</p>
+  </div>
 
+  <div>
+    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">
+      Documentos do Cliente
+    </label>
+    <input type="file" id="suspFileDocumento" accept="image/*,.pdf" multiple
+      class="block w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#0e8890] file:text-white hover:file:bg-[#0b6c72] file:cursor-pointer cursor-pointer">
+    <p class="text-[10px] text-slate-400 mt-1">Múltiplos arquivos (RG, CPF, comprovante…)</p>
+  </div>
+</div>
           <div id="suspFormAlert" class="hidden text-xs p-3 rounded-xl border font-medium mt-4"></div>
 
           <div class="flex justify-end gap-3 mt-6">
@@ -391,6 +409,13 @@
           <select id="suspMesFiltro" onchange="carregarCancelamentos()"
             class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:outline-none focus:border-[#0e8890]">
           </select>
+          
+         <input type="file" id="csvSuspensosInput" accept=".csv" class="hidden" onchange="importarCsvSuspensos(this)">
+<button onclick="document.getElementById('csvSuspensosInput').click()"
+  class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-colors flex items-center gap-2">
+  <i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i> Importar CSV
+</button>
+          
           <button onclick="carregarCancelamentos()"
             class="bg-slate-900 hover:bg-[#000033] text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-colors flex items-center gap-2">
             <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Atualizar
@@ -3267,6 +3292,22 @@ async function salvarSuspensao() {
   const btn = $('btnSalvarSuspensao');
   const alertBox = $('suspFormAlert');
 
+  const fileFatura = $('suspFileFatura');
+  const fileDoc = $('suspFileDocumento');
+
+  if (!fileFatura.files.length) {
+    alertBox.textContent = 'Faça upload da FATURA do cliente.';
+    alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600 mt-4';
+    alertBox.classList.remove('hidden');
+    return;
+  }
+  if (!fileDoc.files.length) {
+    alertBox.textContent = 'Faça upload dos DOCUMENTOS do cliente.';
+    alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600 mt-4';
+    alertBox.classList.remove('hidden');
+    return;
+  }
+
   const dados = {
     consultor: $('suspConsultor').value.trim(),
     nome_titular: $('suspNome').value.trim(),
@@ -3283,9 +3324,10 @@ async function salvarSuspensao() {
     observacao: $('suspObservacao').value.trim() || null,
     status_cancelamento: 'AGUARDANDO',
     chip_devolvido: 'NÃO',
+    salvou_fatura: 'UPLOAD FEITO',
+    salvou_doc_dropbox: 'UPLOAD FEITO',
   };
 
-  // Validações
   if (!dados.nome_titular || !dados.cpf || !dados.numero_linha) {
     alertBox.textContent = 'Preencha Nome, CPF e Número da Linha.';
     alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600 mt-4';
@@ -3298,18 +3340,29 @@ async function salvarSuspensao() {
     alertBox.classList.remove('hidden');
     return;
   }
-  if (dados.numero_linha.length < 10) {
-    alertBox.textContent = 'Número da linha deve ter ao menos 10 dígitos.';
-    alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600 mt-4';
-    alertBox.classList.remove('hidden');
-    return;
-  }
 
   btn.disabled = true;
-  btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Gravando…`;
+  btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Enviando arquivos…`;
   lucide.createIcons();
 
   try {
+    // 1. Upload FATURA
+    const urlsFatura = await uploadSuspensaoArquivos(
+      fileFatura.files, dados.numero_linha, 'fatura'
+    );
+
+    // 2. Upload DOCUMENTOS
+    const urlsDoc = await uploadSuspensaoArquivos(
+      fileDoc.files, dados.numero_linha, 'documento'
+    );
+
+    dados.arquivos_fatura = urlsFatura;
+    dados.arquivos_documentos = urlsDoc;
+
+    btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Salvando registro…`;
+    lucide.createIcons();
+
+    // 3. Insere no banco
     const { error } = await supabaseClient.from('suspensoes').insert(dados);
     if (error) throw error;
 
@@ -3331,6 +3384,37 @@ async function salvarSuspensao() {
     btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Registrar Suspensão';
     lucide.createIcons();
   }
+}
+
+// Upload de arquivos para Supabase Storage
+async function uploadSuspensaoArquivos(files, linha, tipo) {
+  const urls = [];
+  const pasta = `suspensao-${linha}/${tipo}`;
+
+  for (const file of files) {
+    const ext = file.name.split('.').pop();
+    const nome = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    const path = `${pasta}/${nome}`;
+
+    const { error } = await supabaseClient.storage
+      .from('suspensoes-docs')
+      .upload(path, file, { cacheControl: '3600', upsert: false });
+
+    if (error) throw new Error(`Falha ao enviar "${file.name}": ${error.message}`);
+
+    const { data: { publicUrl } } = supabaseClient.storage
+      .from('suspensoes-docs')
+      .getPublicUrl(path);
+
+    urls.push({
+      nome: file.name,
+      url: publicUrl,
+      tipo: file.type,
+      tamanho: file.size,
+      path,
+    });
+  }
+  return urls;
 }
 
 /* ──── ABA CANCELAMENTOS ──── */
@@ -3572,13 +3656,48 @@ async function verDetalhesSuspensao(id) {
         <p class="text-[10px] font-black text-emerald-700 uppercase mb-1">Observação do Cancelamento</p>
         <p class="text-emerald-800 text-xs whitespace-pre-wrap">${escapeHTML(s.observacao_cancelamento)}</p>
       </div>` : ''}
-      ${s.codigo_cliente ? `
+         ${s.codigo_cliente ? `
       <div class="bg-slate-50 rounded-xl p-3 md:col-span-2">
         <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Código do Cliente</p>
         <p class="font-mono text-slate-700 text-xs">${escapeHTML(s.codigo_cliente)}</p>
       </div>` : ''}
     </div>
+
+    ${renderArquivosSuspensao(s)}
   `;
+}
+
+function renderArquivosSuspensao(s) {
+  const faturas = Array.isArray(s.arquivos_fatura) ? s.arquivos_fatura : [];
+  const docs = Array.isArray(s.arquivos_documentos) ? s.arquivos_documentos : [];
+
+  if (!faturas.length && !docs.length) return '';
+
+  const chipBtn = (arq) => `
+    <a href="${arq.url}" target="_blank" rel="noopener"
+      class="inline-flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg hover:border-[#0e8890] hover:bg-[#0e8890]/5 transition-colors text-xs font-medium text-slate-700">
+      <i data-lucide="file-text" class="w-3.5 h-3.5 text-[#0e8890]"></i>
+      <span class="truncate max-w-[180px]">${escapeHTML(arq.nome)}</span>
+    </a>`;
+
+  return `
+    <div class="mt-5 pt-5 border-t border-slate-100">
+      <p class="text-[10px] font-black text-slate-400 uppercase mb-3 tracking-wider">📎 Documentos Anexados</p>
+
+      ${faturas.length ? `
+        <div class="mb-4">
+          <p class="text-[10px] font-bold text-slate-500 mb-2">FATURA:</p>
+          <div class="flex flex-wrap gap-2">${faturas.map(chipBtn).join('')}</div>
+        </div>` : ''}
+
+      ${docs.length ? `
+        <div>
+          <p class="text-[10px] font-bold text-slate-500 mb-2">DOCUMENTOS:</p>
+          <div class="flex flex-wrap gap-2">${docs.map(chipBtn).join('')}</div>
+        </div>` : ''}
+    </div>
+  `;
+}
 
   $('modalSuspDetalhes').classList.remove('hidden');
   lucide.createIcons();
@@ -3719,7 +3838,154 @@ async function atualizarBadgeSuspensoes() {
     badge.classList.remove('flex');
   }
 }
-    
+    /* ==========================================================
+   IMPORTAÇÃO DO CSV HISTÓRICO DE SUSPENSÕES (GAS)
+   ========================================================== */
+async function importarCsvSuspensos(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+
+  const statusEl = $('suspCancelSubtitle');
+  const btn = input.previousElementSibling;
+  statusEl.textContent = '📖 Lendo CSV…';
+
+  const nomeOriginal = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> Importando…';
+  lucide.createIcons();
+
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: 'greedy',
+    transformHeader: h => h.trim().replace(/\s+$/, ''),
+    complete: async ({ data, meta }) => {
+      try {
+        const norm = (s) => String(s || '').toUpperCase().trim()
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ');
+
+        const findKey = (row, ...keys) => {
+          const map = {};
+          for (const k of Object.keys(row)) map[norm(k)] = row[k];
+          for (const k of keys) {
+            const v = map[norm(k)];
+            if (v !== undefined && v !== null && String(v).trim() !== '') return v;
+          }
+          return undefined;
+        };
+
+        const registros = [];
+
+        for (const row of data) {
+          const nome = findKey(row, 'NOME COMPLETO DO TITULAR (IGUAL AO DOCUMENTO)', 'NOME COMPLETO DO TITULAR');
+          if (!nome) continue;
+
+          const rawDataHora = findKey(row, 'CARIMBO DE DATA/HORA');
+          let dataHoraISO = null;
+          if (rawDataHora) {
+            const m = String(rawDataHora).match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):?(\d{2})?/);
+            if (m) {
+              dataHoraISO = `${m[3]}-${m[2]}-${m[1]}T${m[4]}:${m[5]}:${m[6] || '00'}-03:00`;
+            }
+          }
+
+          const observacao = findKey(row, 'OBS.:', 'OBS') || null;
+          const statusRaw = findKey(row, 'REGISTRO DO CANCELAMENTO') || 'AGUARDANDO';
+          const chipDevolvido = findKey(row, 'MARCAR SIM QUANDO CHIP FOR DEVOLVIDO') || null;
+
+          // Extrai links do Drive embutidos no campo OBS. (padrão do GAS)
+          const arquivosFatura = [];
+          const arquivosDoc = [];
+          if (observacao) {
+            const regexFat = /\[LINK FATURA\]:\s*(\S+)/g;
+            const regexDoc = /\[LINK DOC\]:\s*([^\n]+)/g;
+            let m;
+            while ((m = regexFat.exec(observacao)) !== null) {
+              arquivosFatura.push({ nome: 'Fatura (Drive)', url: m[1], tipo: 'drive' });
+            }
+            while ((m = regexDoc.exec(observacao)) !== null) {
+              String(m[1]).split('|').forEach(url => {
+                const u = url.trim();
+                if (u) arquivosDoc.push({ nome: 'Documento (Drive)', url: u, tipo: 'drive' });
+              });
+            }
+          }
+
+          registros.push({
+            data_hora: dataHoraISO,
+            mes_cancelar: findKey(row, 'MÊS PARA CONCLUIR O CANCELAMENTO EM SISTEMA') || null,
+            nome_titular: String(nome).trim(),
+            cpf: String(findKey(row, 'CPF (SEM PONTOS OU TRAÇOS)', 'CPF') || '').replace(/\D/g, ''),
+            numero_linha: String(findKey(row, 'NÚMERO DA LINHA SUSPENSA ( SEM PONTOS OU TRAÇOS )', 'NÚMERO DA LINHA SUSPENSA') || '').replace(/\D/g, ''),
+            nome_plano: findKey(row, 'NOME DO PLANO SUSPENSO') || null,
+            endereco: findKey(row, 'ENDEREÇO COMPLETO QUE CONSTA NA ÚLTIMA FATURA PAGA') || null,
+            data_vencimento: findKey(row, 'DATA VENCIMENTO DA ÚLTIMA FATURA PAGA') || null,
+            protocolo_prazo: findKey(row, 'PROTOCOLO E PRAZO SUSPENSÃO', 'PROTOCOLO E PRAZO') || null,
+            deixou_chip: (() => { const v = findKey(row, 'CLIENTE DEIXOU CHIP NA LOJA'); return v ? String(v).toUpperCase() : null; })(),
+            querer_chip: (() => { const v = findKey(row, 'CLIENTE VAI QUERER O CHIP PARA CONTINUAR USANDO A LINHA NO PRÉ?', 'CLIENTE VAI QUERER O CHIP'); return v ? String(v).toUpperCase() : null; })(),
+            salvou_fatura: findKey(row, 'SALVOU A ÚLTIMA FATURA DETALHADA EM PDF?') || null,
+            salvou_doc_dropbox: findKey(row, 'SALVOU DOCUMENTO DO CLIENTE NO DROPBOX?') || null,
+            consultor: findKey(row, 'CONSULTOR DE VENDAS RESPONSÁVEL') || null,
+            observacao: observacao,
+            codigo_cliente: findKey(row, 'CÓDIGO DO CLIENTE') || null,
+            status_cancelamento: String(statusRaw).trim(),
+            observacao_cancelamento: findKey(row, 'OSERVAÇÃO DO CANCELAMENTO', 'OBSERVAÇÃO DO CANCELAMENTO') || null,
+            draft_notes: findKey(row, 'ANOTAÇÕES') || null,
+            chip_devolvido: chipDevolvido ? String(chipDevolvido).toUpperCase() : 'NÃO',
+            arquivos_fatura: arquivosFatura,
+            arquivos_documentos: arquivosDoc,
+          });
+        }
+
+        if (!registros.length) {
+          statusEl.textContent = '⚠️ Nenhum registro válido no CSV.';
+          btn.disabled = false;
+          btn.innerHTML = nomeOriginal;
+          lucide.createIcons();
+          return;
+        }
+
+        // Insert em lotes
+        const TAMANHO_LOTE = 100;
+        let inseridos = 0;
+        const erros = [];
+
+        for (let i = 0; i < registros.length; i += TAMANHO_LOTE) {
+          const lote = registros.slice(i, i + TAMANHO_LOTE);
+          const { error } = await supabaseClient.from('suspensoes').insert(lote);
+          if (error) erros.push(error.message);
+          else inseridos += lote.length;
+          statusEl.textContent = `💾 Importando… ${inseridos}/${registros.length}`;
+        }
+
+        if (erros.length) {
+          statusEl.textContent = `⚠️ ${inseridos} importados, ${erros.length} lote(s) com erro. ${erros[0]}`;
+        } else {
+          statusEl.textContent = `✅ ${inseridos} suspensões importadas do CSV histórico!`;
+          await carregarCancelamentos();
+          atualizarBadgeSuspensoes();
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = nomeOriginal;
+        lucide.createIcons();
+        input.value = '';
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = '❌ Erro: ' + err.message;
+        btn.disabled = false;
+        btn.innerHTML = nomeOriginal;
+        lucide.createIcons();
+        input.value = '';
+      }
+    },
+    error: (err) => {
+      statusEl.textContent = '❌ Erro CSV: ' + err.message;
+      btn.disabled = false;
+      btn.innerHTML = nomeOriginal;
+      lucide.createIcons();
+    }
+  });
+}
     /* ==========================================================
        BOOT
        ========================================================== */
