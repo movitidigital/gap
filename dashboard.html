@@ -1353,8 +1353,12 @@
             const dtNasc  = parseBR(row['DATA DE NASCIMENTO'] || row['NASCIMENTO'] || '');
 
             return {
-              ano_base: String(new Date().getFullYear()),
-              data_vencimento_base: (() => {
+ano_base: (() => {
+  // Ano da venda se disponível, senão ano atual
+  const dtVenda = parseBR(row['DATA DA VENDA'] || row['DATA VENDA'] || '');
+  return dtVenda ? String(dtVenda.getFullYear()) : String(new Date().getFullYear());
+})(),
+                data_vencimento_base: (() => {
                 const extrair = (txt) => {
                   if (!txt) return null;
                   const s = String(txt).trim();
