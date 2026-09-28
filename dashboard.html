@@ -660,24 +660,34 @@ function prioridadeInfo(c) {
       dashboard: 'Visão Geral',
       faturas: 'Acompanhamento de Faturas TIM',
       suspensoes: 'Gestão de Suspensões',
+      clientes: 'Base Geral de Clientes',        
       prospeccao: 'Prospecção de Clientes',
     };
 
-    function navegar(destino) {
-      Object.keys(TITULOS).forEach(id => {
-        const view = $(`view-${id}`);
-        if (view) view.classList.toggle('hidden', id !== destino);
-      });
-      // Realce do menu
-      document.querySelectorAll('.nav-item').forEach(btn => {
-        const ativo = btn.dataset.nav === destino;
-        btn.className = ativo
-          ? 'nav-item w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium transition-colors shadow-md shadow-[#0e8890]/20 cursor-pointer'
-          : 'nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer';
-      });
-      $('headerTitle').textContent = TITULOS[destino];
-      if (destino === 'faturas') carregarClientes();
-    }
+function navegar(destino) {
+  Object.keys(TITULOS).forEach(id => {
+    const view = $(`view-${id}`);
+    if (view) view.classList.toggle('hidden', id !== destino);
+  });
+  
+  // Realce do menu
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    const ativo = btn.dataset.nav === destino;
+    btn.className = ativo
+      ? 'nav-item w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium transition-colors shadow-md shadow-[#0e8890]/20 cursor-pointer'
+      : 'nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer';
+  });
+  
+  $('headerTitle').textContent = TITULOS[destino];
+  
+  if (destino === 'faturas') carregarClientes();
+
+  if (destino === 'clientes') {  
+    $('clientesBaseTotal').textContent = state.clientes.length;  
+    // Foca no input de busca automaticamente com um pequeno delay para garantir a renderização da view
+    setTimeout(() => $('inputBuscaClientes')?.focus(), 100);
+  }
+}
 
     function toggleSidebar() {
       const s = $('sidebar');
@@ -711,7 +721,7 @@ function prioridadeInfo(c) {
         return;
       }
 
-      state.clientes = (data || []).filter(c => !deveOcultar(c));
+      state.clientes = data || [];
       atualizarStats();
       filtrar();
     }
@@ -739,34 +749,37 @@ function atualizarStats() {
     /* ==========================================================
        FILTRO + RENDER
        ========================================================== */
-    function filtrar() {
-      state.filtros.texto = $('inputBusca').value.toLowerCase().trim();
-      state.filtros.situacao = $('selectSituacao').value;
+ function filtrar() {
+  state.filtros.texto = $('inputBusca').value.toLowerCase().trim();
+  state.filtros.situacao = $('selectSituacao').value;
 
-      const termo = state.filtros.texto;
-      const termoNum = termo.replace(/\D/g, '');
+  const termo = state.filtros.texto;
+  const termoNum = termo.replace(/\D/g, '');
 
-      const filtrados = state.clientes.filter(c => {
-        // Texto (nome / cpf / telefone / consultor)
-        if (termo) {
-          const nome = String(c.nome || '').toLowerCase();
-          const cpf = normalizarCPF(c.cpf);
-          const tel = normalizarTelefone(c.telefone);
-          const alt = normalizarTelefone(c.telefone_alt);
-          const cons = String(c.consultor || '').toLowerCase();
-          const matchTexto = nome.includes(termo) || cons.includes(termo);
-          const matchNum = termoNum && (cpf.includes(termoNum) || tel.includes(termoNum) || alt.includes(termoNum));
-          if (!matchTexto && !matchNum) return false;
-        }
-        // Situação
-        const quitado = clienteQuitado(c);
-        if (state.filtros.situacao === 'aberto' && quitado) return false;
-        if (state.filtros.situacao === 'pagos' && !quitado) return false;
-        return true;
-      });
+  const filtrados = state.clientes.filter(c => {
+    // 🔒 Faturas: oculta TROCA DE APARELHO
+    if (deveOcultar(c)) return false;
 
-    $('contadorResultados').textContent =
-    `Exibindo ${filtrados.length} de ${state.clientes.length} registros (ordenados por prioridade)`;
+    // Texto (nome / cpf / telefone / consultor)
+    if (termo) {
+      const nome = String(c.nome || '').toLowerCase();
+      const cpf = normalizarCPF(c.cpf);
+      const tel = normalizarTelefone(c.telefone);
+      const alt = normalizarTelefone(c.telefone_alt);
+      const cons = String(c.consultor || '').toLowerCase();
+      const matchTexto = nome.includes(termo) || cons.includes(termo);
+      const matchNum = termoNum && (cpf.includes(termoNum) || tel.includes(termoNum) || alt.includes(termoNum));
+      if (!matchTexto && !matchNum) return false;
+    }
+    // Situação
+    const quitado = clienteQuitado(c);
+    if (state.filtros.situacao === 'aberto' && quitado) return false;
+    if (state.filtros.situacao === 'pagos' && !quitado) return false;
+    return true;
+  });
+
+  $('contadorResultados').textContent = 
+    `Exibindo ${filtrados.length} registros (Troca de Aparelho ocultada)`;
 
   // 🎯 Ordena por prioridade operacional
   const ordenados = [...filtrados].sort((a, b) => {
@@ -933,6 +946,253 @@ function renderCelulaFatura(cliente, mes, valor) {
   }
 
   return `<td class="px-4 py-4 text-center align-middle ${cellClass}">${inner}</td>`;
+}
+
+    /* ==========================================================
+   MÓDULO: CLIENTES TIM — BASE GERAL
+   ========================================================== */
+
+// Debounce do input (evita buscar a cada tecla)
+let _buscaClientesTimer = null;
+function debounceBuscarClientes() {
+  clearTimeout(_buscaClientesTimer);
+  _buscaClientesTimer = setTimeout(buscarClientes, 220);
+}
+
+// Normaliza texto (remove acentos + lowercase)
+function _norm(s) {
+  return String(s || '').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+// Busca local (state.clientes) — instantânea, sem ir no servidor
+function buscarClientes() {
+  const termo = $('inputBuscaClientes').value.trim();
+  const contador = $('clientesContador');
+  const resultados = $('clientesResultados');
+
+  // Estado vazio
+  if (termo.length < 2) {
+    contador.textContent = 'Digite ao menos 2 caracteres para buscar';
+    resultados.innerHTML = `
+      <div class="bg-white p-12 rounded-2xl border border-dashed border-slate-200 text-center">
+        <i data-lucide="search" class="w-12 h-12 mx-auto text-slate-300 mb-3"></i>
+        <p class="text-slate-500 font-medium">Use a barra acima para pesquisar</p>
+        <p class="text-xs text-slate-400 mt-1">Busca em toda a base histórica de clientes TIM</p>
+      </div>`;
+    lucide.createIcons();
+    return;
+  }
+
+  const termoNorm = _norm(termo);
+  const termoNum = termo.replace(/\D/g, '');
+
+  const encontrados = state.clientes.filter(c => {
+    const nome = _norm(c.nome);
+    const cons = _norm(c.consultor);
+    const cpf = normalizarCPF(c.cpf);
+    const tel = normalizarTelefone(c.telefone);
+    const alt = normalizarTelefone(c.telefone_alt);
+
+    const matchNome = nome.includes(termoNorm);
+    const matchCons = cons.includes(termoNorm);
+    const matchNum = termoNum.length >= 3 &&
+      (cpf.includes(termoNum) || tel.includes(termoNum) || alt.includes(termoNum));
+
+    return matchNome || matchCons || matchNum;
+  });
+
+  // Ordena alfabeticamente
+  encontrados.sort((a, b) => String(a.nome || '').localeCompare(String(b.nome || '')));
+
+  contador.textContent = `${encontrados.length} ${encontrados.length === 1 ? 'cliente encontrado' : 'clientes encontrados'}`;
+
+  if (!encontrados.length) {
+    resultados.innerHTML = `
+      <div class="bg-white p-12 rounded-2xl border border-slate-200 shadow-sm text-center">
+        <i data-lucide="user-x" class="w-12 h-12 mx-auto text-slate-300 mb-3"></i>
+        <p class="text-slate-600 font-semibold">Nenhum cliente encontrado</p>
+        <p class="text-xs text-slate-400 mt-1">Tente buscar por outro nome, CPF ou número</p>
+      </div>`;
+    lucide.createIcons();
+    return;
+  }
+
+  resultados.innerHTML = encontrados.map(c => renderClienteCard(c)).join('');
+  lucide.createIcons();
+}
+
+// Renderiza um card completo do cliente
+function renderClienteCard(c) {
+  const cpfFmt = normalizarCPF(c.cpf);
+  const telefone = normalizarTelefone(c.telefone);
+  const telFormatado = telefone.length === 11
+    ? `(${telefone.slice(0,2)}) ${telefone.slice(2,7)}-${telefone.slice(7)}`
+    : telefone;
+  const altFormatado = c.telefone_alt ? normalizarTelefone(c.telefone_alt) : null;
+  const venc = c.data_vencimento_base
+    ? (String(c.data_vencimento_base).toUpperCase() === 'CC' ? 'CC' : `DIA ${c.data_vencimento_base}`)
+    : '—';
+
+  // Cores das faturas (compacto)
+  const faturaCell = (valor) => {
+    const st = statusFatura(valor);
+    const cor = {
+      pago: 'text-emerald-600', cc: 'text-sky-600',
+      prejuizo: 'text-red-600', enviada: 'text-orange-600',
+      pendente: 'text-slate-700', vazio: 'text-slate-400',
+    }[st] || 'text-slate-400';
+    const icone = {
+      pago: 'check-circle-2', cc: 'credit-card',
+      prejuizo: 'alert-octagon', enviada: 'send',
+      pendente: 'calendar', vazio: 'minus',
+    }[st] || 'minus';
+
+    return `<div class="flex items-center gap-1.5 ${cor} font-semibold">
+      <i data-lucide="${icone}" class="w-3.5 h-3.5"></i>
+      <span class="text-xs">${escapeHTML(valor || '—')}</span>
+    </div>`;
+  };
+
+  return `
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+      <!-- Header -->
+      <div class="p-5 border-b border-slate-100 flex justify-between items-start gap-4">
+        <div class="min-w-0 flex-1">
+          <h3 class="font-bold text-[#000033] text-base md:text-lg truncate">${escapeHTML(capitalizar(c.nome) || 'Sem Nome')}</h3>
+          <div class="flex flex-wrap items-center gap-2 mt-2">
+            <span class="inline-block bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold border border-slate-200">
+              BASE ${escapeHTML(c.ano_base || '—')}
+            </span>
+            ${venc !== '—' ? `
+              <span class="inline-block bg-amber-50 text-amber-700 px-2 py-0.5 rounded text-[10px] font-bold border border-amber-200">
+                VENCIMENTO: ${escapeHTML(venc)}
+              </span>` : ''}
+            ${String(c.modalidade || '').toUpperCase().includes('TROCA DE APARELHO') ? `
+              <span class="inline-block bg-slate-900 text-white px-2 py-0.5 rounded text-[10px] font-bold">
+                TROCA DE APARELHO
+              </span>` : ''}
+          </div>
+        </div>
+        <button onclick="copiarClienteCard('${cpfFmt}')"
+          title="Copiar dados do cliente"
+          class="p-2 text-slate-400 hover:text-[#0e8890] hover:bg-slate-50 rounded-lg transition-colors shrink-0">
+          <i data-lucide="copy" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Corpo: grid de informações -->
+      <div class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Número da Linha</p>
+          <p class="font-mono text-sm text-slate-800 font-semibold cursor-pointer hover:text-[#0e8890] transition-colors"
+             onclick="copiarTexto('${telefone}', this)" title="Clique para copiar">
+            ${escapeHTML(telFormatado || '—')}
+          </p>
+        </div>
+
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">CPF</p>
+          <p class="font-mono text-sm text-slate-800 cursor-pointer hover:text-[#0e8890] transition-colors"
+             onclick="copiarTexto('${cpfFmt}', this)" title="Clique para copiar">
+            ${escapeHTML(cpfFmt || '—')}
+          </p>
+        </div>
+
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Data da Venda</p>
+          <p class="text-sm text-slate-800">${c.data_venda ? fmtBR(c.data_venda) : '—'}</p>
+        </div>
+
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Consultor</p>
+          <p class="text-sm text-slate-800 uppercase">${escapeHTML(c.consultor || '—')}</p>
+        </div>
+
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Plano</p>
+          <p class="text-sm text-[#E60000] font-bold uppercase">${escapeHTML(c.plano || '—')}</p>
+        </div>
+
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Modalidade</p>
+          <p class="text-sm text-slate-700 uppercase">${escapeHTML(c.modalidade || '—')}</p>
+        </div>
+
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Contato Alternativo</p>
+          ${altFormatado ? `
+            <p class="font-mono text-sm text-slate-800 cursor-pointer hover:text-[#0e8890] transition-colors"
+               onclick="copiarTexto('${altFormatado}', this)" title="Clique para copiar">
+              ${escapeHTML(altFormatado)}
+            </p>` : '<p class="text-sm text-slate-400">—</p>'}
+        </div>
+
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Data Nascimento</p>
+          <p class="text-sm text-slate-800">${c.data_nascimento ? fmtBR(c.data_nascimento) : '—'}</p>
+        </div>
+
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">IMEI</p>
+          <p class="font-mono text-xs text-slate-600 truncate" title="${escapeHTML(c.imei || '')}">${escapeHTML(c.imei || '—')}</p>
+        </div>
+
+      </div>
+
+      <!-- Rodapé: faturas -->
+      <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">1ª Fatura</p>
+          ${faturaCell(c.fatura_p)}
+        </div>
+        <div>
+          <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">2ª Fatura</p>
+          ${faturaCell(c.fatura_q)}
+        </div>
+        <div>
+          <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">3ª Fatura</p>
+          ${faturaCell(c.fatura_r)}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Copia dados completos do cliente formatados
+function copiarClienteCard(cpf) {
+  const c = state.clientes.find(x => normalizarCPF(x.cpf) === cpf);
+  if (!c) return;
+
+  const telefone = normalizarTelefone(c.telefone);
+  const telFormat = telefone.length === 11
+    ? `(${telefone.slice(0,2)}) ${telefone.slice(2,7)}-${telefone.slice(7)}`
+    : telefone;
+
+  const texto =
+    `CLIENTE: ${capitalizar(c.nome)}\n` +
+    `CPF: ${normalizarCPF(c.cpf)}\n` +
+    `LINHA: ${telFormat}\n` +
+    `PLANO: ${c.plano || '—'}\n` +
+    `MODALIDADE: ${c.modalidade || '—'}\n` +
+    `CONSULTOR: ${c.consultor || '—'}\n` +
+    `VENCIMENTO: Dia ${c.data_vencimento_base || '—'}\n` +
+    `BASE: ${c.ano_base || '—'}`;
+
+  // Copia e dá feedback
+  navigator.clipboard.writeText(texto).then(() => {
+    mostrarToastCopy('Dados do cliente copiados!');
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = texto;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    mostrarToastCopy('Dados do cliente copiados!');
+  });
 }
 
     /* ==========================================================
