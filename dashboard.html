@@ -63,10 +63,12 @@
           class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer">
           <i data-lucide="file-text" class="w-5 h-5"></i><span class="text-sm font-medium">Faturas</span>
         </button>
-        <button onclick="navegar('suspensoes')" data-nav="suspensoes"
-          class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer">
-          <i data-lucide="phone-off" class="w-5 h-5"></i><span class="text-sm font-medium">Suspensões</span>
-        </button>
+       <button onclick="navegar('suspensoes')" data-nav="suspensoes"
+  class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer relative">
+  <i data-lucide="shield-alert" class="w-5 h-5"></i>
+  <span class="text-sm font-medium">Gestão de Acessos</span>
+  <span id="badgeSuspensoes" class="hidden absolute top-1.5 right-2 bg-red-500 text-white text-[9px] font-bold w-5 h-5 rounded-full items-center justify-center">0</span>
+</button>
         <button onclick="navegar('gestao')" data-nav="gestao"
   class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer relative">
   <i data-lucide="file-check-2" class="w-5 h-5"></i>
@@ -248,14 +250,206 @@
         </div>
       </div>
 
-      <!-- ===== SUSPENSÕES (placeholder) ===== -->
-      <div id="view-suspensoes" class="hidden animate-fade-in">
-        <div class="bg-white p-12 rounded-2xl border border-slate-200 shadow-sm text-center text-slate-500">
-          <i data-lucide="phone-off" class="w-12 h-12 mx-auto mb-3 text-slate-300"></i>
-          <h3 class="text-lg font-semibold text-slate-700">Módulo de Suspensões</h3>
-          <p class="text-sm mt-1">Em construção — próximo passo.</p>
+ <!-- ===== GESTÃO DE ACESSOS ===== -->
+<div id="view-suspensoes" class="hidden animate-fade-in">
+
+  <!-- Abas -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="border-b border-slate-100 flex">
+      <button id="aba-susp-registrar" onclick="trocarAbaSusp('registrar')"
+        class="flex-1 px-6 py-4 text-sm font-black uppercase tracking-tight flex items-center justify-center gap-2 border-b-2 transition-all">
+        <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+        <span>Registrar</span>
+      </button>
+      <button id="aba-susp-cancelamentos" onclick="trocarAbaSusp('cancelamentos')"
+        class="flex-1 px-6 py-4 text-sm font-black uppercase tracking-tight flex items-center justify-center gap-2 border-b-2 transition-all">
+        <i data-lucide="calendar-x" class="w-4 h-4"></i>
+        <span>Cancelamentos</span>
+        <span id="countSuspCancel" class="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+      </button>
+      <button id="aba-susp-buscar" onclick="trocarAbaSusp('buscar')"
+        class="flex-1 px-6 py-4 text-sm font-black uppercase tracking-tight flex items-center justify-center gap-2 border-b-2 transition-all">
+        <i data-lucide="search" class="w-4 h-4"></i>
+        <span>Buscar Linhas</span>
+      </button>
+    </div>
+
+    <!-- ═══ ABA 1: REGISTRAR ═══ -->
+    <div id="suspContent-registrar" class="p-6 md:p-8">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+          <div class="p-3 bg-red-50 text-red-600 rounded-xl"><i data-lucide="alert-triangle" class="w-5 h-5"></i></div>
+          <div>
+            <h3 class="text-lg font-black text-[#000033]">Formulário de Acesso Suspenso</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Registre o bloqueio para acompanhar o cancelamento</p>
+          </div>
+        </div>
+
+        <form id="formSuspensao" onsubmit="event.preventDefault(); salvarSuspensao()">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Consultor Responsável</label>
+              <input type="text" id="suspConsultor" readonly
+                class="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 cursor-not-allowed">
+            </div>
+            <div>
+              <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Nome Completo do Titular</label>
+              <input type="text" id="suspNome" required
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0e8890]">
+            </div>
+            <div>
+              <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">CPF (11 dígitos)</label>
+              <input type="text" id="suspCpf" required maxlength="11" placeholder="Somente números" oninput="this.value=this.value.replace(/\D/g,'')"
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-[#0e8890]">
+            </div>
+            <div>
+              <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Nº Linha Suspensa</label>
+              <input type="text" id="suspLinha" required maxlength="11" placeholder="DDD + Número" oninput="this.value=this.value.replace(/\D/g,'')"
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-[#0e8890]">
+            </div>
+            <div>
+              <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Nome do Plano</label>
+              <input type="text" id="suspPlano" required
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0e8890]">
+            </div>
+            <div>
+              <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Mês para Cancelar</label>
+              <input type="text" id="suspMesCancelar" readonly
+                class="w-full bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm font-bold text-red-700 cursor-not-allowed">
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Endereço Completo (Fatura)</label>
+              <input type="text" id="suspEndereco" required
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0e8890]">
+            </div>
+            <div>
+              <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Vencimento da Fatura</label>
+              <input type="date" id="suspVencimento" required
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0e8890]">
+            </div>
+            <div>
+              <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Protocolo e Prazo</label>
+              <input type="text" id="suspProtocolo" required
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0e8890]">
+            </div>
+            <div>
+              <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Cliente deixou CHIP?</label>
+              <select id="suspDeixouChip" required
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0e8890]">
+                <option value="">Selecione…</option>
+                <option value="SIM">SIM</option>
+                <option value="NÃO">NÃO</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Vai querer o CHIP?</label>
+              <select id="suspQuererChip" required
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0e8890]">
+                <option value="">Selecione…</option>
+                <option value="SIM">SIM</option>
+                <option value="NÃO">NÃO</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Código Cliente</label>
+              <input type="text" id="suspCodigo" placeholder="Opcional"
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0e8890]">
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Observações</label>
+            <textarea id="suspObservacao" rows="3" placeholder="Insira detalhes importantes…"
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0e8890]"></textarea>
+          </div>
+
+          <div id="suspFormAlert" class="hidden text-xs p-3 rounded-xl border font-medium mt-4"></div>
+
+          <div class="flex justify-end gap-3 mt-6">
+            <button type="button" onclick="limparFormSuspensao()"
+              class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-sm font-bold transition-colors">
+              Limpar
+            </button>
+            <button type="submit" id="btnSalvarSuspensao"
+              class="bg-[#0e8890] hover:bg-[#0b6c72] text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-colors flex items-center gap-2">
+              <i data-lucide="save" class="w-4 h-4"></i> Registrar Suspensão
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ═══ ABA 2: CANCELAMENTOS ═══ -->
+    <div id="suspContent-cancelamentos" class="hidden p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+        <div>
+          <h3 class="text-lg font-black text-[#000033]">Cancelamentos Agendados</h3>
+          <p class="text-xs text-slate-500 mt-0.5" id="suspCancelSubtitle">A carregar…</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <label class="text-xs font-bold text-slate-500 uppercase">Visualizar Mês:</label>
+          <select id="suspMesFiltro" onchange="carregarCancelamentos()"
+            class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:outline-none focus:border-[#0e8890]">
+          </select>
+          <button onclick="carregarCancelamentos()"
+            class="bg-slate-900 hover:bg-[#000033] text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-colors flex items-center gap-2">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Atualizar
+          </button>
         </div>
       </div>
+
+      <div class="overflow-x-auto rounded-2xl border border-slate-200">
+        <table class="w-full text-left text-xs whitespace-nowrap">
+          <thead class="bg-slate-800 text-white text-[10px] uppercase tracking-widest">
+            <tr>
+              <th class="px-4 py-3">Mês Cancel.</th>
+              <th class="px-4 py-3">Cliente</th>
+              <th class="px-4 py-3">Linha</th>
+              <th class="px-4 py-3">CPF</th>
+              <th class="px-4 py-3">Consultor</th>
+              <th class="px-4 py-3">Protocolo</th>
+              <th class="px-4 py-3 text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaCancelamentos" class="divide-y divide-slate-100">
+            <tr><td colspan="7" class="px-6 py-12 text-center text-slate-500">A carregar…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ ABA 3: BUSCAR ═══ -->
+    <div id="suspContent-buscar" class="hidden p-6 md:p-8">
+      <div class="max-w-4xl mx-auto">
+        <h3 class="text-lg font-black text-[#000033] mb-1">Buscar Linhas Suspensas</h3>
+        <p class="text-xs text-slate-500 mb-6">Digite CPF, Nome ou Nº da Linha</p>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
+          <div class="flex flex-col md:flex-row gap-3">
+            <div class="relative flex-1">
+              <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+              <input type="text" id="suspBuscaInput" onkeydown="if(event.key==='Enter'){event.preventDefault();buscarSuspensoes();}"
+                placeholder="Digite CPF, Nome ou Nº da Linha"
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-[#0e8890]">
+            </div>
+            <button onclick="buscarSuspensoes()"
+              class="bg-[#0e8890] hover:bg-[#0b6c72] text-white px-6 py-3 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2">
+              <i data-lucide="search" class="w-4 h-4"></i> Buscar
+            </button>
+          </div>
+        </div>
+
+        <div id="suspResultados" class="space-y-4">
+          <div class="bg-white p-12 rounded-2xl border border-dashed border-slate-200 text-center">
+            <i data-lucide="search" class="w-12 h-12 mx-auto text-slate-300 mb-3"></i>
+            <p class="text-slate-500 font-medium">Digite um termo para iniciar a busca</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
 
       <!-- ===== PORTABILIDADES ===== -->
 <div id="view-portabilidades" class="hidden animate-fade-in">
@@ -501,6 +695,65 @@
         class="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-xs font-black uppercase">
         ✓ Sim, enviado
       </button>
+    </div>
+  </div>
+</div>
+
+  <!-- ============ MODAL CANCELAMENTO ============ -->
+<div id="modalCancelamento" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+    <div class="bg-red-700 px-6 py-4 flex justify-between items-center">
+      <h3 class="text-white font-bold text-sm flex items-center gap-2">
+        <i data-lucide="calendar-x" class="w-5 h-5"></i> Confirmar Cancelamento
+      </h3>
+      <button onclick="fecharModalCancelamento()" class="text-white/70 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="p-6 space-y-4">
+      <div class="bg-slate-50 rounded-xl p-3 text-sm">
+        <p class="font-semibold text-slate-800" id="mcCliente">—</p>
+        <p class="text-xs text-slate-500 mt-1">
+          Linha: <strong id="mcLinha" class="font-mono">—</strong>
+        </p>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Protocolo <span class="text-red-500">*</span></label>
+        <input type="text" id="mcProtocolo" required
+          class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-red-500">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Observações</label>
+        <textarea id="mcObservacao" rows="3"
+          class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-red-500"></textarea>
+      </div>
+
+      <div id="mcAlert" class="hidden text-xs p-3 rounded-xl border font-medium"></div>
+    </div>
+    <div class="px-6 py-4 bg-slate-50 border-t flex justify-end gap-3">
+      <button onclick="fecharModalCancelamento()" class="px-4 py-2 text-sm font-medium text-slate-600">Cancelar</button>
+      <button id="mcBtnConfirmar" onclick="confirmarCancelamento()"
+        class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
+        <i data-lucide="check" class="w-4 h-4"></i> Confirmar Cancelamento
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL DETALHES SUSPENSÃO ============ -->
+<div id="modalSuspDetalhes" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden max-h-[92vh] flex flex-col">
+    <div class="bg-[#000033] px-6 py-4 flex justify-between items-center shrink-0">
+      <h3 class="text-white font-bold text-sm flex items-center gap-2">
+        <i data-lucide="file-search" class="w-5 h-5 text-[#0e8890]"></i> Detalhes do Acesso Suspenso
+      </h3>
+      <button onclick="fecharModalDetalhesSusp()" class="text-white/70 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="p-6 overflow-y-auto flex-1" id="suspDetalhesConteudo">
+      <!-- Preenchido via JS -->
+    </div>
+    <div class="px-6 py-4 bg-slate-50 border-t flex justify-end shrink-0">
+      <button onclick="fecharModalDetalhesSusp()" class="px-5 py-2 text-sm font-bold text-slate-600 hover:text-slate-800">Fechar</button>
     </div>
   </div>
 </div>
@@ -1149,6 +1402,7 @@ function maiorAtraso(c) {
       navegar('dashboard');
       carregarClientes();
       atualizarBadgeGestao();
+      atualizarBadgeSuspensoes();
     }
 
     async function terminarSessao() {
@@ -1160,6 +1414,7 @@ function maiorAtraso(c) {
       dashboard: 'Visão Geral',
       clientes: 'Base Geral de Clientes',
       faturas: 'Acompanhamento de Faturas TIM',
+      suspensoes: 'Gestão de Acessos — Suspensões e Cancelamentos',
       gestao: 'Gestão de Clientes TIM',
       suspensoes: 'Gestão de Suspensões',
       portabilidades: 'Gestão de Portabilidades',
@@ -1183,7 +1438,11 @@ function maiorAtraso(c) {
       });
 
       $('headerTitle').textContent = TITULOS[destino];
-
+if (destino === 'suspensoes') {
+  prepararAbaSusp('registrar');
+  trocarAbaSusp('registrar');
+  atualizarBadgeSuspensoes();
+}
       if (destino === 'faturas') carregarClientes();
       if (destino === 'clientes') {
         setTimeout(() => $('inputBuscaClientes')?.focus(), 100);
@@ -2935,6 +3194,532 @@ async function processarDatasys(input) {
     input.value = '';
   }
 }
+   
+    /* ==========================================================
+   MÓDULO: GESTÃO DE ACESSOS (SUSPENSÕES)
+   ========================================================== */
+
+let _abaSuspAtual = 'registrar';
+let _suspParaCancelar = null;
+
+/* ──── Navegação entre abas ──── */
+function trocarAbaSusp(aba) {
+  _abaSuspAtual = aba;
+
+  const botoes = {
+    registrar:     $('aba-susp-registrar'),
+    cancelamentos: $('aba-susp-cancelamentos'),
+    buscar:        $('aba-susp-buscar'),
+  };
+  const conteudos = {
+    registrar:     $('suspContent-registrar'),
+    cancelamentos: $('suspContent-cancelamentos'),
+    buscar:        $('suspContent-buscar'),
+  };
+
+  Object.keys(botoes).forEach(k => {
+    const ativo = k === aba;
+    conteudos[k].classList.toggle('hidden', !ativo);
+
+    // Cores de cada aba
+    const cores = { registrar: 'red', cancelamentos: 'red', buscar: 'slate' };
+    const c = cores[k];
+    botoes[k].className = ativo
+      ? `flex-1 px-6 py-4 text-sm font-black uppercase tracking-tight flex items-center justify-center gap-2 border-b-2 border-${c}-600 text-${c}-700 bg-${c}-50/50 transition-all`
+      : `flex-1 px-6 py-4 text-sm font-black uppercase tracking-tight flex items-center justify-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-${c}-600 hover:bg-${c}-50/30 transition-all`;
+  });
+
+  if (aba === 'cancelamentos') prepararAbaCancelamentos();
+  if (aba === 'buscar') {
+    $('suspBuscaInput').value = '';
+    $('suspResultados').innerHTML = `
+      <div class="bg-white p-12 rounded-2xl border border-dashed border-slate-200 text-center">
+        <i data-lucide="search" class="w-12 h-12 mx-auto text-slate-300 mb-3"></i>
+        <p class="text-slate-500 font-medium">Digite um termo para iniciar a busca</p>
+      </div>`;
+    lucide.createIcons();
+  }
+  if (aba === 'registrar') prepararFormSuspensao();
+}
+
+/* ──── Mês para cancelar (+2 meses) ──── */
+function calcularMesCancelamento() {
+  const MESES = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+  const hoje = new Date();
+  const futuro = new Date(hoje.getFullYear(), hoje.getMonth() + 2, 1);
+  return `${MESES[futuro.getMonth()]}/${futuro.getFullYear()}`;
+}
+
+/* ──── Prepara formulário ──── */
+function prepararFormSuspensao() {
+  $('suspConsultor').value = state.perfil?.nome_completo || 'Sistema';
+  $('suspMesCancelar').value = calcularMesCancelamento();
+}
+
+function limparFormSuspensao() {
+  $('formSuspensao').reset();
+  prepararFormSuspensao();
+  $('suspFormAlert').classList.add('hidden');
+}
+
+/* ──── SALVAR suspensão ──── */
+async function salvarSuspensao() {
+  const btn = $('btnSalvarSuspensao');
+  const alertBox = $('suspFormAlert');
+
+  const dados = {
+    consultor: $('suspConsultor').value.trim(),
+    nome_titular: $('suspNome').value.trim(),
+    cpf: $('suspCpf').value.trim(),
+    numero_linha: $('suspLinha').value.trim(),
+    nome_plano: $('suspPlano').value.trim(),
+    mes_cancelar: $('suspMesCancelar').value.trim(),
+    endereco: $('suspEndereco').value.trim(),
+    data_vencimento: $('suspVencimento').value,
+    protocolo_prazo: $('suspProtocolo').value.trim(),
+    deixou_chip: $('suspDeixouChip').value,
+    querer_chip: $('suspQuererChip').value,
+    codigo_cliente: $('suspCodigo').value.trim() || null,
+    observacao: $('suspObservacao').value.trim() || null,
+    status_cancelamento: 'AGUARDANDO',
+    chip_devolvido: 'NÃO',
+  };
+
+  // Validações
+  if (!dados.nome_titular || !dados.cpf || !dados.numero_linha) {
+    alertBox.textContent = 'Preencha Nome, CPF e Número da Linha.';
+    alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600 mt-4';
+    alertBox.classList.remove('hidden');
+    return;
+  }
+  if (dados.cpf.length !== 11) {
+    alertBox.textContent = 'CPF deve ter 11 dígitos.';
+    alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600 mt-4';
+    alertBox.classList.remove('hidden');
+    return;
+  }
+  if (dados.numero_linha.length < 10) {
+    alertBox.textContent = 'Número da linha deve ter ao menos 10 dígitos.';
+    alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600 mt-4';
+    alertBox.classList.remove('hidden');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Gravando…`;
+  lucide.createIcons();
+
+  try {
+    const { error } = await supabaseClient.from('suspensoes').insert(dados);
+    if (error) throw error;
+
+    alertBox.textContent = '✅ Suspensão registrada com sucesso!';
+    alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-emerald-50 border-emerald-200 text-emerald-700 mt-4';
+    alertBox.classList.remove('hidden');
+
+    setTimeout(() => {
+      limparFormSuspensao();
+      $('suspFormAlert').classList.add('hidden');
+      atualizarBadgeSuspensoes();
+    }, 1500);
+  } catch (err) {
+    alertBox.textContent = 'Erro: ' + err.message;
+    alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600 mt-4';
+    alertBox.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Registrar Suspensão';
+    lucide.createIcons();
+  }
+}
+
+/* ──── ABA CANCELAMENTOS ──── */
+function prepararAbaCancelamentos() {
+  const MESES = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+  const sel = $('suspMesFiltro');
+  const atual = sel.value;
+
+  // Popula os 13 meses (6 antes + atual + 6 depois)
+  sel.innerHTML = '';
+  const hoje = new Date();
+  for (let i = -6; i <= 6; i++) {
+    const d = new Date(hoje.getFullYear(), hoje.getMonth() + i, 1);
+    const label = `${MESES[d.getMonth()]}/${d.getFullYear()}`;
+    const opt = document.createElement('option');
+    opt.value = label;
+    opt.textContent = label;
+    if (i === 2) opt.selected = true; // default: +2 meses
+    sel.appendChild(opt);
+  }
+
+  carregarCancelamentos();
+}
+
+async function carregarCancelamentos() {
+  const tbody = $('tabelaCancelamentos');
+  const mesFiltro = $('suspMesFiltro').value;
+
+  $('suspCancelSubtitle').textContent = `Clientes agendados para ${mesFiltro}`;
+  tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-slate-500">
+    <i data-lucide="loader-2" class="w-5 h-5 animate-spin inline-block mr-2 text-[#0e8890]"></i>
+    A carregar…
+  </td></tr>`;
+  lucide.createIcons();
+
+  const { data, error } = await supabaseClient
+    .from('suspensoes')
+    .select('*')
+    .eq('mes_cancelar', mesFiltro)
+    .order('data_hora', { ascending: false });
+
+  if (error) {
+    tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-red-500">Erro: ${escapeHTML(error.message)}</td></tr>`;
+    return;
+  }
+
+  const lista = data || [];
+  const countEl = $('countSuspCancel');
+  if (countEl) countEl.textContent = lista.length;
+
+  if (!lista.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-slate-500">
+      Nenhum cancelamento agendado para ${escapeHTML(mesFiltro)}.
+    </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = lista.map(s => linhaCancelamentoHTML(s)).join('');
+  lucide.createIcons();
+}
+
+function linhaCancelamentoHTML(s) {
+  const isCancelado = String(s.status_cancelamento || '').toUpperCase().includes('CANCELADO');
+  const linha = normalizarTelefone(s.numero_linha);
+  const cpf = String(s.cpf || '').replace(/\D/g,'').padStart(11,'0');
+
+  const rowClass = isCancelado ? 'bg-emerald-50/40' : 'bg-red-50/30';
+
+  const protocoloDisplay = isCancelado
+    ? `<span class="text-emerald-700 font-bold text-[10px]">✓ CANCELADO</span>
+       <div class="text-[9px] text-emerald-600 mt-0.5">${escapeHTML(s.protocolo_prazo || '')}</div>`
+    : `<span class="text-red-600 font-bold text-[10px]">${escapeHTML(s.protocolo_prazo || 'PENDENTE')}</span>`;
+
+  const acoesHTML = isCancelado
+    ? `<button onclick="verDetalhesSuspensao(${s.id})"
+         class="bg-slate-600 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase">
+         Ver Detalhes
+       </button>`
+    : `<div class="flex flex-col gap-1 items-center">
+         <button onclick="verDetalhesSuspensao(${s.id})"
+           class="bg-slate-600 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase w-full">
+           Ver Detalhes
+         </button>
+         <button onclick="abrirModalCancelamento(${s.id})"
+           class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase w-full">
+           Cancelar Agora
+         </button>
+       </div>`;
+
+  return `
+    <tr class="${rowClass} hover:bg-slate-100/50 transition-colors border-b border-slate-100 text-xs">
+      <td class="px-4 py-3 font-black text-red-700 text-[11px]">${escapeHTML(s.mes_cancelar || '—')}</td>
+      <td class="px-4 py-3 font-bold text-slate-800 uppercase">${escapeHTML(capitalizar(s.nome_titular) || '—')}</td>
+      <td class="px-4 py-3 font-mono font-bold text-slate-700">${escapeHTML(linha || '—')}</td>
+      <td class="px-4 py-3 font-mono text-[10px] text-slate-500">${escapeHTML(cpf)}</td>
+      <td class="px-4 py-3 text-[10px] text-slate-500 uppercase">${escapeHTML(s.consultor || '—')}</td>
+      <td class="px-4 py-3">${protocoloDisplay}</td>
+      <td class="px-4 py-3 text-center">${acoesHTML}</td>
+    </tr>
+  `;
+}
+
+/* ──── MODAL CANCELAMENTO ──── */
+function abrirModalCancelamento(id) {
+  // Busca em memória? Melhor buscar direto do banco (mais confiável)
+  supabaseClient.from('suspensoes').select('*').eq('id', id).single().then(({ data, error }) => {
+    if (error || !data) { alert('Erro ao buscar registro.'); return; }
+    _suspParaCancelar = data;
+    $('mcCliente').textContent = capitalizar(data.nome_titular);
+    $('mcLinha').textContent = data.numero_linha || '—';
+    $('mcProtocolo').value = '';
+    $('mcObservacao').value = '';
+    $('mcAlert').classList.add('hidden');
+    $('modalCancelamento').classList.remove('hidden');
+    lucide.createIcons();
+  });
+}
+
+function fecharModalCancelamento() {
+  $('modalCancelamento').classList.add('hidden');
+  _suspParaCancelar = null;
+}
+
+async function confirmarCancelamento() {
+  const s = _suspParaCancelar;
+  if (!s) return;
+
+  const protocolo = $('mcProtocolo').value.trim();
+  const observacao = $('mcObservacao').value.trim();
+  const alertBox = $('mcAlert');
+  const btn = $('mcBtnConfirmar');
+
+  if (!protocolo) {
+    alertBox.textContent = 'Informe o protocolo do cancelamento.';
+    alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+    alertBox.classList.remove('hidden');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Cancelando…`;
+  lucide.createIcons();
+
+  const agora = new Date();
+  const dataHora = `${String(agora.getDate()).padStart(2,'0')}/${String(agora.getMonth()+1).padStart(2,'0')}/${agora.getFullYear()} ${String(agora.getHours()).padStart(2,'0')}:${String(agora.getMinutes()).padStart(2,'0')}`;
+  const nomeUser = state.perfil?.nome_completo || 'Sistema';
+
+  try {
+    const { error } = await supabaseClient
+      .from('suspensoes')
+      .update({
+        status_cancelamento: `CANCELADO por ${nomeUser} em ${dataHora} | Protocolo: ${protocolo}`,
+        observacao_cancelamento: observacao || null,
+        protocolo_prazo: s.protocolo_prazo || protocolo,
+      })
+      .eq('id', s.id);
+    if (error) throw error;
+
+    fecharModalCancelamento();
+    await carregarCancelamentos();
+    atualizarBadgeSuspensoes();
+  } catch (err) {
+    alertBox.textContent = 'Erro: ' + err.message;
+    alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+    alertBox.classList.remove('hidden');
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Confirmar Cancelamento';
+    lucide.createIcons();
+  }
+}
+
+/* ──── MODAL DETALHES ──── */
+async function verDetalhesSuspensao(id) {
+  const { data: s, error } = await supabaseClient
+    .from('suspensoes').select('*').eq('id', id).single();
+
+  if (error || !s) { alert('Erro ao carregar detalhes.'); return; }
+
+  const conteudo = $('suspDetalhesConteudo');
+  const isCancelado = String(s.status_cancelamento || '').toUpperCase().includes('CANCELADO');
+  const corStatus = isCancelado ? 'emerald' : 'red';
+
+  conteudo.innerHTML = `
+    <div class="border-b border-slate-100 pb-4 mb-5">
+      <div class="flex justify-between items-start gap-4">
+        <div>
+          <h4 class="text-lg font-black text-[#000033]">${escapeHTML(capitalizar(s.nome_titular) || '—')}</h4>
+          <p class="text-xs text-slate-500 mt-1">Linha: <strong class="font-mono">${escapeHTML(s.numero_linha || '—')}</strong></p>
+        </div>
+        <div class="text-right">
+          <span class="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase border bg-${corStatus}-50 text-${corStatus}-700 border-${corStatus}-200">
+            ${isCancelado ? 'Cancelado' : 'Aguardando'}
+          </span>
+          <p class="text-[10px] text-slate-400 mt-2">Registrado em ${s.data_hora ? new Date(s.data_hora).toLocaleDateString('pt-BR') : '—'}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+      <div class="bg-slate-50 rounded-xl p-3">
+        <p class="text-[10px] font-black text-slate-400 uppercase mb-1">CPF</p>
+        <p class="font-mono font-bold text-slate-800">${escapeHTML(s.cpf || '—')}</p>
+      </div>
+      <div class="bg-slate-50 rounded-xl p-3">
+        <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Mês Cancelar</p>
+        <p class="font-bold text-red-700">${escapeHTML(s.mes_cancelar || '—')}</p>
+      </div>
+      <div class="bg-slate-50 rounded-xl p-3">
+        <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Plano</p>
+        <p class="font-bold text-slate-800 uppercase text-xs">${escapeHTML(s.nome_plano || '—')}</p>
+      </div>
+      <div class="bg-slate-50 rounded-xl p-3">
+        <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Vencimento Fatura</p>
+        <p class="font-bold text-slate-800">${escapeHTML(s.data_vencimento || '—')}</p>
+      </div>
+      <div class="bg-slate-50 rounded-xl p-3">
+        <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Deixou Chip?</p>
+        <p class="font-bold text-slate-800">${escapeHTML(s.deixou_chip || '—')}</p>
+      </div>
+      <div class="bg-slate-50 rounded-xl p-3">
+        <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Vai querer chip?</p>
+        <p class="font-bold text-slate-800">${escapeHTML(s.querer_chip || '—')}</p>
+      </div>
+      <div class="bg-slate-50 rounded-xl p-3 md:col-span-2">
+        <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Endereço</p>
+        <p class="text-slate-700 text-xs">${escapeHTML(s.endereco || '—')}</p>
+      </div>
+      <div class="bg-slate-50 rounded-xl p-3 md:col-span-2">
+        <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Protocolo / Prazo</p>
+        <p class="font-mono text-slate-700 text-xs">${escapeHTML(s.protocolo_prazo || '—')}</p>
+      </div>
+      ${s.observacao ? `
+      <div class="bg-slate-50 rounded-xl p-3 md:col-span-2">
+        <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Observações</p>
+        <p class="text-slate-700 text-xs whitespace-pre-wrap">${escapeHTML(s.observacao)}</p>
+      </div>` : ''}
+      ${s.observacao_cancelamento ? `
+      <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 md:col-span-2">
+        <p class="text-[10px] font-black text-emerald-700 uppercase mb-1">Observação do Cancelamento</p>
+        <p class="text-emerald-800 text-xs whitespace-pre-wrap">${escapeHTML(s.observacao_cancelamento)}</p>
+      </div>` : ''}
+      ${s.codigo_cliente ? `
+      <div class="bg-slate-50 rounded-xl p-3 md:col-span-2">
+        <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Código do Cliente</p>
+        <p class="font-mono text-slate-700 text-xs">${escapeHTML(s.codigo_cliente)}</p>
+      </div>` : ''}
+    </div>
+  `;
+
+  $('modalSuspDetalhes').classList.remove('hidden');
+  lucide.createIcons();
+}
+
+function fecharModalDetalhesSusp() {
+  $('modalSuspDetalhes').classList.add('hidden');
+}
+
+/* ──── BUSCA ──── */
+async function buscarSuspensoes() {
+  const termo = $('suspBuscaInput').value.trim();
+  const resultArea = $('suspResultados');
+
+  if (termo.length < 3) {
+    resultArea.innerHTML = `
+      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-amber-700 text-sm font-medium text-center">
+        Digite pelo menos 3 caracteres.
+      </div>`;
+    return;
+  }
+
+  resultArea.innerHTML = `
+    <div class="bg-white p-12 rounded-2xl border border-slate-200 shadow-sm text-center">
+      <i data-lucide="loader-2" class="w-8 h-8 mx-auto text-[#0e8890] animate-spin mb-3"></i>
+      <p class="text-slate-500">Buscando…</p>
+    </div>`;
+  lucide.createIcons();
+
+  const termoNum = termo.replace(/\D/g, '');
+  const termoSeguro = termo.replace(/[%,]/g, '');
+
+  let query = supabaseClient.from('suspensoes').select('*').limit(50);
+  if (termoNum.length >= 3 && /^\d+$/.test(termoNum)) {
+    query = query.or(`cpf.ilike.%${termoNum}%,numero_linha.ilike.%${termoNum}%,nome_titular.ilike.%${termoSeguro}%`);
+  } else {
+    query = query.ilike('nome_titular', `%${termoSeguro}%`);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    resultArea.innerHTML = `<div class="bg-red-50 border border-red-200 rounded-2xl p-4 text-red-700 text-sm">Erro: ${escapeHTML(error.message)}</div>`;
+    return;
+  }
+
+  const lista = data || [];
+  if (!lista.length) {
+    resultArea.innerHTML = `
+      <div class="bg-white p-12 rounded-2xl border border-slate-200 shadow-sm text-center">
+        <i data-lucide="search-x" class="w-12 h-12 mx-auto text-slate-300 mb-3"></i>
+        <p class="text-slate-600 font-semibold">Nenhum registro encontrado</p>
+        <p class="text-xs text-slate-400 mt-1">Tente outro CPF, nome ou linha</p>
+      </div>`;
+    lucide.createIcons();
+    return;
+  }
+
+  resultArea.innerHTML = `
+    <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-3">
+      ${lista.length} ${lista.length === 1 ? 'registro encontrado' : 'registros encontrados'}
+    </p>
+    ${lista.map(s => cardSuspensaoHTML(s)).join('')}
+  `;
+  lucide.createIcons();
+}
+
+function cardSuspensaoHTML(s) {
+  const isCancelado = String(s.status_cancelamento || '').toUpperCase().includes('CANCELADO');
+  const corBorda = isCancelado ? 'border-l-emerald-500 bg-emerald-50/40' : 'border-l-red-500 bg-red-50/40';
+  const corStatus = isCancelado ? 'emerald' : 'red';
+
+  const chipInfo = String(s.deixou_chip || '').toUpperCase() === 'SIM'
+    ? (String(s.chip_devolvido || '').toUpperCase() === 'SIM'
+        ? '<span class="text-emerald-600 font-bold text-xs">✓ Chip devolvido</span>'
+        : '<span class="text-red-600 font-bold text-xs">⚠ Chip com a Loja</span>')
+    : '<span class="text-slate-400 text-xs">Cliente não deixou chip</span>';
+
+  return `
+    <div class="bg-white rounded-2xl border-l-4 ${corBorda} border border-slate-200 shadow-sm p-5">
+      <div class="flex justify-between items-start mb-3 gap-4">
+        <div>
+          <h4 class="font-black text-slate-800 uppercase text-sm">${escapeHTML(capitalizar(s.nome_titular) || '—')}</h4>
+          <p class="text-xs text-slate-500 font-mono mt-1">${escapeHTML(s.numero_linha || '—')}</p>
+        </div>
+        <span class="inline-block px-2.5 py-1 rounded-full text-[10px] font-black uppercase border bg-${corStatus}-50 text-${corStatus}-700 border-${corStatus}-200">
+          ${isCancelado ? 'Cancelamento Confirmado' : 'Aguardando Cancelamento'}
+        </span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+        <div>
+          <p class="text-[10px] font-black text-slate-400 uppercase mb-1">CPF</p>
+          <p class="font-mono text-slate-700">${escapeHTML(s.cpf || '—')}</p>
+        </div>
+        <div>
+          <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Status do Chip</p>
+          ${chipInfo}
+        </div>
+        <div>
+          <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Mês Cancelar</p>
+          <p class="font-bold text-slate-700">${escapeHTML(s.mes_cancelar || '—')}</p>
+        </div>
+        <div class="md:col-span-3">
+          <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Protocolo</p>
+          <p class="font-mono text-slate-700 text-xs">${escapeHTML(s.protocolo_prazo || '—')}</p>
+        </div>
+        ${s.status_cancelamento ? `
+        <div class="md:col-span-3 border-t border-slate-100 pt-2">
+          <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Status Detalhado</p>
+          <p class="text-slate-600 text-[11px]">${escapeHTML(s.status_cancelamento)}</p>
+        </div>` : ''}
+      </div>
+      <div class="flex justify-end mt-3 pt-3 border-t border-slate-100">
+        <button onclick="verDetalhesSuspensao(${s.id})"
+          class="text-[#0e8890] hover:text-[#0b6c72] text-[11px] font-black uppercase flex items-center gap-1">
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i> Ver detalhes completos
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+/* ──── BADGE ──── */
+async function atualizarBadgeSuspensoes() {
+  const { count } = await supabaseClient
+    .from('suspensoes')
+    .select('*', { count: 'exact', head: true })
+    .eq('status_cancelamento', 'AGUARDANDO');
+
+  const badge = $('badgeSuspensoes');
+  if (!badge) return;
+  if (count > 0) {
+    badge.textContent = count;
+    badge.classList.remove('hidden');
+    badge.classList.add('flex');
+  } else {
+    badge.classList.add('hidden');
+    badge.classList.remove('flex');
+  }
+}
+    
     /* ==========================================================
        BOOT
        ========================================================== */
