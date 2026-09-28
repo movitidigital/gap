@@ -1958,6 +1958,74 @@ async function atualizarBadgeGestao() {
 
 // Alias para compatibilidade
 const atualizarBadgeBoasVindas = atualizarBadgeGestao;
+/* ==========================================================
+   RENDERIZAÇÃO — Thales + Boas-Vindas
+   ========================================================== */
+
+function linhaContratoHTML(c) {
+  const tel = normalizarTelefone(c.telefone);
+  const prov = normalizarTelefone(c.telefone_provisorio);
+  const isPort = String(c.modalidade || '').toUpperCase().includes('PORT');
+
+  return `
+    <tr class="hover:bg-indigo-50/50 transition-colors border-b border-slate-100 text-xs">
+      <td class="px-4 py-3 text-slate-500 font-bold">${c.data_venda ? fmtBR(c.data_venda) : '—'}</td>
+      <td class="px-4 py-3">
+        <div class="font-mono font-bold text-indigo-700 cursor-pointer hover:underline"
+             onclick="copiarTexto('${tel}', this)">${escapeHTML(tel || '—')}</div>
+        ${isPort && prov ? `<div class="text-[9px] text-amber-600 font-bold mt-0.5">⚡ PROVISÓRIO (${escapeHTML(prov)})</div>` : ''}
+      </td>
+      <td class="px-4 py-3 font-mono text-[10px] text-slate-500">${escapeHTML(c.imei || '—')}</td>
+      <td class="px-4 py-3 text-center">
+        <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${String(c.fidel_ap || '').toUpperCase() === 'SIM' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-50 text-slate-400 border-slate-200'}">
+          ${escapeHTML(String(c.fidel_ap || 'NÃO').toUpperCase())}
+        </span>
+      </td>
+      <td class="px-4 py-3 text-[10px] text-slate-600 uppercase">${escapeHTML(c.modalidade || '—')}</td>
+      <td class="px-4 py-3 text-[10px] text-slate-500 uppercase">${escapeHTML(c.consultor || '—')}</td>
+      <td class="px-4 py-3 font-mono text-[10px] text-slate-500">${escapeHTML(normalizarCPF(c.cpf))}</td>
+      <td class="px-4 py-3 font-bold text-slate-800 uppercase">${escapeHTML(capitalizar(c.nome) || '—')}</td>
+      <td class="px-4 py-3 text-center">
+        <button onclick="abrirModalSaneamento(${c.id})"
+          class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-tighter">
+          Verificação
+        </button>
+      </td>
+    </tr>
+  `;
+}
+
+function linhaBoasVindasHTML(c) {
+  const tel = normalizarTelefone(c.telefone);
+  const telFmt = tel.length === 11 ? `(${tel.slice(0,2)}) ${tel.slice(2,7)}-${tel.slice(7)}` : tel;
+  const venc = c.data_vencimento_base || '—';
+  const temUserLine = String(c.usuario_linha || '').trim() !== '' && c.status_boas_vindas === 'USUARIO DEFINIDO';
+
+  const btn = temUserLine
+    ? `<button onclick="enviarBoasVindas(${c.id})"
+        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase">
+        📱 Enviar WhatsApp
+      </button>`
+    : `<button onclick="abrirModalUserLine(${c.id})"
+        class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase">
+        Usuário da Linha
+      </button>`;
+
+  return `
+    <tr class="hover:bg-teal-50/50 transition-colors border-b border-slate-100 text-xs">
+      <td class="px-4 py-3">
+        <div class="font-bold text-slate-800 uppercase">${escapeHTML(capitalizar(c.nome))}</div>
+        <div class="text-[9px] font-bold text-teal-600 uppercase mt-0.5">BASE ${escapeHTML(c.ano_base || '—')}</div>
+      </td>
+      <td class="px-4 py-3 font-mono font-bold text-slate-700">${escapeHTML(telFmt)}</td>
+      <td class="px-4 py-3 text-[10px] text-slate-600 uppercase">${escapeHTML(c.modalidade || '—')}</td>
+      <td class="px-4 py-3 text-[10px] text-[#E60000] font-bold uppercase">${escapeHTML(c.plano || '—')}</td>
+      <td class="px-4 py-3 text-[10px] text-slate-500 uppercase">${escapeHTML(c.consultor || '—')}</td>
+      <td class="px-4 py-3 font-bold text-slate-700">Dia ${escapeHTML(venc)}</td>
+      <td class="px-4 py-3 text-center">${btn}</td>
+    </tr>
+  `;
+}
     
     /* ==========================================================
        BOOT
