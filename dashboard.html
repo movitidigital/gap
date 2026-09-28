@@ -956,11 +956,22 @@
       return new Date(+m[3], +m[2] - 1, +m[1]);
     }
 
-    function fmtBR(date) {
-      if (!date) return '—';
-      const d = new Date(date);
-      return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-    }
+function fmtBR(date) {
+  if (!date) return '—';
+
+  // 1. String ISO "YYYY-MM-DD" → parseia direto, sem timezone
+  if (typeof date === 'string') {
+    const iso = date.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (iso) return `${iso[3]}/${iso[2]}/${iso[1]}`;
+    // Já vem em BR?
+    if (/^\d{2}\/\d{2}\/\d{4}/.test(date)) return date.slice(0, 10);
+  }
+
+  // 2. Date object → usa horário local
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '—';
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+}
 
     function statusFatura(txt) {
       const t = String(txt || '').toUpperCase();
@@ -2802,18 +2813,25 @@ async function processarDatasys(input) {
       const rawData = r[6];
       if (!rawData) { ignorados.semData++; continue; }
 
-      let dtVenda = null;
-      if (rawData instanceof Date) {
-        dtVenda = rawData;
+      // Extrai direto como string ISO, sem passar por Date (evita shift de timezone)
+      let dtVendaISO = null;
+      if (rawData instanceof Date && !isNaN(rawData.getTime())) {
+        // SheetJS retorna datas em UTC → pega os campos UTC
+        const y = rawData.getUTCFullYear();
+        const m = String(rawData.getUTCMonth() + 1).padStart(2, '0');
+        const d = String(rawData.getUTCDate()).padStart(2, '0');
+        dtVendaISO = `${y}-${m}-${d}`;
       } else {
         const s = String(rawData).trim();
         const m = s.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
         if (m) {
           const ano = m[3].length === 2 ? 2000 + +m[3] : +m[3];
-          dtVenda = new Date(ano, +m[2] - 1, +m[1]);
+          const mes = String(+m[2]).padStart(2, '0');
+          const dia = String(+m[1]).padStart(2, '0');
+          dtVendaISO = `${ano}-${mes}-${dia}`;
         }
       }
-      if (!dtVenda || isNaN(dtVenda.getTime())) { ignorados.semData++; continue; }
+      if (!dtVendaISO) { ignorados.semData++; continue; }
 
       const nome = String(r[38] || '').trim();
       if (!nome) { ignorados.semNome++; continue; }
