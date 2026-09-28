@@ -2026,6 +2026,236 @@ function linhaBoasVindasHTML(c) {
     </tr>
   `;
 }
+/* ==========================================================
+   MODAL SANEAMENTO (Verificação no Thales)
+   ========================================================== */
+
+// Máscara DD/MM/AAAA
+function mascaraData(el) {
+  let v = el.value.replace(/\D/g, '');
+  if (v.length > 8) v = v.substring(0, 8);
+  if (v.length > 4) v = v.substring(0, 2) + '/' + v.substring(2, 4) + '/' + v.substring(4);
+  else if (v.length > 2) v = v.substring(0, 2) + '/' + v.substring(2);
+  el.value = v;
+}
+
+// Regra de vencimentos TIM (do GAS original)
+function calcularFaturasTIM(dataVenda, diaVenc) {
+  if (diaVenc === 'CC') return ['CC', 'CC', 'CC'];
+  if (!diaVenc) return ['N/A', 'N/A', 'N/A'];
+
+  const diaVencNum = parseInt(diaVenc, 10);
+  const venda = new Date(dataVenda);
+  if (isNaN(venda.getTime())) return ['N/A', 'N/A', 'N/A'];
+
+  const regra = { 1: 7, 7: 14, 10: 19, 12: 19, 15: 25, 20: 1, 25: 1 };
+  const diaRenov = regra[diaVencNum];
+  if (!diaRenov) return ['N/A', 'N/A', 'N/A'];
+
+  let dataRenov = new Date(venda.getFullYear(), venda.getMonth(), diaRenov);
+  if (diaRenov === 1) {
+    dataRenov.setMonth(dataRenov.getMonth() + 1);
+  } else if (dataRenov <= venda) {
+    dataRenov.setMonth(dataRenov.getMonth() + 1);
+  }
+
+  let dataF1 = new Date(dataRenov.getFullYear(), dataRenov.getMonth(), diaVencNum);
+  if (dataF1 <= dataRenov) dataF1.setMonth(dataF1.getMonth() + 1);
+
+  const dataF2 = new Date(dataF1.getFullYear(), dataF1.getMonth() + 1, diaVencNum);
+  const dataF3 = new Date(dataF1.getFullYear(), dataF1.getMonth() + 2, diaVencNum);
+
+  const fmt = (d) => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  return [fmt(dataF1), fmt(dataF2), fmt(dataF3)];
+}
+
+// Abre o modal com a seção correta conforme modalidade
+function abrirModalSaneamento(id) {
+  const c = (state.contratos || []).find(x => x.id === id);
+  if (!c) {
+    alert('Contrato não encontrado. Recarregue a lista.');
+    return;
+  }
+
+  state.saneamentoAtual = c;
+
+  $('modalAba').value = c.ano_base || '';
+  $('modalRow').value = c.id;
+  $('nomeClienteModal').textContent = capitalizar(c.nome);
+
+  $('modalInfoLinha').textContent = c.telefone || '---';
+  $('modalInfoCpf').textContent = normalizarCPF(c.cpf);
+
+  const modalidade = String(c.modalidade || '').toUpperCase().trim();
+  const fidelAp = String(c.fidel_ap || '').toUpperCase().trim();
+
+  const temAparelho = modalidade.includes('APARELHO');
+  const temPlano = modalidade.includes('MIGRAÇÃO') || modalidade.includes('ATIVAÇÃO') || modalidade.includes('PORTABILIDADE');
+
+  // Reset visibilidade
+  ['camposPadraoModal', 'secaoCombo', 'secaoTroca', 'secaoMartim'].forEach(id => {
+    const el = $(id);
+    if (el) el.classList.add('hidden');
+  });
+
+  if (temAparelho && temPlano) {
+    // COMBO
+    $('secaoCombo').classList.remove('hidden');
+    $('comboVencimento').value = '';
+    $('comboNascimento').value = c.data_nascimento ? fmtBR(c.data_nascimento) : '';
+    $('comboStatusPlano').value = '';
+    $('comboStatusThales').value = '';
+    document.querySelectorAll('input[name="comboCbcf"]').forEach(r => r.checked = false);
+  } else if (modalidade === 'TROCA DE APARELHO' && fidelAp === 'SIM') {
+    // TROCA
+    $('secaoTroca').classList.remove('hidden');
+    document.querySelectorAll('input[name="checkCbcf"]').forEach(r => r.checked = false);
+    document.querySelectorAll('input[name="checkThales"]').forEach(r => r.checked = false);
+  } else if (temAparelho && fidelAp === 'NÃO') {
+    // MARTIM
+    $('secaoMartim').classList.remove('hidden');
+    document.querySelectorAll('input[name="checkMartim"]').forEach(r => r.checked = false);
+  } else {
+    // PADRÃO
+    $('camposPadraoModal').classList.remove('hidden');
+    $('modalVencimento').value = c.data_vencimento_base || '';
+    $('modalNascimento').value = c.data_nascimento ? fmtBR(c.data_nascimento) : '';
+    $('modalStatus').value = '';
+    $('modalStatus').disabled = false;
+
+    if (c.data_vencimento_base === 'CC') {
+      $('modalStatus').value = 'LIBERADO';
+      $('modalStatus').disabled = true;
+    }
+  }
+
+  $('saneamentoAlert').classList.add('hidden');
+  $('modalSaneamento').classList.remove('hidden');
+  lucide.createIcons();
+}
+
+function fecharModalSaneamento() {
+  $('modalSaneamento').classList.add('hidden');
+  state.saneamentoAtual = null;
+}
+
+async function salvarSaneamento() {
+  const c = state.saneamentoAtual;
+  if (!c) return;
+
+  const alertBox = $('saneamentoAlert');
+  const btn = $('btnSalvarSaneamento');
+
+  const combo = !$('secaoCombo').classList.contains('hidden');
+  const troca = !$('secaoTroca').classList.contains('hidden');
+  const martim = !$('secaoMartim').classList.contains('hidden');
+  const padrao = !$('camposPadraoModal').classList.contains('hidden');
+
+  let update = {};
+
+  if (padrao) {
+    const venc = $('modalVencimento').value;
+    const nasc = $('modalNascimento').value.trim();
+    const status = $('modalStatus').value;
+
+    if (!venc || !nasc || !status) {
+      alertBox.textContent = 'Preencha Vencimento, Nascimento e Status.';
+      alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+      alertBox.classList.remove('hidden');
+      return;
+    }
+
+    const [fp, fq, fr] = calcularFaturasTIM(c.data_venda, venc);
+    const nascISO = parseBR(nasc) ? parseBR(nasc).toISOString().slice(0,10) : null;
+
+    update = {
+      data_vencimento_base: venc,
+      data_nascimento: nascISO,
+      status_thales: status,
+      fatura_p: fp, fatura_q: fq, fatura_r: fr,
+      status_saneamento: status === 'LIBERADO' ? 'SANEADO' : 'PENDENTE'
+    };
+  } else if (combo) {
+    const cbcf = document.querySelector('input[name="comboCbcf"]:checked')?.value;
+    const venc = $('comboVencimento').value;
+    const nasc = $('comboNascimento').value.trim();
+    const sPlano = $('comboStatusPlano').value;
+    const sThales = $('comboStatusThales').value;
+
+    if (!cbcf || !venc || !nasc || !sPlano || !sThales) {
+      alertBox.textContent = 'Preencha todos os campos do Combo.';
+      alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+      alertBox.classList.remove('hidden');
+      return;
+    }
+
+    const [fp, fq, fr] = calcularFaturasTIM(c.data_venda, venc);
+    const statusFinal = (sPlano === 'LIBERADO' && sThales === 'LIBERADO' && cbcf === 'SIM') ? 'LIBERADO' : 'VERIFICAR';
+
+    update = {
+      data_vencimento_base: venc,
+      data_nascimento: parseBR(nasc)?.toISOString().slice(0,10) || null,
+      status_thales: statusFinal,
+      fatura_p: fp, fatura_q: fq, fatura_r: fr,
+      status_saneamento: statusFinal === 'LIBERADO' ? 'SANEADO' : 'PENDENTE'
+    };
+  } else if (troca) {
+    const cbcf = document.querySelector('input[name="checkCbcf"]:checked')?.value;
+    const thales = document.querySelector('input[name="checkThales"]:checked')?.value;
+
+    if (!cbcf || !thales) {
+      alertBox.textContent = 'Responda CBCF e Thales.';
+      alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+      alertBox.classList.remove('hidden');
+      return;
+    }
+
+    const statusFinal = (cbcf === 'SIM' && thales === 'SIM') ? 'LIBERADO' : 'VERIFICAR';
+    update = {
+      status_thales: statusFinal,
+      fatura_p: 'N/A', fatura_q: 'N/A', fatura_r: 'N/A',
+      data_vencimento_base: 'N/A',
+      data_nascimento: null,
+      status_saneamento: statusFinal === 'LIBERADO' ? 'SANEADO' : 'PENDENTE'
+    };
+  } else if (martim) {
+    const m = document.querySelector('input[name="checkMartim"]:checked')?.value;
+    if (!m) {
+      alertBox.textContent = 'Responda se a linha está no nome do cliente.';
+      alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+      alertBox.classList.remove('hidden');
+      return;
+    }
+    update = {
+      status_thales: m === 'SIM' ? 'LIBERADO' : 'VERIFICAR',
+      status_saneamento: m === 'SIM' ? 'SANEADO' : 'PENDENTE',
+      fatura_p: 'N/A', fatura_q: 'N/A', fatura_r: 'N/A',
+      data_vencimento_base: 'N/A'
+    };
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Gravando…`;
+  lucide.createIcons();
+
+  try {
+    const { error } = await supabaseClient
+      .from('clientes_faturas')
+      .update(update)
+      .eq('id', c.id);
+    if (error) throw error;
+
+    fecharModalSaneamento();
+    await carregarGestao();
+  } catch (err) {
+    alertBox.textContent = 'Erro: ' + err.message;
+    alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+    alertBox.classList.remove('hidden');
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Gravar Dados';
+    lucide.createIcons();
+  }
+}
     
     /* ==========================================================
        BOOT
