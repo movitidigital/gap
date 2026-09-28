@@ -604,6 +604,26 @@
       return st.every(s => s === 'pago' || s === 'cc');
     }
 
+    // Cliente tem alguma fatura marcada como prejuízo?
+function temPrejuizoAtivo(c) {
+  return [c.fatura_p, c.fatura_q, c.fatura_r]
+    .some(v => statusFatura(v) === 'prejuizo');
+}
+
+// Dias de atraso MÁXIMO entre as faturas abertas (P, Q, R)
+function maiorAtraso(c) {
+  let maior = 0;
+  [c.fatura_p, c.fatura_q, c.fatura_r].forEach(v => {
+    const st = statusFatura(v);
+    if (st !== 'pendente' && st !== 'enviada') return;
+    const data = extrairDataFatura(v);
+    if (!data) return;
+    const d = diasAtraso(data);
+    if (d > maior) maior = d;
+  });
+  return maior;
+}
+    
     function deveOcultar(c) {
       return String(c.modalidade || '').toUpperCase().includes('TROCA DE APARELHO');
     }
@@ -837,45 +857,81 @@
     /* ==========================================================
        FATURAS — FILTRO + RENDER
        ========================================================== */
-    function filtrar() {
-      state.filtros.texto = $('inputBusca').value.toLowerCase().trim();
-      state.filtros.situacao = $('selectSituacao').value;
+function filtrar() {
+  state.filtros.texto = $('inputBusca').value.toLowerCase().trim();
+  state.filtros.situacao = $('selectSituacao').value;
 
-      const termo = state.filtros.texto;
-      const termoNum = termo.replace(/\D/g, '');
+  const termo = state.filtros.texto;
+  const termoNum = termo.replace(/\D/g, '');
 
-      const filtrados = state.clientes.filter(c => {
-        if (deveOcultar(c)) return false;
+  const filtrados = state.clientes.filter(c => {
+    // 1. Oculta TROCA DE APARELHO
+    if (deveOcultar(c)) return false;
 
-        if (termo) {
-          const nome = String(c.nome || '').toLowerCase();
-          const cpf = normalizarCPF(c.cpf);
-          const tel = normalizarTelefone(c.telefone);
-          const alt = normalizarTelefone(c.telefone_alt);
-          const cons = String(c.consultor || '').toLowerCase();
-          const matchTexto = nome.includes(termo) || cons.includes(termo);
-          const matchNum = termoNum && (cpf.includes(termoNum) || tel.includes(termoNum) || alt.includes(termoNum));
-          if (!matchTexto && !matchNum) return false;
-        }
-
-        const quitado = clienteQuitado(c);
-        if (state.filtros.situacao === 'aberto' && quitado) return false;
-        if (state.filtros.situacao === 'pagos' && !quitado) return false;
-        return true;
-      });
-
-      $('contadorResultados').textContent =
-        `Exibindo ${filtrados.length} registros (Troca de Aparelho ocultada)`;
-
-      const ordenados = [...filtrados].sort((a, b) => {
-        const pa = prioridadeInfo(a).score;
-        const pb = prioridadeInfo(b).score;
-        if (pa !== pb) return pb - pa;
-        return new Date(b.data_venda || 0) - new Date(a.data_venda || 0);
-      });
-
-      renderTabela(ordenados);
+    // 2. Filtro de texto (Nome, CPF, Linha, Consultor)
+    if (termo) {
+      const nome = String(c.nome || '').toLowerCase();
+      const cpf = normalizarCPF(c.cpf);
+      const tel = normalizarTelefone(c.telefone);
+      const alt = normalizarTelefone(c.telefone_alt);
+      const cons = String(c.consultor || '').toLowerCase();
+      const matchTexto = nome.includes(termo) || cons.includes(termo);
+      const matchNum = termoNum && (cpf.includes(termoNum) || tel.includes(termoNum) || alt.includes(termoNum));
+      if (!matchTexto && !matchNum) return false;
     }
+
+    // 3. Filtro por situação
+    const quitado = clienteQuitado(c);
+    const temPrej = temPrejuizoAtivo(c);
+    const atraso = maiorAtraso(c);
+
+    switch (state.filtros.situacao) {
+      case 'aberto':
+        // Em Aberto: só o que precisa cobrança ativa — fora quitados E fora prejuízo
+        return !quitado && !temPrej;
+
+      case 'atrasados':
+        // Só Atrasados: só quem tem pelo menos 1 fatura vencida e não paga
+        return atraso > 0 && !quitado && !temPrej;
+
+      case 'prejuizo':
+        // Só Prejuízo: quem já foi marcado como prejuízo
+        return temPrej;
+
+      case 'pagos':
+        // Pagos / CC: só quitados
+        return quitado;
+
+      case 'todos':
+      default:
+        return true;
+    }
+  });
+
+  // Contador com detalhe de atraso
+  const contAtrasados = filtrados.filter(c => maiorAtraso(c) > 0).length;
+  $('contadorResultados').textContent =
+    `Exibindo ${filtrados.length} registros · ${contAtrasados} em atraso (Troca de Aparelho ocultada)`;
+
+  // 🎯 ORDENAÇÃO POR ATRASO (dias DESC) e depois por prioridade
+  const ordenados = [...filtrados].sort((a, b) => {
+    const atrasoA = maiorAtraso(a);
+    const atrasoB = maiorAtraso(b);
+
+    // 1º critério: mais dias de atraso no topo
+    if (atrasoA !== atrasoB) return atrasoB - atrasoA;
+
+    // 2º critério: prioridade geral (tier + score)
+    const pa = prioridadeInfo(a).score;
+    const pb = prioridadeInfo(b).score;
+    if (pa !== pb) return pb - pa;
+
+    // 3º critério: venda mais recente
+    return new Date(b.data_venda || 0) - new Date(a.data_venda || 0);
+  });
+
+  renderTabela(ordenados);
+}
 
     function renderTabela(lista) {
       const tbody = $('tabelaFaturas');
