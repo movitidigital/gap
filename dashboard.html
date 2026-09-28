@@ -17,7 +17,6 @@
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-    /* Badges — CSS puro (o CDN do Tailwind NÃO suporta @apply) */
     .badge { display:inline-flex; align-items:center; gap:4px;
              padding:3px 8px; border-radius:6px; border-width:1px;
              font-size:10px; text-transform:uppercase;
@@ -53,9 +52,9 @@
           <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span class="text-sm font-medium">Dashboard</span>
         </button>
         <button onclick="navegar('clientes')" data-nav="clientes"
-  class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer">
-  <i data-lucide="search" class="w-5 h-5"></i><span class="text-sm font-medium">Clientes TIM</span>
-</button>
+          class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer">
+          <i data-lucide="search" class="w-5 h-5"></i><span class="text-sm font-medium">Clientes TIM</span>
+        </button>
         <button onclick="navegar('faturas')" data-nav="faturas"
           class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer">
           <i data-lucide="file-text" class="w-5 h-5"></i><span class="text-sm font-medium">Faturas</span>
@@ -109,59 +108,50 @@
     <!-- VIEWS -->
     <div class="flex-1 overflow-y-auto p-4 md:p-8 relative">
 
-      
       <!-- ===== DASHBOARD ===== -->
       <div id="view-dashboard" class="animate-fade-in">
-     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-
-  <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex justify-between items-start">
-    <div>
-      <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Clientes na Base</p>
-      <h3 id="statTotal" class="text-3xl font-bold text-[#000033]">—</h3>
-    </div>
-    <div class="p-3 bg-blue-50 text-blue-500 rounded-xl"><i data-lucide="users" class="w-6 h-6"></i></div>
-  </div>
-
-  <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex justify-between items-start">
-    <div>
-      <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Faturas Pendentes</p>
-      <h3 id="statPendentes" class="text-3xl font-bold text-[#000033]">—</h3>
-    </div>
-    <div class="p-3 bg-amber-50 text-amber-500 rounded-xl"><i data-lucide="alert-circle" class="w-6 h-6"></i></div>
-  </div>
-
-  <!-- NOVO CARD -->
-  <div class="bg-white rounded-2xl p-6 border border-red-100 shadow-sm flex justify-between items-start ring-2 ring-red-100">
-    <div>
-      <p class="text-xs font-semibold text-red-500 uppercase mb-1 flex items-center gap-1">
-        <i data-lucide="alert-triangle" class="w-3 h-3"></i> Em Risco (30+ dias)
-      </p>
-      <h3 id="statRisco" class="text-3xl font-bold text-red-600">—</h3>
-    </div>
-    <div class="p-3 bg-red-50 text-red-500 rounded-xl"><i data-lucide="alert-octagon" class="w-6 h-6"></i></div>
-  </div>
-
-  <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex justify-between items-start">
-    <div>
-      <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Status</p>
-      <h3 class="text-3xl font-bold text-emerald-500">Online</h3>
-    </div>
-    <div class="p-3 bg-emerald-50 text-emerald-500 rounded-xl"><i data-lucide="server" class="w-6 h-6"></i></div>
-  </div>
-</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex justify-between items-start">
+            <div>
+              <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Clientes na Base</p>
+              <h3 id="statTotal" class="text-3xl font-bold text-[#000033]">—</h3>
+            </div>
+            <div class="p-3 bg-blue-50 text-blue-500 rounded-xl"><i data-lucide="users" class="w-6 h-6"></i></div>
+          </div>
+          <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex justify-between items-start">
+            <div>
+              <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Faturas Pendentes</p>
+              <h3 id="statPendentes" class="text-3xl font-bold text-[#000033]">—</h3>
+            </div>
+            <div class="p-3 bg-amber-50 text-amber-500 rounded-xl"><i data-lucide="alert-circle" class="w-6 h-6"></i></div>
+          </div>
+          <div class="bg-white rounded-2xl p-6 border border-red-100 shadow-sm flex justify-between items-start ring-2 ring-red-100">
+            <div>
+              <p class="text-xs font-semibold text-red-500 uppercase mb-1 flex items-center gap-1">
+                <i data-lucide="alert-triangle" class="w-3 h-3"></i> Em Risco (30+ dias)
+              </p>
+              <h3 id="statRisco" class="text-3xl font-bold text-red-600">—</h3>
+            </div>
+            <div class="p-3 bg-red-50 text-red-500 rounded-xl"><i data-lucide="alert-octagon" class="w-6 h-6"></i></div>
+          </div>
+          <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex justify-between items-start">
+            <div>
+              <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Status</p>
+              <h3 class="text-3xl font-bold text-emerald-500">Online</h3>
+            </div>
+            <div class="p-3 bg-emerald-50 text-emerald-500 rounded-xl"><i data-lucide="server" class="w-6 h-6"></i></div>
+          </div>
+        </div>
       </div>
 
       <!-- ===== FATURAS ===== -->
       <div id="view-faturas" class="hidden animate-fade-in">
-
-        <!-- Filtros -->
         <div class="bg-white p-4 md:p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
           <div class="relative w-full md:w-80">
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
             <input type="text" id="inputBusca" oninput="filtrar()" placeholder="Buscar Cliente, CPF ou Linha..."
               class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-[#0e8890] transition-all">
           </div>
-
           <div class="flex flex-wrap gap-3 w-full md:w-auto items-center">
             <div class="flex items-center gap-2">
               <span class="text-xs font-semibold text-slate-500 uppercase">Situação:</span>
@@ -172,7 +162,6 @@
                 <option value="pagos">Pagos / CC</option>
               </select>
             </div>
-
             <button onclick="abrirModalImportacao()"
               class="bg-slate-900 hover:bg-[#000033] text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm transition-colors flex items-center gap-2">
               <i data-lucide="upload-cloud" class="w-4 h-4"></i><span class="hidden sm:inline">Importar</span>
@@ -180,7 +169,6 @@
           </div>
         </div>
 
-        <!-- Tabela -->
         <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
           <div class="px-6 py-3 bg-slate-50 border-b border-slate-100 text-xs font-semibold text-slate-500 flex justify-between items-center">
             <span id="contadorResultados">Carregando registros…</span>
@@ -206,7 +194,7 @@
             </table>
           </div>
 
-     <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex flex-wrap items-center gap-4 text-[11px] text-slate-500">
+          <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex flex-wrap items-center gap-4 text-[11px] text-slate-500">
             <span class="font-semibold uppercase tracking-wider">Legenda:</span>
             <span class="flex items-center gap-1"><span class="badge badge-pendente">dd/mm</span> Pendente</span>
             <span class="flex items-center gap-1"><span class="badge badge-enviada">Enviada</span> Cobrança enviada</span>
@@ -215,7 +203,36 @@
             <span class="flex items-center gap-1"><span class="badge badge-prejuizo">Prejuízo</span> Registrada</span>
             <span class="flex items-center gap-1"><span class="badge badge-cc">CC</span> Débito automático</span>
           </div>
-          
+        </div>
+      </div>
+
+      <!-- ===== CLIENTES TIM ===== -->
+      <div id="view-clientes" class="hidden animate-fade-in">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
+          <div class="relative">
+            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+            <input type="text" id="inputBuscaClientes"
+              oninput="debounceBuscarClientes()"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();buscarClientes();}"
+              placeholder="Buscar por Nome, CPF, Número da Linha ou Consultor..."
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-3.5 text-sm focus:outline-none focus:border-[#0e8890] focus:ring-2 focus:ring-[#0e8890]/20 transition-all"
+              autocomplete="off">
+          </div>
+          <div class="flex justify-between items-center mt-3 text-xs text-slate-500 flex-wrap gap-2">
+            <span id="clientesContador" class="font-medium">Digite ao menos 2 caracteres para buscar</span>
+            <span class="text-slate-400 flex items-center gap-1">
+              <i data-lucide="info" class="w-3 h-3"></i>
+              Busca em Nome, CPF, Linha e Consultor · Base total: <strong id="clientesBaseTotal" class="text-slate-600">—</strong>
+            </span>
+          </div>
+        </div>
+
+        <div id="clientesResultados" class="space-y-4">
+          <div class="bg-white p-12 rounded-2xl border border-dashed border-slate-200 text-center">
+            <i data-lucide="search" class="w-12 h-12 mx-auto text-slate-300 mb-3"></i>
+            <p class="text-slate-500 font-medium">Use a barra acima para pesquisar</p>
+            <p class="text-xs text-slate-400 mt-1">Busca em toda a base histórica de clientes TIM</p>
+          </div>
         </div>
       </div>
 
@@ -228,39 +245,6 @@
         </div>
       </div>
 
-      <!-- ===== CLIENTES TIM (BASE GERAL) ===== -->
-<div id="view-clientes" class="hidden animate-fade-in">
-
-  <!-- Barra de busca -->
-  <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
-    <div class="relative">
-      <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
-      <input type="text" id="inputBuscaClientes"
-        oninput="debounceBuscarClientes()"
-        onkeydown="if(event.key==='Enter'){event.preventDefault();buscarClientes();}"
-        placeholder="Buscar por Nome, CPF, Número da Linha ou Consultor..."
-        class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-3.5 text-sm focus:outline-none focus:border-[#0e8890] focus:ring-2 focus:ring-[#0e8890]/20 transition-all"
-        autocomplete="off">
-    </div>
-    <div class="flex justify-between items-center mt-3 text-xs text-slate-500 flex-wrap gap-2">
-      <span id="clientesContador" class="font-medium">Digite ao menos 2 caracteres para buscar</span>
-      <span class="text-slate-400 flex items-center gap-1">
-        <i data-lucide="info" class="w-3 h-3"></i>
-        Busca em Nome, CPF, Linha e Consultor · Base total: <strong id="clientesBaseTotal" class="text-slate-600">—</strong>
-      </span>
-    </div>
-  </div>
-
-  <!-- Resultados -->
-  <div id="clientesResultados" class="space-y-4">
-    <div class="bg-white p-12 rounded-2xl border border-dashed border-slate-200 text-center">
-      <i data-lucide="search" class="w-12 h-12 mx-auto text-slate-300 mb-3"></i>
-      <p class="text-slate-500 font-medium">Use a barra acima para pesquisar</p>
-      <p class="text-xs text-slate-400 mt-1">Busca em toda a base histórica de clientes TIM</p>
-    </div>
-  </div>
-
-</div>
       <!-- ===== PROSPECÇÃO (placeholder) ===== -->
       <div id="view-prospeccao" class="hidden animate-fade-in">
         <div class="bg-white p-12 rounded-2xl border border-slate-200 shadow-sm text-center text-slate-500">
@@ -311,49 +295,46 @@
         </h3>
         <button onclick="fecharModalFatura()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-    <div class="p-6 space-y-3">
+      <div class="p-6 space-y-3">
 
-  <!-- Info básica -->
-  <div class="bg-slate-50 rounded-xl p-3 text-sm">
-    <p class="font-semibold text-slate-800" id="mfCliente">—</p>
-    <p class="text-xs text-slate-500 mt-1">
-      <span id="mfLinha">—</span> · <span id="mfFatura">—</span> · venc. <strong id="mfVenc">—</strong>
-    </p>
-  </div>
+        <div class="bg-slate-50 rounded-xl p-3 text-sm">
+          <p class="font-semibold text-slate-800" id="mfCliente">—</p>
+          <p class="text-xs text-slate-500 mt-1">
+            <span id="mfLinha">—</span> · <span id="mfFatura">—</span> · venc. <strong id="mfVenc">—</strong>
+          </p>
+        </div>
 
-  <!-- Banner de risco (só aparece quando 30+ dias) -->
-  <div id="mfAlertaRisco" class="hidden bg-red-50 border-2 border-red-200 rounded-xl p-3">
-    <p class="font-bold text-red-700 flex items-center gap-2 text-sm">
-      <i data-lucide="alert-triangle" class="w-4 h-4"></i>
-      Fatura em zona de PREJUÍZO
-    </p>
-    <p class="text-xs text-red-600 mt-1 leading-relaxed">
-      Esta fatura está em atraso há <strong id="mfDiasAtraso" class="text-red-700">—</strong>.
-      A partir de <strong>30 dias</strong> de atraso, o valor impacta negativamente os indicadores da loja.
-    </p>
-    <p class="text-[11px] text-red-500 mt-2 italic">
-      Escolha abaixo: receber pagamento (com atraso) ou registrar como prejuízo contábil.
-    </p>
-  </div>
+        <div id="mfAlertaRisco" class="hidden bg-red-50 border-2 border-red-200 rounded-xl p-3">
+          <p class="font-bold text-red-700 flex items-center gap-2 text-sm">
+            <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+            Fatura em zona de PREJUÍZO
+          </p>
+          <p class="text-xs text-red-600 mt-1 leading-relaxed">
+            Esta fatura está em atraso há <strong id="mfDiasAtraso" class="text-red-700">—</strong>.
+            A partir de <strong>30 dias</strong> de atraso, o valor impacta negativamente os indicadores da loja.
+          </p>
+          <p class="text-[11px] text-red-500 mt-2 italic">
+            Escolha abaixo: receber pagamento (com atraso) ou registrar como prejuízo contábil.
+          </p>
+        </div>
 
-  <!-- AÇÕES -->
-  <button id="mfBtnCobrar" onclick="acaoCobrar()"
-    class="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold text-sm transition-colors">
-    <i data-lucide="message-circle" class="w-4 h-4"></i> Enviar Cobrança (WhatsApp)
-  </button>
+        <button id="mfBtnCobrar" onclick="acaoCobrar()"
+          class="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold text-sm transition-colors">
+          <i data-lucide="message-circle" class="w-4 h-4"></i> Enviar Cobrança (WhatsApp)
+        </button>
 
-  <button id="mfBtnPagar" onclick="acaoPagar()"
-    class="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold text-sm transition-colors">
-    <i data-lucide="check-circle-2" class="w-4 h-4"></i> Marcar como PAGA
-  </button>
+        <button id="mfBtnPagar" onclick="acaoPagar()"
+          class="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold text-sm transition-colors">
+          <i data-lucide="check-circle-2" class="w-4 h-4"></i> Marcar como PAGA
+        </button>
 
-  <button id="mfBtnPrejuizo" onclick="acaoPrejuizo()"
-    class="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-red-700 text-white py-3 rounded-xl font-semibold text-sm transition-all">
-    <i data-lucide="alert-octagon" class="w-4 h-4"></i> Registrar PREJUÍZO
-  </button>
+        <button id="mfBtnPrejuizo" onclick="acaoPrejuizo()"
+          class="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-red-700 text-white py-3 rounded-xl font-semibold text-sm transition-all">
+          <i data-lucide="alert-octagon" class="w-4 h-4"></i> Registrar PREJUÍZO
+        </button>
 
-  <div id="mfAlert" class="hidden text-xs p-3 rounded-xl border font-medium"></div>
-</div>
+        <div id="mfAlert" class="hidden text-xs p-3 rounded-xl border font-medium"></div>
+      </div>
     </div>
   </div>
 
@@ -367,182 +348,85 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     /* ==========================================================
+       EMOJIS SEGUROS (unicode escapes — nunca corrompem)
+       ========================================================== */
+    window.EMOJI = {
+      sparkles:  '\u2728',
+      wave:      '\u{1F44B}',
+      bill:      '\u{1F4D1}',
+      phone:     '\u{1F4F1}',
+      warning:   '\u26A0\uFE0F',
+      pray:      '\u{1F64F}',
+      rocket:    '\u{1F680}',
+      check:     '\u2705',
+      gift:      '\u{1F381}',
+      party:     '\u{1F389}',
+      cake:      '\u{1F382}',
+      heart:     '\u{1F499}',
+      thumbsUp:  '\u{1F44D}',
+      calendar:  '\u{1F4C5}',
+      moneyBag:  '\u{1F4B0}',
+      ticket:    '\u{1F3AB}',
+      handshake: '\u{1F91D}',
+      fire:      '\u{1F525}',
+    };
+
+    window.EMOJI_SAFE = (() => {
+      // Testa suporte a emoji astral (surrogate pair)
+      const teste = '\u{1F44B}';
+      const suporta = teste.length === 2;
+      if (suporta) return window.EMOJI;
+      return {
+        sparkles: ':)', wave: 'Oi', bill: '[fatura]', phone: '[TIM]',
+        warning: '!', pray: 'obrigado', rocket: '>>', check: 'OK',
+        gift: '[presente]', party: '*', cake: '*', heart: '<3',
+        thumbsUp: 'OK', calendar: '[data]', moneyBag: 'R$',
+        ticket: '[cupom]', handshake: ':)', fire: '*',
+      };
+    })();
+
+    /* ==========================================================
        STATE
        ========================================================== */
     const state = {
       user: null,
       perfil: null,
       clientes: [],
+      clientesBusca: [],
       filtros: { texto: '', situacao: 'aberto' },
       arquivoSelecionado: null,
-      faturaEmEdicao: null, // { id, mes, valorAtual, cliente }
+      faturaEmEdicao: null,
     };
 
     const REGRA_RENOVACAO = { 1:7, 7:14, 10:19, 12:19, 15:25, 20:1, 25:1 };
-  const DIAS_PREJUIZO = 30; // A partir de 30 dias de atraso, fatura entra em zona de prejuízo
-    /* ═══════════════════════════════════════════════════════════
-   EMOJIS SEGUROS — sempre como escape Unicode.
-   Definidos em window.EMOJI para ficarem acessíveis
-   globalmente (console, qualquer função, qualquer script).
-   NUNCA use emoji literal no código (corrompe em copy/paste).
-   ═══════════════════════════════════════════════════════════ */
-window.EMOJI = {
-  sparkles:  '\u2728',
-  wave:      '\u{1F44B}',
-  bill:      '\u{1F4D1}',
-  phone:     '\u{1F4F1}',
-  warning:   '\u26A0\uFE0F',
-  pray:      '\u{1F64F}',
-  rocket:    '\u{1F680}',
-  check:     '\u2705',
-  gift:      '\u{1F381}',
-  party:     '\u{1F389}',
-  cake:      '\u{1F382}',
-  heart:     '\u{1F499}',
-  thumbsUp:  '\u{1F44D}',
-  calendar:  '\u{1F4C5}',
-  moneyBag:  '\u{1F4B0}',
-  ticket:    '\u{1F3AB}',
-  handshake: '\u{1F91D}',
-  fire:      '\u{1F525}',
-};
-    /* Fallback: se o navegador/SO não renderizar o emoji, troca por texto.
-   Não afeta a maioria dos usuários — só quem tem fontes limitadas. */
-window.EMOJI_SAFE = (() => {
-  // Testa suporte a emoji astral
-  const teste = '👋';
-  const suporta = teste.length === 2; // surrogate pair OK
-  if (suporta) return window.EMOJI;
+    const DIAS_PREJUIZO = 30;
 
-  // Fallback textual
-  return {
-    sparkles: ':)', wave: 'Oi', bill: '[fatura]', phone: '[TIM]',
-    warning: '!', pray: 'obrigado', rocket: '>>', check: 'OK',
-    gift: '[presente]', party: '*', cake: '*', heart: '<3',
-    thumbsUp: 'OK', calendar: '[data]', moneyBag: 'R$',
-    ticket: '[cupom]', handshake: ':)', fire: '*',
-  };
-})();
     /* ==========================================================
        HELPERS
        ========================================================== */
-    // ═══════════════════════════════════════════════════════════
-// EMOJIS SEGUROS — sempre como escape Unicode.
-// NUNCA use emoji literal no código (corrompe em copy/paste).
-// ═══════════════════════════════════════════════════════════
-const EMOJI = {
-  sparkles:  '\u2728',          // ✨ (BMP)
-  wave:      '\u{1F44B}',       // 👋
-  bill:      '\u{1F4D1}',       // 📑
-  phone:     '\u{1F4F1}',       // 📱
-  warning:   '\u26A0\uFE0F',    // ⚠️ (com variation selector)
-  pray:      '\u{1F64F}',       // 🙏
-  rocket:    '\u{1F680}',       // 🚀
-  check:     '\u2705',          // ✅
-  gift:      '\u{1F381}',       // 🎁
-  party:     '\u{1F389}',       // 🎉
-  cake:      '\u{1F382}',       // 🎂
-  heart:     '\u{1F499}',       // 💙
-  thumbsUp:  '\u{1F44D}',       // 👍
-  calendar:  '\u{1F4C5}',       // 📅
-  moneyBag:  '\u{1F4B0}',       // 💰
-  ticket:    '\u{1F3AB}',       // 🎫
-  handshake: '\u{1F91D}',       // 🤝
-  fire:      '\u{1F525}',       // 🔥
-};
     const $ = (id) => document.getElementById(id);
+
     const escapeHTML = (s) => String(s || '').replace(/[&<>"']/g,
       m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
     const normalizarCPF = (v) => String(v || '').replace(/\D/g, '').padStart(11, '0');
     const normalizarTelefone = (v) => String(v || '').replace(/\D/g, '');
     const capitalizar = (s) => String(s || '').toLowerCase()
       .split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
-// Copia texto para o clipboard + feedback visual
-async function copiarTexto(texto, elemento) {
-  if (!texto || texto === '—' || texto === '---') return;
-
-  try {
-    // Tenta API moderna primeiro (funciona em HTTPS)
-    await navigator.clipboard.writeText(texto);
-  } catch (err) {
-    // Fallback para navegadores antigos / HTTP
-    const ta = document.createElement('textarea');
-    ta.value = texto;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-  }
-
-  // Feedback visual no elemento clicado
-  if (elemento) {
-    const original = elemento.style.cssText;
-    elemento.style.transition = 'all 0.15s ease';
-    elemento.style.background = '#d1fae5';
-    elemento.style.color = '#047857';
-    elemento.style.transform = 'scale(1.05)';
-    setTimeout(() => {
-      elemento.style.cssText = original;
-    }, 400);
-  }
-
-  // Toast flutuante
-  mostrarToastCopy(texto);
-}
-
-// Toast auto-destrutivo no canto inferior direito
-let _toastCopyTimer = null;
-function mostrarToastCopy(texto) {
-  let toast = document.getElementById('_toastCopy');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.id = '_toastCopy';
-    toast.className = 'fixed bottom-6 right-6 z-[9999] bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 text-sm font-medium pointer-events-none';
-    toast.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(20px)';
-    document.body.appendChild(toast);
-  }
-
-  const textoCurto = texto.length > 20 ? texto.slice(0, 20) + '…' : texto;
-  toast.innerHTML = `
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="20 6 9 17 4 12"></polyline>
-    </svg>
-    <span>Copiado: <strong class="font-mono">${textoCurto}</strong></span>
-  `;
-
-  // Reset + fade in
-  clearTimeout(_toastCopyTimer);
-  requestAnimationFrame(() => {
-    toast.style.opacity = '1';
-    toast.style.transform = 'translateY(0)';
-  });
-
-  // Auto-hide
-  _toastCopyTimer = setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(20px)';
-  }, 1800);
-}
-    
-    // "dd/mm/yyyy" → Date (ou null)
     function parseBR(str) {
       if (!str) return null;
       const m = String(str).match(/(\d{2})\/(\d{2})\/(\d{4})/);
       if (!m) return null;
       return new Date(+m[3], +m[2] - 1, +m[1]);
     }
+
     function fmtBR(date) {
       if (!date) return '—';
       const d = new Date(date);
       return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
     }
 
-    // Classificação do conteúdo da fatura
     function statusFatura(txt) {
       const t = String(txt || '').toUpperCase();
       if (!t || t === '---' || t === 'N/A') return 'vazio';
@@ -554,13 +438,11 @@ function mostrarToastCopy(texto) {
       return 'vazio';
     }
 
-    // Extrai a data "pura" (dd/mm/yyyy) do conteúdo
     function extrairDataFatura(txt) {
       const m = String(txt || '').match(/(\d{2}\/\d{2}\/\d{4})/);
       return m ? m[1] : null;
     }
 
-    // Dias de atraso em relação a hoje
     function diasAtraso(dataStr) {
       const d = parseBR(dataStr);
       if (!d) return 0;
@@ -568,66 +450,118 @@ function mostrarToastCopy(texto) {
       return Math.floor((hoje - d) / 86400000);
     }
 
-    // Cliente está totalmente quitado (P, Q, R = pago/cc)?
     function clienteQuitado(c) {
       const st = [statusFatura(c.fatura_p), statusFatura(c.fatura_q), statusFatura(c.fatura_r)];
       return st.every(s => s === 'pago' || s === 'cc');
     }
-    // Calcula prioridade operacional — retorna { score, tier, label, cor }
-function prioridadeInfo(c) {
-  const faturas = [
-    { v: c.fatura_p, st: statusFatura(c.fatura_p) },
-    { v: c.fatura_q, st: statusFatura(c.fatura_q) },
-    { v: c.fatura_r, st: statusFatura(c.fatura_r) },
-  ];
 
-  // Considera somente faturas em aberto (pendente / enviada)
-  const abertas = faturas.filter(f => f.st === 'pendente' || f.st === 'enviada');
-
-  // Tudo resolvido → prioridade baixíssima
-  if (abertas.length === 0) {
-    return { score: -1, tier: 0, label: '', cor: '#94a3b8' };
-  }
-
-  let melhor = { score: 0, tier: 5, label: '', cor: '#3b82f6' };
-
-  abertas.forEach(f => {
-    const data = extrairDataFatura(f.v);
-    const dias = data ? diasAtraso(data) : 0;
-
-    let score, tier, label, cor;
-
-    if (dias >= DIAS_PREJUIZO) {
-      score = 9000 + dias;
-      tier = 1;
-      label = `${dias}d atraso`;
-      cor = '#dc2626';
-    } else if (dias > 0) {
-      score = 8000 + dias;
-      tier = 2;
-      label = `${dias}d atraso`;
-      cor = '#f97316';
-    } else if (f.st === 'enviada') {
-      score = 1000 + (100 - Math.abs(dias));
-      tier = 3;
-      label = `enviada · vence ${Math.abs(dias)}d`;
-      cor = '#eab308';
-    } else {
-      score = 500 + (100 - Math.abs(dias));
-      tier = 4;
-      label = `vence em ${Math.abs(dias)}d`;
-      cor = '#3b82f6';
-    }
-
-    if (score > melhor.score) melhor = { score, tier, label, cor };
-  });
-
-  return melhor;
-}
-
-    // Deve ocultar da listagem principal?
     function deveOcultar(c) {
       return String(c.modalidade || '').toUpperCase().includes('TROCA DE APARELHO');
+    }
+
+    function prioridadeInfo(c) {
+      const faturas = [
+        { v: c.fatura_p, st: statusFatura(c.fatura_p) },
+        { v: c.fatura_q, st: statusFatura(c.fatura_q) },
+        { v: c.fatura_r, st: statusFatura(c.fatura_r) },
+      ];
+      const abertas = faturas.filter(f => f.st === 'pendente' || f.st === 'enviada');
+
+      if (abertas.length === 0) {
+        return { score: -1, tier: 0, label: '', cor: '#94a3b8' };
+      }
+
+      let melhor = { score: 0, tier: 5, label: '', cor: '#3b82f6' };
+
+      abertas.forEach(f => {
+        const data = extrairDataFatura(f.v);
+        const dias = data ? diasAtraso(data) : 0;
+        let score, tier, label, cor;
+
+        if (dias >= DIAS_PREJUIZO) {
+          score = 9000 + dias; tier = 1;
+          label = `${dias}d atraso`; cor = '#dc2626';
+        } else if (dias > 0) {
+          score = 8000 + dias; tier = 2;
+          label = `${dias}d atraso`; cor = '#f97316';
+        } else if (f.st === 'enviada') {
+          score = 1000 + (100 - Math.abs(dias)); tier = 3;
+          label = `enviada · vence ${Math.abs(dias)}d`; cor = '#eab308';
+        } else {
+          score = 500 + (100 - Math.abs(dias)); tier = 4;
+          label = `vence em ${Math.abs(dias)}d`; cor = '#3b82f6';
+        }
+        if (score > melhor.score) melhor = { score, tier, label, cor };
+      });
+      return melhor;
+    }
+
+    function _norm(s) {
+      return String(s || '').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
+    /* ==========================================================
+       CLIPBOARD + TOAST
+       ========================================================== */
+    async function copiarTexto(texto, elemento) {
+      if (!texto || texto === '—' || texto === '---') return;
+
+      try {
+        await navigator.clipboard.writeText(texto);
+      } catch (err) {
+        const ta = document.createElement('textarea');
+        ta.value = texto;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+
+      if (elemento) {
+        const original = elemento.style.cssText;
+        elemento.style.transition = 'all 0.15s ease';
+        elemento.style.background = '#d1fae5';
+        elemento.style.color = '#047857';
+        elemento.style.transform = 'scale(1.05)';
+        setTimeout(() => { elemento.style.cssText = original; }, 400);
+      }
+
+      mostrarToastCopy(texto);
+    }
+
+    let _toastCopyTimer = null;
+    function mostrarToastCopy(texto) {
+      let toast = document.getElementById('_toastCopy');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = '_toastCopy';
+        toast.className = 'fixed bottom-6 right-6 z-[9999] bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 text-sm font-medium pointer-events-none';
+        toast.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        document.body.appendChild(toast);
+      }
+
+      const textoCurto = texto.length > 20 ? texto.slice(0, 20) + '…' : texto;
+      toast.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span>Copiado: <strong class="font-mono">${textoCurto}</strong></span>
+      `;
+
+      clearTimeout(_toastCopyTimer);
+      requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+      });
+      _toastCopyTimer = setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+      }, 1800);
     }
 
     /* ==========================================================
@@ -639,7 +573,6 @@ function prioridadeInfo(c) {
 
       state.user = session.user;
 
-      // Carrega perfil (permissao)
       const { data: perfil } = await supabaseClient
         .from('perfis').select('*').eq('id', session.user.id).single();
       state.perfil = perfil || { nome_completo: session.user.email, permissao: 'Operador' };
@@ -648,7 +581,7 @@ function prioridadeInfo(c) {
       $('userPerm').textContent = state.perfil.permissao;
 
       navegar('dashboard');
-      carregarClientes(); // pré-carrega dados para os stats
+      carregarClientes();
     }
 
     async function terminarSessao() {
@@ -658,36 +591,32 @@ function prioridadeInfo(c) {
 
     const TITULOS = {
       dashboard: 'Visão Geral',
+      clientes: 'Base Geral de Clientes',
       faturas: 'Acompanhamento de Faturas TIM',
       suspensoes: 'Gestão de Suspensões',
-      clientes: 'Base Geral de Clientes',        
       prospeccao: 'Prospecção de Clientes',
     };
 
-function navegar(destino) {
-  Object.keys(TITULOS).forEach(id => {
-    const view = $(`view-${id}`);
-    if (view) view.classList.toggle('hidden', id !== destino);
-  });
-  
-  // Realce do menu
-  document.querySelectorAll('.nav-item').forEach(btn => {
-    const ativo = btn.dataset.nav === destino;
-    btn.className = ativo
-      ? 'nav-item w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium transition-colors shadow-md shadow-[#0e8890]/20 cursor-pointer'
-      : 'nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer';
-  });
-  
-  $('headerTitle').textContent = TITULOS[destino];
-  
-  if (destino === 'faturas') carregarClientes();
+    function navegar(destino) {
+      Object.keys(TITULOS).forEach(id => {
+        const view = $(`view-${id}`);
+        if (view) view.classList.toggle('hidden', id !== destino);
+      });
 
-  if (destino === 'clientes') {  
-    $('clientesBaseTotal').textContent = state.clientes.length;  
-    // Foca no input de busca automaticamente com um pequeno delay para garantir a renderização da view
-    setTimeout(() => $('inputBuscaClientes')?.focus(), 100);
-  }
-}
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        const ativo = btn.dataset.nav === destino;
+        btn.className = ativo
+          ? 'nav-item w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium transition-colors shadow-md shadow-[#0e8890]/20 cursor-pointer'
+          : 'nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer';
+      });
+
+      $('headerTitle').textContent = TITULOS[destino];
+
+      if (destino === 'faturas') carregarClientes();
+      if (destino === 'clientes') {
+        setTimeout(() => $('inputBuscaClientes')?.focus(), 100);
+      }
+    }
 
     function toggleSidebar() {
       const s = $('sidebar');
@@ -698,108 +627,103 @@ function navegar(destino) {
     }
 
     /* ==========================================================
-       CARREGAR CLIENTES DO SUPABASE
+       CARREGAR CLIENTES (Faturas + Stats)
        ========================================================== */
-async function carregarClientes() {
-  $('tabelaFaturas').innerHTML =
-    `<tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">
-      <i data-lucide="loader-2" class="w-6 h-6 animate-spin inline-block mr-2 text-[#0e8890]"></i>
-      A carregar faturas…
-    </td></tr>`;
-  lucide.createIcons();
+    async function carregarClientes() {
+      $('tabelaFaturas').innerHTML =
+        `<tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">
+          <i data-lucide="loader-2" class="w-6 h-6 animate-spin inline-block mr-2 text-[#0e8890]"></i>
+          A carregar faturas…
+        </td></tr>`;
+      lucide.createIcons();
 
-  // 1. Busca o total REAL (só count, é instantâneo)
-  const { count: totalReal } = await supabaseClient
-    .from('clientes_faturas')
-    .select('*', { count: 'exact', head: true });
+      // Total real (count)
+      const { count: totalReal } = await supabaseClient
+        .from('clientes_faturas')
+        .select('*', { count: 'exact', head: true });
 
-  $('clientesBaseTotal').textContent = (totalReal || 0).toLocaleString('pt-BR');
+      $('clientesBaseTotal').textContent = (totalReal || 0).toLocaleString('pt-BR');
 
-  // 2. Carrega APENAS os registros do ano mais recente para o dashboard/faturas
-  // (evita os 1000 no limite e mantém performance)
-  const { data, error } = await supabaseClient
-    .from('clientes_faturas')
-    .select('*')
-    .order('data_venda', { ascending: false })
-    .limit(1000);
+      // Carrega os 1000 mais recentes
+      const { data, error } = await supabaseClient
+        .from('clientes_faturas')
+        .select('*')
+        .order('data_venda', { ascending: false })
+        .limit(1000);
 
-  if (error) {
-    console.error(error);
-    $('tabelaFaturas').innerHTML =
-      `<tr><td colspan="6" class="px-6 py-12 text-center text-red-500">Erro: ${escapeHTML(error.message)}</td></tr>`;
-    return;
-  }
+      if (error) {
+        console.error(error);
+        $('tabelaFaturas').innerHTML =
+          `<tr><td colspan="6" class="px-6 py-12 text-center text-red-500">Erro: ${escapeHTML(error.message)}</td></tr>`;
+        return;
+      }
 
-  state.clientes = data || [];
-  atualizarStats();
-  filtrar();
-}
-function atualizarStats() {
-  const total = state.clientes.length;
-  const pendentes = state.clientes.filter(c => !clienteQuitado(c)).length;
+      state.clientes = data || [];
+      atualizarStats();
+      filtrar();
+    }
 
-  // Conta faturas em zona de prejuízo (30+ dias)
-  let risco = 0;
-  state.clientes.forEach(c => {
-    [['P', c.fatura_p], ['Q', c.fatura_q], ['R', c.fatura_r]].forEach(([_, v]) => {
-      const st = statusFatura(v);
-      if (st !== 'pendente' && st !== 'enviada') return;
-      const data = extrairDataFatura(v);
-      if (data && diasAtraso(data) >= DIAS_PREJUIZO) risco++;
-    });
-  });
+    function atualizarStats() {
+      const total = state.clientes.length;
+      const pendentes = state.clientes.filter(c => !clienteQuitado(c)).length;
 
-  $('statTotal').textContent = total;
-  $('statPendentes').textContent = pendentes;
-  $('statRisco').textContent = risco;
-}
+      let risco = 0;
+      state.clientes.forEach(c => {
+        [c.fatura_p, c.fatura_q, c.fatura_r].forEach(v => {
+          const st = statusFatura(v);
+          if (st !== 'pendente' && st !== 'enviada') return;
+          const data = extrairDataFatura(v);
+          if (data && diasAtraso(data) >= DIAS_PREJUIZO) risco++;
+        });
+      });
+
+      $('statTotal').textContent = total;
+      $('statPendentes').textContent = pendentes;
+      $('statRisco').textContent = risco;
+    }
 
     /* ==========================================================
-       FILTRO + RENDER
+       FATURAS — FILTRO + RENDER
        ========================================================== */
- function filtrar() {
-  state.filtros.texto = $('inputBusca').value.toLowerCase().trim();
-  state.filtros.situacao = $('selectSituacao').value;
+    function filtrar() {
+      state.filtros.texto = $('inputBusca').value.toLowerCase().trim();
+      state.filtros.situacao = $('selectSituacao').value;
 
-  const termo = state.filtros.texto;
-  const termoNum = termo.replace(/\D/g, '');
+      const termo = state.filtros.texto;
+      const termoNum = termo.replace(/\D/g, '');
 
-  const filtrados = state.clientes.filter(c => {
-    // 🔒 Faturas: oculta TROCA DE APARELHO
-    if (deveOcultar(c)) return false;
+      const filtrados = state.clientes.filter(c => {
+        if (deveOcultar(c)) return false;
 
-    // Texto (nome / cpf / telefone / consultor)
-    if (termo) {
-      const nome = String(c.nome || '').toLowerCase();
-      const cpf = normalizarCPF(c.cpf);
-      const tel = normalizarTelefone(c.telefone);
-      const alt = normalizarTelefone(c.telefone_alt);
-      const cons = String(c.consultor || '').toLowerCase();
-      const matchTexto = nome.includes(termo) || cons.includes(termo);
-      const matchNum = termoNum && (cpf.includes(termoNum) || tel.includes(termoNum) || alt.includes(termoNum));
-      if (!matchTexto && !matchNum) return false;
+        if (termo) {
+          const nome = String(c.nome || '').toLowerCase();
+          const cpf = normalizarCPF(c.cpf);
+          const tel = normalizarTelefone(c.telefone);
+          const alt = normalizarTelefone(c.telefone_alt);
+          const cons = String(c.consultor || '').toLowerCase();
+          const matchTexto = nome.includes(termo) || cons.includes(termo);
+          const matchNum = termoNum && (cpf.includes(termoNum) || tel.includes(termoNum) || alt.includes(termoNum));
+          if (!matchTexto && !matchNum) return false;
+        }
+
+        const quitado = clienteQuitado(c);
+        if (state.filtros.situacao === 'aberto' && quitado) return false;
+        if (state.filtros.situacao === 'pagos' && !quitado) return false;
+        return true;
+      });
+
+      $('contadorResultados').textContent =
+        `Exibindo ${filtrados.length} registros (Troca de Aparelho ocultada)`;
+
+      const ordenados = [...filtrados].sort((a, b) => {
+        const pa = prioridadeInfo(a).score;
+        const pb = prioridadeInfo(b).score;
+        if (pa !== pb) return pb - pa;
+        return new Date(b.data_venda || 0) - new Date(a.data_venda || 0);
+      });
+
+      renderTabela(ordenados);
     }
-    // Situação
-    const quitado = clienteQuitado(c);
-    if (state.filtros.situacao === 'aberto' && quitado) return false;
-    if (state.filtros.situacao === 'pagos' && !quitado) return false;
-    return true;
-  });
-
-  $('contadorResultados').textContent = 
-    `Exibindo ${filtrados.length} registros (Troca de Aparelho ocultada)`;
-
-  // 🎯 Ordena por prioridade operacional
-  const ordenados = [...filtrados].sort((a, b) => {
-    const pa = prioridadeInfo(a).score;
-    const pb = prioridadeInfo(b).score;
-    if (pa !== pb) return pb - pa;                       // maior score no topo
-    // Desempate: venda mais recente primeiro
-    return new Date(b.data_venda || 0) - new Date(a.data_venda || 0);
-  });
-
-  renderTabela(ordenados);
-}
 
     function renderTabela(lista) {
       const tbody = $('tabelaFaturas');
@@ -811,489 +735,183 @@ function atualizarStats() {
       lucide.createIcons();
     }
 
-function linhaHTML(c) {
-  const telefone = normalizarTelefone(c.telefone);
-  const ehDebito = String(c.debito_automatico || '').toUpperCase() === 'SIM';
-  const cpfFmt = normalizarCPF(c.cpf);
-  const prio = prioridadeInfo(c);
+    function linhaHTML(c) {
+      const telefone = normalizarTelefone(c.telefone);
+      const ehDebito = String(c.debito_automatico || '').toUpperCase() === 'SIM';
+      const cpfFmt = normalizarCPF(c.cpf);
+      const prio = prioridadeInfo(c);
 
-  // Badge de prioridade (vermelho = 30+d, laranja = atraso, amarelo = enviada, azul = pendente)
-  const prioBadge = prio.tier > 0 ? `
-    <span class="inline-flex items-center gap-1 text-[9px] font-black uppercase px-1.5 py-0.5 rounded border"
-          style="background:${prio.cor}1A; color:${prio.cor}; border-color:${prio.cor}40;">
-      <span class="inline-block w-1.5 h-1.5 rounded-full" style="background:${prio.cor};"></span>
-      ${prio.label}
-    </span>` : '';
+      const prioBadge = prio.tier > 0 ? `
+        <span class="inline-flex items-center gap-1 text-[9px] font-black uppercase px-1.5 py-0.5 rounded border"
+              style="background:${prio.cor}1A; color:${prio.cor}; border-color:${prio.cor}40;">
+          <span class="inline-block w-1.5 h-1.5 rounded-full" style="background:${prio.cor};"></span>
+          ${prio.label}
+        </span>` : '';
 
-  // Vencimento inteligente (com fallback para clientes já quitados)
-  const vencTxt = (() => {
-    const v = String(c.data_vencimento_base || '').trim();
-    if (v && v !== '---' && v !== 'null') {
-      if (v.toUpperCase() === 'CC') return 'Venc: <span class="text-sky-600">CC</span>';
-      return `Venc: Dia ${v}`;
+      const vencTxt = (() => {
+        const v = String(c.data_vencimento_base || '').trim();
+        if (v && v !== '---' && v !== 'null') {
+          if (v.toUpperCase() === 'CC') return 'Venc: <span class="text-sky-600">CC</span>';
+          return `Venc: Dia ${v}`;
+        }
+        const sts = [statusFatura(c.fatura_p), statusFatura(c.fatura_q), statusFatura(c.fatura_r)];
+        const todasResolvidas = sts.every(s => s === 'pago' || s === 'cc' || s === 'prejuizo' || s === 'vazio');
+        if (todasResolvidas && sts.some(s => s === 'pago')) return '<span class="text-emerald-600">✓ Faturas quitadas</span>';
+        if (todasResolvidas) return '<span class="text-slate-400">Sem fatura ativa</span>';
+        return '<span class="text-slate-400">Venc: —</span>';
+      })();
+
+      return `
+        <tr class="hover:bg-[#0e8890]/5 transition-colors border-b border-slate-100 text-xs">
+          <td class="px-4 py-4 align-top">
+            <span class="inline-block bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold border border-slate-200 mb-1">${escapeHTML(c.ano_base || '—')}</span>
+            <div class="text-slate-500">Venda: ${c.data_venda ? fmtBR(c.data_venda) : '—'}</div>
+            <div class="text-slate-700 font-semibold mt-0.5">${vencTxt}</div>
+          </td>
+
+          <td class="px-4 py-4 align-top">
+            <div class="flex items-center flex-wrap gap-1">
+              <p class="font-bold text-[#000033] text-sm">${escapeHTML(capitalizar(c.nome) || 'Sem Nome')}</p>
+              ${prioBadge}
+            </div>
+            <p class="text-slate-500 font-mono mt-1 flex items-center gap-1 group/cpf cursor-pointer select-none"
+               onclick="copiarTexto('${cpfFmt}', this)"
+               title="Clique para copiar o CPF">
+              <span class="text-slate-400">CPF:</span>
+              <span class="rounded px-1 transition-all group-hover/cpf:bg-emerald-50 group-hover/cpf:text-emerald-700">${escapeHTML(cpfFmt)}</span>
+              <i data-lucide="copy" class="w-3 h-3 text-slate-300 opacity-0 group-hover/cpf:opacity-100 transition-opacity"></i>
+            </p>
+          </td>
+
+          <td class="px-4 py-4 align-top">
+            <p class="text-slate-700 font-medium flex items-center gap-1 group/tel cursor-pointer select-none"
+               onclick="copiarTexto('${telefone}', this)"
+               title="Clique para copiar o número da linha">
+              <i data-lucide="phone" class="w-3 h-3 text-[#0e8890]"></i>
+              <span class="rounded px-1 transition-all group-hover/tel:bg-emerald-50 group-hover/tel:text-emerald-700">${escapeHTML(telefone || '—')}</span>
+              <i data-lucide="copy" class="w-3 h-3 text-slate-300 opacity-0 group-hover/tel:opacity-100 transition-opacity"></i>
+            </p>
+            ${c.telefone_alt ? `
+              <p class="text-slate-400 text-[11px] mt-0.5 flex items-center gap-1 group/alt cursor-pointer select-none"
+                 onclick="copiarTexto('${normalizarTelefone(c.telefone_alt)}', this)"
+                 title="Clique para copiar o telefone alternativo">
+                <span>Alt:</span>
+                <span class="rounded px-1 transition-all group-hover/alt:bg-emerald-50 group-hover/alt:text-emerald-700">${escapeHTML(c.telefone_alt)}</span>
+              </p>` : ''}
+            <p class="text-[#E60000] uppercase font-bold text-[11px] mt-1">${escapeHTML(c.plano || '—')}</p>
+            ${c.consultor ? `<p class="text-slate-500 text-[11px] mt-1 flex items-center gap-1">
+              <i data-lucide="user-check" class="w-3 h-3"></i> ${escapeHTML(c.consultor)}
+            </p>` : ''}
+            ${ehDebito ? `<span class="badge badge-cc mt-1">Débito Automático</span>` : ''}
+          </td>
+
+          ${renderCelulaFatura(c, 'P', c.fatura_p)}
+          ${renderCelulaFatura(c, 'Q', c.fatura_q)}
+          ${renderCelulaFatura(c, 'R', c.fatura_r)}
+        </tr>
+      `;
     }
-    const sts = [statusFatura(c.fatura_p), statusFatura(c.fatura_q), statusFatura(c.fatura_r)];
-    const todasResolvidas = sts.every(s => s === 'pago' || s === 'cc' || s === 'prejuizo' || s === 'vazio');
-    if (todasResolvidas && sts.some(s => s === 'pago')) return '<span class="text-emerald-600">✓ Faturas quitadas</span>';
-    if (todasResolvidas) return '<span class="text-slate-400">Sem fatura ativa</span>';
-    return '<span class="text-slate-400">Venc: —</span>';
-  })();
 
-  return `
-    <tr class="hover:bg-[#0e8890]/5 transition-colors border-b border-slate-100 text-xs">
+    function renderCelulaFatura(cliente, mes, valor) {
+      const st = statusFatura(valor);
+      const data = extrairDataFatura(valor);
+      const dias = data ? diasAtraso(data) : 0;
+      const emRisco = dias >= DIAS_PREJUIZO && (st === 'pendente' || st === 'enviada');
 
-      <!-- ═══ COLUNA 1: Base / Venda / Venc ═══ -->
-      <td class="px-4 py-4 align-top">
-        <span class="inline-block bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold border border-slate-200 mb-1">${escapeHTML(c.ano_base || '—')}</span>
-        <div class="text-slate-500">Venda: ${c.data_venda ? fmtBR(c.data_venda) : '—'}</div>
-        <div class="text-slate-700 font-semibold mt-0.5">${vencTxt}</div>
-      </td>
+      let inner = '';
+      let cellClass = 'bg-slate-50/40';
 
-      <!-- ═══ COLUNA 2: Cliente (nome + badge + CPF) ═══ -->
-      <td class="px-4 py-4 align-top">
-        <div class="flex items-center flex-wrap gap-1">
-          <p class="font-bold text-[#000033] text-sm">${escapeHTML(capitalizar(c.nome) || 'Sem Nome')}</p>
-          ${prioBadge}
-        </div>
-<p class="text-slate-500 font-mono mt-1 flex items-center gap-1 group/cpf cursor-pointer select-none"
-   onclick="copiarTexto('${cpfFmt}', this)"
-   title="Clique para copiar o CPF">
-  <span class="text-slate-400">CPF:</span>
-  <span class="rounded px-1 transition-all group-hover/cpf:bg-emerald-50 group-hover/cpf:text-emerald-700">${escapeHTML(cpfFmt)}</span>
-  <i data-lucide="copy" class="w-3 h-3 text-slate-300 opacity-0 group-hover/cpf:opacity-100 transition-opacity"></i>
-</p>
-              </td>
+      if (emRisco) {
+        cellClass = 'bg-red-50/70 border-l-4 border-red-400';
+      }
 
-      <!-- ═══ COLUNA 3: Linha / Plano / Consultor ═══ -->
-      <td class="px-4 py-4 align-top">
-        <p class="text-slate-700 font-medium flex items-center gap-1 group/tel cursor-pointer select-none"
-   onclick="copiarTexto('${telefone}', this)"
-   title="Clique para copiar o número da linha">
-  <i data-lucide="phone" class="w-3 h-3 text-[#0e8890]"></i>
-  <span class="rounded px-1 transition-all group-hover/tel:bg-emerald-50 group-hover/tel:text-emerald-700">${escapeHTML(telefone || '—')}</span>
-  <i data-lucide="copy" class="w-3 h-3 text-slate-300 opacity-0 group-hover/tel:opacity-100 transition-opacity"></i>
-</p>
-${c.telefone_alt ? `
-  <p class="text-slate-400 text-[11px] mt-0.5 flex items-center gap-1 group/alt cursor-pointer select-none"
-     onclick="copiarTexto('${normalizarTelefone(c.telefone_alt)}', this)"
-     title="Clique para copiar o telefone alternativo">
-    <span>Alt:</span>
-    <span class="rounded px-1 transition-all group-hover/alt:bg-emerald-50 group-hover/alt:text-emerald-700">${escapeHTML(c.telefone_alt)}</span>
-  </p>` : ''}
-                <p class="text-[#E60000] uppercase font-bold text-[11px] mt-1">${escapeHTML(c.plano || '—')}</p>
-        ${c.consultor ? `<p class="text-slate-500 text-[11px] mt-1 flex items-center gap-1">
-          <i data-lucide="user-check" class="w-3 h-3"></i> ${escapeHTML(c.consultor)}
-        </p>` : ''}
-        ${ehDebito ? `<span class="badge badge-cc mt-1">Débito Automático</span>` : ''}
-      </td>
+      if (st === 'pago') {
+        inner = `<span class="badge badge-pago">
+          <i data-lucide="check-circle-2" class="w-3 h-3"></i> Pago
+        </span>`;
+      } else if (st === 'cc') {
+        inner = `<span class="badge badge-cc">CC · Débito</span>`;
+      } else if (st === 'prejuizo') {
+        inner = `<span class="badge badge-prejuizo">
+          <i data-lucide="alert-triangle" class="w-3 h-3"></i> Prejuízo
+        </span>`;
+      } else if (st === 'enviada') {
+        const classeCor = emRisco
+          ? 'badge-atraso animate-pulse'
+          : (dias >= 5 ? 'badge-atraso' : 'badge-enviada');
+        const icone = emRisco ? 'alert-triangle' : 'send';
+        inner = `<button onclick="abrirModalFatura(${cliente.id}, '${mes}')"
+          class="badge ${classeCor} cursor-pointer hover:opacity-80 transition"
+          title="${emRisco ? 'Fatura em zona de prejuízo — clique para decidir' : 'Fatura enviada'}">
+          <i data-lucide="${icone}" class="w-3 h-3"></i>
+          Enviada${dias > 0 ? ` (${dias}d)` : ''}${emRisco ? ' · RISCO' : ''}
+        </button>`;
+      } else if (st === 'pendente') {
+        const classeCor = emRisco ? 'badge-atraso animate-pulse' : 'badge-pendente';
+        const icone = emRisco ? 'alert-triangle' : 'calendar';
+        inner = `<button onclick="abrirModalFatura(${cliente.id}, '${mes}')"
+          class="badge ${classeCor} cursor-pointer hover:opacity-80 transition"
+          title="${emRisco ? 'Fatura em zona de prejuízo — clique para decidir' : 'Fatura pendente'}">
+          <i data-lucide="${icone}" class="w-3 h-3"></i>
+          ${data}${dias > 0 ? ` (${dias}d)` : ''}${emRisco ? ' · RISCO' : ''}
+        </button>`;
+      } else {
+        inner = `<span class="text-slate-400">—</span>`;
+      }
 
-      ${renderCelulaFatura(c, 'P', c.fatura_p)}
-      ${renderCelulaFatura(c, 'Q', c.fatura_q)}
-      ${renderCelulaFatura(c, 'R', c.fatura_r)}
-
-    </tr>
-  `;
-}
-function renderCelulaFatura(cliente, mes, valor) {
-  const st = statusFatura(valor);
-  const data = extrairDataFatura(valor);
-  const dias = data ? diasAtraso(data) : 0;
-
-  // 🚨 Fatura em ZONA DE PREJUÍZO: pendente/enviada + 30 dias ou mais
-  const emRisco = dias >= DIAS_PREJUIZO && (st === 'pendente' || st === 'enviada');
-
-  let inner = '';
-  let cellClass = 'bg-slate-50/40';
-
-  // Célula inteira ganha fundo vermelho sutil + borda lateral quando em risco
-  if (emRisco) {
-    cellClass = 'bg-red-50/70 border-l-4 border-red-400';
-  }
-
-  if (st === 'pago') {
-    inner = `<span class="badge badge-pago">
-      <i data-lucide="check-circle-2" class="w-3 h-3"></i> Pago
-    </span>`;
-
-  } else if (st === 'cc') {
-    inner = `<span class="badge badge-cc">CC · Débito</span>`;
-
-  } else if (st === 'prejuizo') {
-    inner = `<span class="badge badge-prejuizo">
-      <i data-lucide="alert-triangle" class="w-3 h-3"></i> Prejuízo
-    </span>`;
-
-  } else if (st === 'enviada') {
-    const classeCor = emRisco
-      ? 'badge-atraso animate-pulse'
-      : (dias >= 5 ? 'badge-atraso' : 'badge-enviada');
-    const icone = emRisco ? 'alert-triangle' : 'send';
-
-    inner = `<button onclick="abrirModalFatura(${cliente.id}, '${mes}')"
-      class="badge ${classeCor} cursor-pointer hover:opacity-80 transition"
-      title="${emRisco ? 'Fatura em zona de prejuízo — clique para decidir' : 'Fatura enviada'}">
-      <i data-lucide="${icone}" class="w-3 h-3"></i>
-      Enviada${dias > 0 ? ` (${dias}d)` : ''}${emRisco ? ' · RISCO' : ''}
-    </button>`;
-
-  } else if (st === 'pendente') {
-    const classeCor = emRisco
-      ? 'badge-atraso animate-pulse'
-      : 'badge-pendente';
-    const icone = emRisco ? 'alert-triangle' : 'calendar';
-
-    inner = `<button onclick="abrirModalFatura(${cliente.id}, '${mes}')"
-      class="badge ${classeCor} cursor-pointer hover:opacity-80 transition"
-      title="${emRisco ? 'Fatura em zona de prejuízo — clique para decidir' : 'Fatura pendente'}">
-      <i data-lucide="${icone}" class="w-3 h-3"></i>
-      ${data}${dias > 0 ? ` (${dias}d)` : ''}${emRisco ? ' · RISCO' : ''}
-    </button>`;
-
-  } else {
-    inner = `<span class="text-slate-400">—</span>`;
-  }
-
-  return `<td class="px-4 py-4 text-center align-middle ${cellClass}">${inner}</td>`;
-}
+      return `<td class="px-4 py-4 text-center align-middle ${cellClass}">${inner}</td>`;
+    }
 
     /* ==========================================================
-   MÓDULO: CLIENTES TIM — BASE GERAL
-   ========================================================== */
-
-// Debounce do input (evita buscar a cada tecla)
-let _buscaClientesTimer = null;
-function debounceBuscarClientes() {
-  clearTimeout(_buscaClientesTimer);
-  _buscaClientesTimer = setTimeout(buscarClientes, 350);
-}
-
-// Normaliza texto (remove acentos + lowercase)
-function _norm(s) {
-  return String(s || '').toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-}
-
-// Busca local (state.clientes) — instantânea, sem ir no servidor
-let _buscaClientesTimer = null;
-function debounceBuscarClientes() {
-  clearTimeout(_buscaClientesTimer);
-  _buscaClientesTimer = setTimeout(buscarClientes, 350);
-}
-
-async function buscarClientes() {
-  const termo = $('inputBuscaClientes').value.trim();
-  const contador = $('clientesContador');
-  const resultados = $('clientesResultados');
-
-  // Estado vazio
-  if (termo.length < 2) {
-    contador.textContent = 'Digite ao menos 2 caracteres para buscar';
-    resultados.innerHTML = `
-      <div class="bg-white p-12 rounded-2xl border border-dashed border-slate-200 text-center">
-        <i data-lucide="search" class="w-12 h-12 mx-auto text-slate-300 mb-3"></i>
-        <p class="text-slate-500 font-medium">Use a barra acima para pesquisar</p>
-        <p class="text-xs text-slate-400 mt-1">Busca em toda a base histórica de clientes TIM</p>
-      </div>`;
-    lucide.createIcons();
-    return;
-  }
-
-  // Feedback de carregamento
-  contador.textContent = 'Buscando...';
-  resultados.innerHTML = `
-    <div class="bg-white p-12 rounded-2xl border border-slate-200 shadow-sm text-center">
-      <i data-lucide="loader-2" class="w-8 h-8 mx-auto text-[#0e8890] animate-spin mb-3"></i>
-      <p class="text-slate-500">Consultando banco de dados...</p>
-    </div>`;
-  lucide.createIcons();
-
-  // Prepara filtros
-  const termoNum = termo.replace(/\D/g, '');
-  const termoNorm = _norm(termo);
-
-  // Monta a query com OR em várias colunas
-  // Usa ilike (case-insensitive) e envia os números para CPF/telefone
-  let query = supabaseClient
-    .from('clientes_faturas')
-    .select('*');
-
-  if (termoNum.length >= 3 && /^\d+$/.test(termo.replace(/\D/g, '')) && termo.replace(/\D/g,'').length > 0) {
-    // Busca numérica: tenta em cpf, telefone, telefone_alt
-    query = query.or(`cpf.ilike.%${termoNum}%,telefone.ilike.%${termoNum}%,telefone_alt.ilike.%${termoNum}%,nome.ilike.%${termo}%,consultor.ilike.%${termo}%`);
-  } else {
-    // Busca textual: nome ou consultor
-    query = query.or(`nome.ilike.%${termo}%,consultor.ilike.%${termo}%`);
-  }
-
-  // Traz até 500 resultados (suficiente para qualquer busca real)
-  const { data, error } = await query.limit(500);
-
-  if (error) {
-    console.error(error);
-    contador.textContent = 'Erro na busca';
-    resultados.innerHTML = `
-      <div class="bg-white p-12 rounded-2xl border border-red-200 shadow-sm text-center">
-        <i data-lucide="alert-circle" class="w-12 h-12 mx-auto text-red-400 mb-3"></i>
-        <p class="text-slate-600 font-semibold">Erro ao buscar</p>
-        <p class="text-xs text-slate-500 mt-1">${escapeHTML(error.message)}</p>
-      </div>`;
-    lucide.createIcons();
-    return;
-  }
-
-  const encontrados = data || [];
-  encontrados.sort((a, b) => String(a.nome || '').localeCompare(String(b.nome || '')));
-
-  contador.textContent = `${encontrados.length} ${encontrados.length === 1 ? 'cliente encontrado' : 'clientes encontrados'}`;
-
-  if (!encontrados.length) {
-    resultados.innerHTML = `
-      <div class="bg-white p-12 rounded-2xl border border-slate-200 shadow-sm text-center">
-        <i data-lucide="user-x" class="w-12 h-12 mx-auto text-slate-300 mb-3"></i>
-        <p class="text-slate-600 font-semibold">Nenhum cliente encontrado</p>
-        <p class="text-xs text-slate-400 mt-1">Tente buscar por outro nome, CPF ou número</p>
-      </div>`;
-    lucide.createIcons();
-    return;
-  }
-
-  // Guarda o resultado atual para as ações (copiar)
-  state.clientesBusca = encontrados;
-  resultados.innerHTML = encontrados.map(c => renderClienteCard(c)).join('');
-  lucide.createIcons();
-}
-
-// Renderiza um card completo do cliente
-function renderClienteCard(c) {
-  const cpfFmt = normalizarCPF(c.cpf);
-  const telefone = normalizarTelefone(c.telefone);
-  const telFormatado = telefone.length === 11
-    ? `(${telefone.slice(0,2)}) ${telefone.slice(2,7)}-${telefone.slice(7)}`
-    : telefone;
-  const altFormatado = c.telefone_alt ? normalizarTelefone(c.telefone_alt) : null;
-  const venc = c.data_vencimento_base
-    ? (String(c.data_vencimento_base).toUpperCase() === 'CC' ? 'CC' : `DIA ${c.data_vencimento_base}`)
-    : '—';
-
-  // Cores das faturas (compacto)
-  const faturaCell = (valor) => {
-    const st = statusFatura(valor);
-    const cor = {
-      pago: 'text-emerald-600', cc: 'text-sky-600',
-      prejuizo: 'text-red-600', enviada: 'text-orange-600',
-      pendente: 'text-slate-700', vazio: 'text-slate-400',
-    }[st] || 'text-slate-400';
-    const icone = {
-      pago: 'check-circle-2', cc: 'credit-card',
-      prejuizo: 'alert-octagon', enviada: 'send',
-      pendente: 'calendar', vazio: 'minus',
-    }[st] || 'minus';
-
-    return `<div class="flex items-center gap-1.5 ${cor} font-semibold">
-      <i data-lucide="${icone}" class="w-3.5 h-3.5"></i>
-      <span class="text-xs">${escapeHTML(valor || '—')}</span>
-    </div>`;
-  };
-
-  return `
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-      <!-- Header -->
-      <div class="p-5 border-b border-slate-100 flex justify-between items-start gap-4">
-        <div class="min-w-0 flex-1">
-          <h3 class="font-bold text-[#000033] text-base md:text-lg truncate">${escapeHTML(capitalizar(c.nome) || 'Sem Nome')}</h3>
-          <div class="flex flex-wrap items-center gap-2 mt-2">
-            <span class="inline-block bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold border border-slate-200">
-              BASE ${escapeHTML(c.ano_base || '—')}
-            </span>
-            ${venc !== '—' ? `
-              <span class="inline-block bg-amber-50 text-amber-700 px-2 py-0.5 rounded text-[10px] font-bold border border-amber-200">
-                VENCIMENTO: ${escapeHTML(venc)}
-              </span>` : ''}
-            ${String(c.modalidade || '').toUpperCase().includes('TROCA DE APARELHO') ? `
-              <span class="inline-block bg-slate-900 text-white px-2 py-0.5 rounded text-[10px] font-bold">
-                TROCA DE APARELHO
-              </span>` : ''}
-          </div>
-        </div>
-        <button onclick="copiarClienteCard('${cpfFmt}')"
-          title="Copiar dados do cliente"
-          class="p-2 text-slate-400 hover:text-[#0e8890] hover:bg-slate-50 rounded-lg transition-colors shrink-0">
-          <i data-lucide="copy" class="w-4 h-4"></i>
-        </button>
-      </div>
-
-      <!-- Corpo: grid de informações -->
-      <div class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-
-        <div>
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Número da Linha</p>
-          <p class="font-mono text-sm text-slate-800 font-semibold cursor-pointer hover:text-[#0e8890] transition-colors"
-             onclick="copiarTexto('${telefone}', this)" title="Clique para copiar">
-            ${escapeHTML(telFormatado || '—')}
-          </p>
-        </div>
-
-        <div>
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">CPF</p>
-          <p class="font-mono text-sm text-slate-800 cursor-pointer hover:text-[#0e8890] transition-colors"
-             onclick="copiarTexto('${cpfFmt}', this)" title="Clique para copiar">
-            ${escapeHTML(cpfFmt || '—')}
-          </p>
-        </div>
-
-        <div>
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Data da Venda</p>
-          <p class="text-sm text-slate-800">${c.data_venda ? fmtBR(c.data_venda) : '—'}</p>
-        </div>
-
-        <div>
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Consultor</p>
-          <p class="text-sm text-slate-800 uppercase">${escapeHTML(c.consultor || '—')}</p>
-        </div>
-
-        <div>
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Plano</p>
-          <p class="text-sm text-[#E60000] font-bold uppercase">${escapeHTML(c.plano || '—')}</p>
-        </div>
-
-        <div>
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Modalidade</p>
-          <p class="text-sm text-slate-700 uppercase">${escapeHTML(c.modalidade || '—')}</p>
-        </div>
-
-        <div>
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Contato Alternativo</p>
-          ${altFormatado ? `
-            <p class="font-mono text-sm text-slate-800 cursor-pointer hover:text-[#0e8890] transition-colors"
-               onclick="copiarTexto('${altFormatado}', this)" title="Clique para copiar">
-              ${escapeHTML(altFormatado)}
-            </p>` : '<p class="text-sm text-slate-400">—</p>'}
-        </div>
-
-        <div>
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Data Nascimento</p>
-          <p class="text-sm text-slate-800">${c.data_nascimento ? fmtBR(c.data_nascimento) : '—'}</p>
-        </div>
-
-        <div>
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">IMEI</p>
-          <p class="font-mono text-xs text-slate-600 truncate" title="${escapeHTML(c.imei || '')}">${escapeHTML(c.imei || '—')}</p>
-        </div>
-
-      </div>
-
-      <!-- Rodapé: faturas -->
-      <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div>
-          <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">1ª Fatura</p>
-          ${faturaCell(c.fatura_p)}
-        </div>
-        <div>
-          <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">2ª Fatura</p>
-          ${faturaCell(c.fatura_q)}
-        </div>
-        <div>
-          <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">3ª Fatura</p>
-          ${faturaCell(c.fatura_r)}
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-// Copia dados completos do cliente formatados
-function copiarClienteCard(cpf) {
-  const c = (state.clientesBusca || []).find(x => normalizarCPF(x.cpf) === cpf);
-  if (!c) return;
-
-  const telefone = normalizarTelefone(c.telefone);
-  const telFormat = telefone.length === 11
-    ? `(${telefone.slice(0,2)}) ${telefone.slice(2,7)}-${telefone.slice(7)}`
-    : telefone;
-
-  const texto =
-    `CLIENTE: ${capitalizar(c.nome)}\n` +
-    `CPF: ${normalizarCPF(c.cpf)}\n` +
-    `LINHA: ${telFormat}\n` +
-    `PLANO: ${c.plano || '—'}\n` +
-    `MODALIDADE: ${c.modalidade || '—'}\n` +
-    `CONSULTOR: ${c.consultor || '—'}\n` +
-    `VENCIMENTO: Dia ${c.data_vencimento_base || '—'}\n` +
-    `BASE: ${c.ano_base || '—'}`;
-
-  navigator.clipboard.writeText(texto).then(() => {
-    mostrarToastCopy('Dados do cliente copiados!');
-  }).catch(() => {
-    const ta = document.createElement('textarea');
-    ta.value = texto;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    mostrarToastCopy('Dados do cliente copiados!');
-  });
-}
-
-    /* ==========================================================
-       MODAL GERENCIAR FATURA
+       MODAL FATURA
        ========================================================== */
-function abrirModalFatura(clienteId, mes) {
-  const cliente = state.clientes.find(c => c.id === clienteId);
-  if (!cliente) return;
+    function abrirModalFatura(clienteId, mes) {
+      const cliente = state.clientes.find(c => c.id === clienteId);
+      if (!cliente) return;
 
-  const valor = mes === 'P' ? cliente.fatura_p
-              : mes === 'Q' ? cliente.fatura_q
-              : cliente.fatura_r;
-  const data = extrairDataFatura(valor) || '—';
-  const st = statusFatura(valor);
-  const dias = data !== '—' ? diasAtraso(data) : 0;
-  const emRisco = dias >= DIAS_PREJUIZO && (st === 'pendente' || st === 'enviada');
+      const valor = mes === 'P' ? cliente.fatura_p
+                  : mes === 'Q' ? cliente.fatura_q
+                  : cliente.fatura_r;
+      const data = extrairDataFatura(valor) || '—';
+      const st = statusFatura(valor);
+      const dias = data !== '—' ? diasAtraso(data) : 0;
+      const emRisco = dias >= DIAS_PREJUIZO && (st === 'pendente' || st === 'enviada');
 
-  state.faturaEmEdicao = { clienteId, mes, valor, data, cliente, dias, emRisco };
+      state.faturaEmEdicao = { clienteId, mes, valor, data, cliente, dias, emRisco };
 
-  // Cabeçalho
-  $('modalFaturaTitle').textContent = `Fatura ${mes === 'P' ? '1ª' : mes === 'Q' ? '2ª' : '3ª'}`;
-  $('mfCliente').textContent = capitalizar(cliente.nome);
-  $('mfLinha').textContent = `Linha: ${cliente.telefone || '—'}`;
-  $('mfFatura').textContent = `${mes === 'P' ? '1ª' : mes === 'Q' ? '2ª' : '3ª'} fatura`;
-  $('mfVenc').textContent = data;
+      $('modalFaturaTitle').textContent = `Fatura ${mes === 'P' ? '1ª' : mes === 'Q' ? '2ª' : '3ª'}`;
+      $('mfCliente').textContent = capitalizar(cliente.nome);
+      $('mfLinha').textContent = `Linha: ${cliente.telefone || '—'}`;
+      $('mfFatura').textContent = `${mes === 'P' ? '1ª' : mes === 'Q' ? '2ª' : '3ª'} fatura`;
+      $('mfVenc').textContent = data;
 
-  // ---------- Banner de risco ----------
-  const bannerRisco = $('mfAlertaRisco');
-  if (emRisco) {
-    bannerRisco.classList.remove('hidden');
-    $('mfDiasAtraso').textContent = `${dias} dias`;
-  } else {
-    bannerRisco.classList.add('hidden');
-  }
+      const bannerRisco = $('mfAlertaRisco');
+      if (emRisco) {
+        bannerRisco.classList.remove('hidden');
+        $('mfDiasAtraso').textContent = `${dias} dias`;
+      } else {
+        bannerRisco.classList.add('hidden');
+      }
 
-  // ---------- Botões ----------
-  const btnCobrar = $('mfBtnCobrar');
-  const btnPagar = $('mfBtnPagar');
-  const btnPrej = $('mfBtnPrejuizo');
+      const btnCobrar = $('mfBtnCobrar');
+      const btnPagar = $('mfBtnPagar');
+      const btnPrej = $('mfBtnPrejuizo');
 
-  const mostrarAcoes = (st === 'pendente' || st === 'enviada');
+      const mostrarAcoes = (st === 'pendente' || st === 'enviada');
+      btnCobrar.classList.toggle('hidden', !mostrarAcoes);
+      btnPagar.classList.toggle('hidden', !mostrarAcoes || st === 'prejuizo');
+      btnPrej.classList.toggle('hidden', !emRisco);
 
-  // Cobrar WhatsApp: sempre que ainda pode ser cobrado
-  btnCobrar.classList.toggle('hidden', !mostrarAcoes);
+      if (emRisco) {
+        btnPrej.classList.add('ring-2', 'ring-red-400', 'ring-offset-2', 'animate-pulse');
+      } else {
+        btnPrej.classList.remove('ring-2', 'ring-red-400', 'ring-offset-2', 'animate-pulse');
+      }
 
-  // Pagar: cliente ainda pode quitar (mesmo atrasado). Só esconde se já é prejuízo.
-  btnPagar.classList.toggle('hidden', !mostrarAcoes || st === 'prejuizo');
-
-  // Prejuízo: SÓ aparece quando cruza o limiar de 30 dias
-  btnPrej.classList.toggle('hidden', !emRisco);
-
-  // Realce visual: se em risco, o botão de prejuízo ganha animação e destaque
-  if (emRisco) {
-    btnPrej.classList.add('ring-2', 'ring-red-400', 'ring-offset-2', 'animate-pulse');
-  } else {
-    btnPrej.classList.remove('ring-2', 'ring-red-400', 'ring-offset-2', 'animate-pulse');
-  }
-
-  $('mfAlert').classList.add('hidden');
-  $('modalFatura').classList.remove('hidden');
-  lucide.createIcons();
-}
+      $('mfAlert').classList.add('hidden');
+      $('modalFatura').classList.remove('hidden');
+      lucide.createIcons();
+    }
 
     function fecharModalFatura() {
       $('modalFatura').classList.add('hidden');
@@ -1303,90 +921,82 @@ function abrirModalFatura(clienteId, mes) {
     /* ==========================================================
        AÇÕES SOBRE A FATURA
        ========================================================== */
-function cobrarWhatsAppCliente(cliente, mes, dataVenc, enviar = true) {
-  // -------- Emojis com fallback --------
-  const E = window.EMOJI_SAFE;
+    function cobrarWhatsAppCliente(cliente, mes, dataVenc, enviar = true) {
+      const E = window.EMOJI_SAFE;
 
-  const nomeCompleto = capitalizar(cliente.nome);
-  const usuarioLinha = String(cliente.usuario_linha || '').trim();
-  const nomeSaudacao = (usuarioLinha && usuarioLinha.toUpperCase() !== 'MESMO')
-    ? capitalizar(usuarioLinha)
-    : nomeCompleto;
-  const primeiroNome = (nomeSaudacao.split(' ')[0] || 'Cliente').toUpperCase();
+      const nomeCompleto = capitalizar(cliente.nome);
+      const usuarioLinha = String(cliente.usuario_linha || '').trim();
+      const nomeSaudacao = (usuarioLinha && usuarioLinha.toUpperCase() !== 'MESMO')
+        ? capitalizar(usuarioLinha)
+        : nomeCompleto;
+      const primeiroNome = (nomeSaudacao.split(' ')[0] || 'Cliente').toUpperCase();
 
-  const atendente = (state.perfil?.nome_completo || 'Consultor').split(' ')[0];
-  const greeting = (() => {
-    const h = new Date().getHours();
-    if (h < 12) return 'bom dia';
-    if (h < 18) return 'boa tarde';
-    return 'boa noite';
-  })();
+      const atendente = (state.perfil?.nome_completo || 'Consultor').split(' ')[0];
+      const greeting = (() => {
+        const h = new Date().getHours();
+        if (h < 12) return 'bom dia';
+        if (h < 18) return 'boa tarde';
+        return 'boa noite';
+      })();
 
-  const atrasada = diasAtraso(dataVenc) > 0;
-  const rotulo = mes === 'P' ? 'primeira' : mes === 'Q' ? 'segunda' : 'terceira';
+      const atrasada = diasAtraso(dataVenc) > 0;
+      const rotulo = mes === 'P' ? 'primeira' : mes === 'Q' ? 'segunda' : 'terceira';
 
-  let msg = '';
-  if (atrasada) {
-    msg = `Olá, ${primeiroNome}! ${E.sparkles}\n\n` +
-          `${E.wave} Tudo bem?\n\n` +
-          `Não identificamos o pagamento da sua ${rotulo} fatura TIM que venceu no dia *${dataVenc}*. ${E.bill}\n\n` +
-          `Caso precise, você pode efetuar o pagamento via cartão de crédito ou PIX pelo *App Meu TIM*. ${E.phone}\n\n` +
-          `${E.warning} Evite a suspensão dos seus benefícios mantendo o pagamento em dia. Se já pagou, por favor desconsidere! ${E.pray}`;
-  } else {
-    msg = `Olá, ${primeiroNome}, ${greeting}! ${E.sparkles}\n\n` +
-          `Aqui é o ${atendente}, da Inforteca TIM.\n\n` +
-          `Sua *${rotulo} fatura* TIM já está disponível com vencimento em *${dataVenc}*. ${E.bill}\n\n` +
-          `Qualquer dúvida, estou à disposição! ${E.rocket}`;
-  }
-
-  const telefone = normalizarTelefone(
-    cliente.telefone_alt && cliente.telefone_alt.replace(/\D/g, '').length >= 10
-      ? cliente.telefone_alt
-      : cliente.telefone
-  );
-  if (!telefone) { alert('Cliente sem telefone cadastrado.'); return null; }
-
-  const msgEnc = encodeURIComponent(msg);
-  const appUrl = `whatsapp://send?phone=55${telefone}&text=${msgEnc}`;
-  const webUrl = `https://wa.me/55${telefone}?text=${msgEnc}`;
-
-  console.log('[WHATSAPP] Mensagem:\n' + msg);
-
-  if (enviar) {
-    let appAbriu = false;
-    const marcarAberto = () => { appAbriu = true; };
-
-    // Detecta se a página perdeu o foco (= app abriu por cima)
-    window.addEventListener('blur', marcarAberto, { once: true });
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) appAbriu = true;
-    }, { once: true });
-
-    // 1) Tenta o app desktop
-    try {
-      window.location.href = appUrl;
-    } catch (_) { /* alguns browsers bloqueiam protocolos custom */ }
-
-    // 2) Fallback: se nada aconteceu em 900ms, vai para wa.me
-    setTimeout(() => {
-      window.removeEventListener('blur', marcarAberto);
-      if (!appAbriu) {
-        console.log('[WHATSAPP] App não abriu — fallback para wa.me');
-        window.open(webUrl, '_blank', 'noopener');
+      let msg = '';
+      if (atrasada) {
+        msg = `Olá, ${primeiroNome}! ${E.sparkles}\n\n` +
+              `${E.wave} Tudo bem?\n\n` +
+              `Não identificamos o pagamento da sua ${rotulo} fatura TIM que venceu no dia *${dataVenc}*. ${E.bill}\n\n` +
+              `Caso precise, você pode efetuar o pagamento via cartão de crédito ou PIX pelo *App Meu TIM*. ${E.phone}\n\n` +
+              `${E.warning} Evite a suspensão dos seus benefícios mantendo o pagamento em dia. Se já pagou, por favor desconsidere! ${E.pray}`;
       } else {
-        console.log('[WHATSAPP] App desktop aberto com sucesso.');
+        msg = `Olá, ${primeiroNome}, ${greeting}! ${E.sparkles}\n\n` +
+              `Aqui é o ${atendente}, da Inforteca TIM.\n\n` +
+              `Sua *${rotulo} fatura* TIM já está disponível com vencimento em *${dataVenc}*. ${E.bill}\n\n` +
+              `Qualquer dúvida, estou à disposição! ${E.rocket}`;
       }
-    }, 900);
-  }
 
-  return appUrl;
-}
+      const telefone = normalizarTelefone(
+        cliente.telefone_alt && cliente.telefone_alt.replace(/\D/g, '').length >= 10
+          ? cliente.telefone_alt
+          : cliente.telefone
+      );
+      if (!telefone) { alert('Cliente sem telefone cadastrado.'); return null; }
+
+      const msgEnc = encodeURIComponent(msg);
+      const appUrl = `whatsapp://send?phone=55${telefone}&text=${msgEnc}`;
+      const webUrl = `https://wa.me/55${telefone}?text=${msgEnc}`;
+
+      console.log('[WHATSAPP] Mensagem:\n' + msg);
+
+      if (enviar) {
+        let appAbriu = false;
+        const marcarAberto = () => { appAbriu = true; };
+
+        window.addEventListener('blur', marcarAberto, { once: true });
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) appAbriu = true;
+        }, { once: true });
+
+        try { window.location.href = appUrl; } catch (_) {}
+
+        setTimeout(() => {
+          window.removeEventListener('blur', marcarAberto);
+          if (!appAbriu) {
+            console.log('[WHATSAPP] App não abriu — fallback para wa.me');
+            window.open(webUrl, '_blank', 'noopener');
+          } else {
+            console.log('[WHATSAPP] App desktop aberto com sucesso.');
+          }
+        }, 900);
+      }
+
+      return appUrl;
+    }
 
     async function acaoCobrar() {
       const f = state.faturaEmEdicao; if (!f) return;
       cobrarWhatsAppCliente(f.cliente, f.mes, f.data);
-
-      // Registra ENVIADA mantendo a data original
       const novoValor = `${f.data} (FATURA ENVIADA)`;
       await atualizarFatura(f.clienteId, f.mes, novoValor, 'cobrar');
     }
@@ -1398,22 +1008,20 @@ function cobrarWhatsAppCliente(cliente, mes, dataVenc, enviar = true) {
       await atualizarFatura(f.clienteId, f.mes, novoValor, 'pagar');
     }
 
-async function acaoPrejuizo() {
-  const f = state.faturaEmEdicao; if (!f) return;
+    async function acaoPrejuizo() {
+      const f = state.faturaEmEdicao; if (!f) return;
+      const confirmar = confirm(
+        `Confirmar registro de PREJUÍZO?\n\n` +
+        `Cliente: ${capitalizar(f.cliente.nome)}\n` +
+        `Fatura: ${f.data}\n` +
+        `Atraso: ${f.dias} dias\n\n` +
+        `Esta ação NÃO pode ser desfeita.`
+      );
+      if (!confirmar) return;
+      const novoValor = `${f.data} PREJUIZO`;
+      await atualizarFatura(f.clienteId, f.mes, novoValor, 'prejuizo');
+    }
 
-  // Confirmação explícita — ação que impacta indicador
-  const confirmar = confirm(
-    `Confirmar registro de PREJUÍZO?\n\n` +
-    `Cliente: ${capitalizar(f.cliente.nome)}\n` +
-    `Fatura: ${f.data}\n` +
-    `Atraso: ${f.dias} dias\n\n` +
-    `Esta ação NÃO pode ser desfeita.`
-  );
-  if (!confirmar) return;
-
-  const novoValor = `${f.data} PREJUIZO`;
-  await atualizarFatura(f.clienteId, f.mes, novoValor, 'prejuizo');
-}
     async function atualizarFatura(clienteId, mes, novoValor, acao) {
       const coluna = mes === 'P' ? 'fatura_p' : mes === 'Q' ? 'fatura_q' : 'fatura_r';
       const alertBox = $('mfAlert');
@@ -1425,7 +1033,6 @@ async function acaoPrejuizo() {
           .eq('id', clienteId);
         if (error) throw error;
 
-        // Log de auditoria (opcional mas recomendado)
         try {
           await supabaseClient.rpc('registrar_log', {
             p_tabela: 'clientes_faturas',
@@ -1434,9 +1041,8 @@ async function acaoPrejuizo() {
             p_antes: null,
             p_depois: { [coluna]: novoValor }
           });
-        } catch (_) { /* silencioso */ }
+        } catch (_) {}
 
-        // Atualiza cache local
         const c = state.clientes.find(x => x.id === clienteId);
         if (c) c[coluna] = novoValor;
 
@@ -1451,6 +1057,244 @@ async function acaoPrejuizo() {
     }
 
     /* ==========================================================
+       MÓDULO: CLIENTES TIM (busca server-side)
+       ========================================================== */
+    let _buscaClientesTimer = null;
+    function debounceBuscarClientes() {
+      clearTimeout(_buscaClientesTimer);
+      _buscaClientesTimer = setTimeout(buscarClientes, 350);
+    }
+
+    async function buscarClientes() {
+      const termo = $('inputBuscaClientes').value.trim();
+      const contador = $('clientesContador');
+      const resultados = $('clientesResultados');
+
+      if (termo.length < 2) {
+        contador.textContent = 'Digite ao menos 2 caracteres para buscar';
+        resultados.innerHTML = `
+          <div class="bg-white p-12 rounded-2xl border border-dashed border-slate-200 text-center">
+            <i data-lucide="search" class="w-12 h-12 mx-auto text-slate-300 mb-3"></i>
+            <p class="text-slate-500 font-medium">Use a barra acima para pesquisar</p>
+            <p class="text-xs text-slate-400 mt-1">Busca em toda a base histórica de clientes TIM</p>
+          </div>`;
+        lucide.createIcons();
+        return;
+      }
+
+      contador.textContent = 'Buscando...';
+      resultados.innerHTML = `
+        <div class="bg-white p-12 rounded-2xl border border-slate-200 shadow-sm text-center">
+          <i data-lucide="loader-2" class="w-8 h-8 mx-auto text-[#0e8890] animate-spin mb-3"></i>
+          <p class="text-slate-500">Consultando banco de dados...</p>
+        </div>`;
+      lucide.createIcons();
+
+      const termoNum = termo.replace(/\D/g, '');
+      const termoSeguro = termo.replace(/[%,]/g, ''); // previne quebra do filtro OR
+
+      let query = supabaseClient.from('clientes_faturas').select('*');
+
+      if (termoNum.length >= 3 && /^\d+$/.test(termoNum)) {
+        query = query.or(
+          `cpf.ilike.%${termoNum}%,telefone.ilike.%${termoNum}%,telefone_alt.ilike.%${termoNum}%,nome.ilike.%${termoSeguro}%,consultor.ilike.%${termoSeguro}%`
+        );
+      } else {
+        query = query.or(`nome.ilike.%${termoSeguro}%,consultor.ilike.%${termoSeguro}%`);
+      }
+
+      const { data, error } = await query.limit(500);
+
+      if (error) {
+        console.error(error);
+        contador.textContent = 'Erro na busca';
+        resultados.innerHTML = `
+          <div class="bg-white p-12 rounded-2xl border border-red-200 shadow-sm text-center">
+            <i data-lucide="alert-circle" class="w-12 h-12 mx-auto text-red-400 mb-3"></i>
+            <p class="text-slate-600 font-semibold">Erro ao buscar</p>
+            <p class="text-xs text-slate-500 mt-1">${escapeHTML(error.message)}</p>
+          </div>`;
+        lucide.createIcons();
+        return;
+      }
+
+      const encontrados = data || [];
+      encontrados.sort((a, b) => String(a.nome || '').localeCompare(String(b.nome || '')));
+
+      contador.textContent = `${encontrados.length} ${encontrados.length === 1 ? 'cliente encontrado' : 'clientes encontrados'}`;
+
+      if (!encontrados.length) {
+        resultados.innerHTML = `
+          <div class="bg-white p-12 rounded-2xl border border-slate-200 shadow-sm text-center">
+            <i data-lucide="user-x" class="w-12 h-12 mx-auto text-slate-300 mb-3"></i>
+            <p class="text-slate-600 font-semibold">Nenhum cliente encontrado</p>
+            <p class="text-xs text-slate-400 mt-1">Tente buscar por outro nome, CPF ou número</p>
+          </div>`;
+        lucide.createIcons();
+        return;
+      }
+
+      state.clientesBusca = encontrados;
+      resultados.innerHTML = encontrados.map(c => renderClienteCard(c)).join('');
+      lucide.createIcons();
+    }
+
+    function renderClienteCard(c) {
+      const cpfFmt = normalizarCPF(c.cpf);
+      const telefone = normalizarTelefone(c.telefone);
+      const telFormatado = telefone.length === 11
+        ? `(${telefone.slice(0,2)}) ${telefone.slice(2,7)}-${telefone.slice(7)}`
+        : telefone;
+      const altFormatado = c.telefone_alt ? normalizarTelefone(c.telefone_alt) : null;
+      const venc = c.data_vencimento_base
+        ? (String(c.data_vencimento_base).toUpperCase() === 'CC' ? 'CC' : `DIA ${c.data_vencimento_base}`)
+        : '—';
+
+      const faturaCell = (valor) => {
+        const st = statusFatura(valor);
+        const cor = {
+          pago: 'text-emerald-600', cc: 'text-sky-600',
+          prejuizo: 'text-red-600', enviada: 'text-orange-600',
+          pendente: 'text-slate-700', vazio: 'text-slate-400',
+        }[st] || 'text-slate-400';
+        const icone = {
+          pago: 'check-circle-2', cc: 'credit-card',
+          prejuizo: 'alert-octagon', enviada: 'send',
+          pendente: 'calendar', vazio: 'minus',
+        }[st] || 'minus';
+
+        return `<div class="flex items-center gap-1.5 ${cor} font-semibold">
+          <i data-lucide="${icone}" class="w-3.5 h-3.5"></i>
+          <span class="text-xs">${escapeHTML(valor || '—')}</span>
+        </div>`;
+      };
+
+      return `
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+          <div class="p-5 border-b border-slate-100 flex justify-between items-start gap-4">
+            <div class="min-w-0 flex-1">
+              <h3 class="font-bold text-[#000033] text-base md:text-lg truncate">${escapeHTML(capitalizar(c.nome) || 'Sem Nome')}</h3>
+              <div class="flex flex-wrap items-center gap-2 mt-2">
+                <span class="inline-block bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold border border-slate-200">
+                  BASE ${escapeHTML(c.ano_base || '—')}
+                </span>
+                ${venc !== '—' ? `
+                  <span class="inline-block bg-amber-50 text-amber-700 px-2 py-0.5 rounded text-[10px] font-bold border border-amber-200">
+                    VENCIMENTO: ${escapeHTML(venc)}
+                  </span>` : ''}
+                ${String(c.modalidade || '').toUpperCase().includes('TROCA DE APARELHO') ? `
+                  <span class="inline-block bg-slate-900 text-white px-2 py-0.5 rounded text-[10px] font-bold">
+                    TROCA DE APARELHO
+                  </span>` : ''}
+              </div>
+            </div>
+            <button onclick="copiarClienteCard('${cpfFmt}')"
+              title="Copiar dados do cliente"
+              class="p-2 text-slate-400 hover:text-[#0e8890] hover:bg-slate-50 rounded-lg transition-colors shrink-0">
+              <i data-lucide="copy" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <div class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Número da Linha</p>
+              <p class="font-mono text-sm text-slate-800 font-semibold cursor-pointer hover:text-[#0e8890] transition-colors"
+                 onclick="copiarTexto('${telefone}', this)" title="Clique para copiar">
+                ${escapeHTML(telFormatado || '—')}
+              </p>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">CPF</p>
+              <p class="font-mono text-sm text-slate-800 cursor-pointer hover:text-[#0e8890] transition-colors"
+                 onclick="copiarTexto('${cpfFmt}', this)" title="Clique para copiar">
+                ${escapeHTML(cpfFmt || '—')}
+              </p>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Data da Venda</p>
+              <p class="text-sm text-slate-800">${c.data_venda ? fmtBR(c.data_venda) : '—'}</p>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Consultor</p>
+              <p class="text-sm text-slate-800 uppercase">${escapeHTML(c.consultor || '—')}</p>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Plano</p>
+              <p class="text-sm text-[#E60000] font-bold uppercase">${escapeHTML(c.plano || '—')}</p>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Modalidade</p>
+              <p class="text-sm text-slate-700 uppercase">${escapeHTML(c.modalidade || '—')}</p>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Contato Alternativo</p>
+              ${altFormatado ? `
+                <p class="font-mono text-sm text-slate-800 cursor-pointer hover:text-[#0e8890] transition-colors"
+                   onclick="copiarTexto('${altFormatado}', this)" title="Clique para copiar">
+                  ${escapeHTML(altFormatado)}
+                </p>` : '<p class="text-sm text-slate-400">—</p>'}
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Data Nascimento</p>
+              <p class="text-sm text-slate-800">${c.data_nascimento ? fmtBR(c.data_nascimento) : '—'}</p>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">IMEI</p>
+              <p class="font-mono text-xs text-slate-600 truncate" title="${escapeHTML(c.imei || '')}">${escapeHTML(c.imei || '—')}</p>
+            </div>
+          </div>
+
+          <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">1ª Fatura</p>
+              ${faturaCell(c.fatura_p)}
+            </div>
+            <div>
+              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">2ª Fatura</p>
+              ${faturaCell(c.fatura_q)}
+            </div>
+            <div>
+              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">3ª Fatura</p>
+              ${faturaCell(c.fatura_r)}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function copiarClienteCard(cpf) {
+      const c = (state.clientesBusca || []).find(x => normalizarCPF(x.cpf) === cpf);
+      if (!c) return;
+
+      const telefone = normalizarTelefone(c.telefone);
+      const telFormat = telefone.length === 11
+        ? `(${telefone.slice(0,2)}) ${telefone.slice(2,7)}-${telefone.slice(7)}`
+        : telefone;
+
+      const texto =
+        `CLIENTE: ${capitalizar(c.nome)}\n` +
+        `CPF: ${normalizarCPF(c.cpf)}\n` +
+        `LINHA: ${telFormat}\n` +
+        `PLANO: ${c.plano || '—'}\n` +
+        `MODALIDADE: ${c.modalidade || '—'}\n` +
+        `CONSULTOR: ${c.consultor || '—'}\n` +
+        `VENCIMENTO: Dia ${c.data_vencimento_base || '—'}\n` +
+        `BASE: ${c.ano_base || '—'}`;
+
+      navigator.clipboard.writeText(texto).then(() => {
+        mostrarToastCopy('Dados do cliente copiados!');
+      }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = texto;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        mostrarToastCopy('Dados do cliente copiados!');
+      });
+    }
+
+    /* ==========================================================
        IMPORTAÇÃO CSV
        ========================================================== */
     function abrirModalImportacao() {
@@ -1461,9 +1305,11 @@ async function acaoPrejuizo() {
       $('importAlert').classList.add('hidden');
       state.arquivoSelecionado = null;
     }
+
     function fecharModalImportacao() {
       $('modalImport').classList.add('hidden');
     }
+
     function onFileSelected(input) {
       if (input.files && input.files[0]) {
         state.arquivoSelecionado = input.files[0];
@@ -1472,123 +1318,121 @@ async function acaoPrejuizo() {
       }
     }
 
-async function processarCSV() {
-  const arquivo = state.arquivoSelecionado;
-  if (!arquivo) return;
-
-  const btn = $('btnProcessar');
-  const alertBox = $('importAlert');
-  btn.disabled = true;
-  btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Processando…`;
-  lucide.createIcons();
-
-  Papa.parse(arquivo, {
-    header: true,
-    skipEmptyLines: 'greedy',
-    transformHeader: (h) => h.trim(),
-    complete: async ({ data }) => {
-      // ---------- 1. Mapeamento ----------
-      const brutos = data.map(row => {
-        const dtVenda = parseBR(row['DATA DA VENDA'] || row['DATA VENDA'] || '');
-        const dtNasc  = parseBR(row['DATA DE NASCIMENTO'] || row['NASCIMENTO'] || '');
-        return {
-          ano_base: String(new Date().getFullYear()), // dinâmico
-data_vencimento_base: (() => {
-  const fp = (row['PRIMEIRA FATURA'] || row['1ª FATURA'] || '').trim();
-  if (!fp || fp === '---' || fp === 'N/A') return null;
-  if (fp.toUpperCase() === 'CC') return 'CC';
-  const m = fp.match(/^(\d{2})\/\d{2}\/\d{4}/);
-  return m ? String(parseInt(m[1], 10)) : null; // "12/11/2026" → "12"
-})(),          data_nascimento: dtNasc ? dtNasc.toISOString().slice(0,10) : null,
-          status_thales: (row['STATUS'] || row['STATUS THALES'] || '').trim() || null,
-          data_venda: dtVenda ? dtVenda.toISOString().slice(0,10) : null,
-          imei: (row['IMEI'] || '').trim() || null,
-          telefone: normalizarTelefone(row['NÚMERO DA LINHA'] || row['LINHA'] || row['TELEFONE'] || ''),
-          telefone_provisorio: (row['NÚMERO PROVISÓRIO'] || row['PROVISORIO'] || '').trim() || null,
-          fidel_ap: (row['FIDELIZAÇÃO AP'] || row['FIDEL AP'] || '').trim() || null,
-          fidel_pl: (row['FIDELIZAÇÃO PLANO'] || row['FIDEL PL'] || '').trim() || null,
-          modalidade: (row['MODALIDADE'] || '').trim() || null,
-          plano: (row['PLANO'] || '').trim() || null,
-          consultor: (row['CONSULTOR'] || '').trim() || null,
-          cpf: normalizarCPF(row['CPF CLIENTE'] || row['CPF'] || ''),
-          nome: (row['NOME DO CLIENTE'] || row['CLIENTE'] || row['NOME'] || '').trim() || null,
-          nota_o: null,
-          fatura_p: (row['PRIMEIRA FATURA'] || row['1ª FATURA'] || '---').trim(),
-          fatura_q: (row['SEGUNDA FATURA'] || row['2ª FATURA'] || '---').trim(),
-          fatura_r: (row['TERCEIRA FATURA'] || row['3ª FATURA'] || '---').trim(),
-          telefone_alt: normalizarTelefone(row['TELEFONE ALTERNATIVO'] || row['TEL ALT'] || '') || null,
-          status_boas_vindas: null,
-          usuario_linha: null,
-          debito_automatico: 'NÃO',
-          status_saneamento: 'SANEADO',
-        };
-      }).filter(r => r.nome && r.cpf && r.telefone);
-
-      if (!brutos.length) {
-        return mostrarAlertaImportacao('Nenhum registro válido encontrado no CSV.', 'red', btn);
+    function mostrarAlertaImportacao(texto, cor, btn) {
+      const alertBox = $('importAlert');
+      const cores = {
+        red:     'bg-red-50 border-red-200 text-red-600',
+        emerald: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+        amber:   'bg-amber-50 border-amber-200 text-amber-700',
+      };
+      alertBox.textContent = texto;
+      alertBox.className = `text-xs p-3 rounded-xl border font-medium ${cores[cor] || cores.red}`;
+      alertBox.classList.remove('hidden');
+      if (cor === 'red') {
+        btn.disabled = false;
+        btn.innerHTML = 'Processar';
       }
+    }
 
-      // ---------- 2. Deduplicação inteligente ----------
-      // Chave natural: ano_base + cpf + telefone + data_venda
-      // Se repetir, mantém a ÚLTIMA ocorrência (linha mais recente do CSV)
-      const mapa = new Map();
-      brutos.forEach(reg => {
-        const chave = `${reg.ano_base}|${reg.cpf}|${reg.telefone}|${reg.data_venda || ''}`;
-        mapa.set(chave, reg);
+    async function processarCSV() {
+      const arquivo = state.arquivoSelecionado;
+      if (!arquivo) return;
+
+      const btn = $('btnProcessar');
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Processando…`;
+      lucide.createIcons();
+
+      Papa.parse(arquivo, {
+        header: true,
+        skipEmptyLines: 'greedy',
+        transformHeader: (h) => h.trim(),
+        complete: async ({ data }) => {
+          const brutos = data.map(row => {
+            const dtVenda = parseBR(row['DATA DA VENDA'] || row['DATA VENDA'] || '');
+            const dtNasc  = parseBR(row['DATA DE NASCIMENTO'] || row['NASCIMENTO'] || '');
+
+            return {
+              ano_base: String(new Date().getFullYear()),
+              data_vencimento_base: (() => {
+                const extrair = (txt) => {
+                  if (!txt) return null;
+                  const s = String(txt).trim();
+                  if (!s || s === '---' || s.toUpperCase() === 'N/A') return null;
+                  if (s.toUpperCase() === 'CC' || s.toUpperCase().includes(' CC')) return 'CC';
+                  const m = s.match(/(\d{2})\/\d{2}\/\d{4}/);
+                  return m ? String(parseInt(m[1], 10)) : null;
+                };
+                const fp = row['PRIMEIRA FATURA'] || row['1ª FATURA'] || '';
+                const fq = row['SEGUNDA FATURA']  || row['2ª FATURA'] || '';
+                const fr = row['TERCEIRA FATURA'] || row['3ª FATURA'] || '';
+                return extrair(fp) || extrair(fq) || extrair(fr);
+              })(),
+              data_nascimento: dtNasc ? dtNasc.toISOString().slice(0,10) : null,
+              status_thales: (row['STATUS'] || row['STATUS THALES'] || '').trim() || null,
+              data_venda: dtVenda ? dtVenda.toISOString().slice(0,10) : null,
+              imei: (row['IMEI'] || '').trim() || null,
+              telefone: normalizarTelefone(row['NÚMERO DA LINHA'] || row['LINHA'] || row['TELEFONE'] || ''),
+              telefone_provisorio: (row['NÚMERO PROVISÓRIO'] || row['PROVISORIO'] || '').trim() || null,
+              fidel_ap: (row['FIDELIZAÇÃO AP'] || row['FIDEL AP'] || '').trim() || null,
+              fidel_pl: (row['FIDELIZAÇÃO PLANO'] || row['FIDEL PL'] || '').trim() || null,
+              modalidade: (row['MODALIDADE'] || '').trim() || null,
+              plano: (row['PLANO'] || '').trim() || null,
+              consultor: (row['CONSULTOR'] || '').trim() || null,
+              cpf: normalizarCPF(row['CPF CLIENTE'] || row['CPF'] || ''),
+              nome: (row['NOME DO CLIENTE'] || row['CLIENTE'] || row['NOME'] || '').trim() || null,
+              nota_o: null,
+              fatura_p: (row['PRIMEIRA FATURA'] || row['1ª FATURA'] || '---').trim(),
+              fatura_q: (row['SEGUNDA FATURA'] || row['2ª FATURA'] || '---').trim(),
+              fatura_r: (row['TERCEIRA FATURA'] || row['3ª FATURA'] || '---').trim(),
+              telefone_alt: normalizarTelefone(row['TELEFONE ALTERNATIVO'] || row['TEL ALT'] || '') || null,
+              status_boas_vindas: null,
+              usuario_linha: null,
+              debito_automatico: 'NÃO',
+              status_saneamento: 'SANEADO',
+            };
+          }).filter(r => r.nome && r.cpf && r.telefone);
+
+          if (!brutos.length) {
+            return mostrarAlertaImportacao('Nenhum registro válido encontrado no CSV.', 'red', btn);
+          }
+
+          // Deduplicação
+          const mapa = new Map();
+          brutos.forEach(reg => {
+            const chave = `${reg.ano_base}|${reg.cpf}|${reg.telefone}|${reg.data_venda || ''}`;
+            mapa.set(chave, reg);
+          });
+          const payload = Array.from(mapa.values());
+          const duplicatasRemovidas = brutos.length - payload.length;
+
+          // Insert em lotes
+          const TAMANHO_LOTE = 200;
+          let inseridos = 0;
+          const erros = [];
+
+          for (let i = 0; i < payload.length; i += TAMANHO_LOTE) {
+            const lote = payload.slice(i, i + TAMANHO_LOTE);
+            const { error } = await supabaseClient.from('clientes_faturas').insert(lote);
+            if (error) erros.push(error.message);
+            else inseridos += lote.length;
+          }
+
+          if (erros.length) {
+            mostrarAlertaImportacao(
+              `⚠️ ${inseridos} importados, ${erros.length} lote(s) com erro. Primeiro erro: ${erros[0]}`,
+              'amber', btn
+            );
+          } else {
+            const msg = `✅ ${inseridos} clientes importados` +
+              (duplicatasRemovidas > 0 ? ` · ${duplicatasRemovidas} duplicata(s) do CSV removida(s)` : '') + '!';
+            mostrarAlertaImportacao(msg, 'emerald', btn);
+            setTimeout(() => { fecharModalImportacao(); carregarClientes(); }, 1200);
+          }
+        },
+        error: (err) => mostrarAlertaImportacao('Erro ao ler o CSV: ' + err.message, 'red', btn)
       });
-      const payload = Array.from(mapa.values());
-
-      const duplicatasRemovidas = brutos.length - payload.length;
-
-      // ---------- 3. Inserção em lotes (evita timeout) ----------
-      const TAMANHO_LOTE = 200;
-      let inseridos = 0;
-      const erros = [];
-
-      for (let i = 0; i < payload.length; i += TAMANHO_LOTE) {
-        const lote = payload.slice(i, i + TAMANHO_LOTE);
-        const { error } = await supabaseClient
-          .from('clientes_faturas')
-          .insert(lote);
-
-        if (error) {
-          erros.push(error.message);
-        } else {
-          inseridos += lote.length;
-        }
-      }
-
-      // ---------- 4. Feedback final ----------
-      if (erros.length) {
-        const msg = `⚠️ ${inseridos} importados, ${erros.length} lote(s) com erro. Primeiro erro: ${erros[0]}`;
-        mostrarAlertaImportacao(msg, 'amber', btn);
-      } else {
-        const msg = `✅ ${inseridos} clientes importados` +
-          (duplicatasRemovidas > 0 ? ` · ${duplicatasRemovidas} duplicata(s) do CSV removida(s)` : '') + '!';
-        mostrarAlertaImportacao(msg, 'emerald', btn);
-        setTimeout(() => { fecharModalImportacao(); carregarClientes(); }, 1200);
-      }
-    },
-    error: (err) => mostrarAlertaImportacao('Erro ao ler o CSV: ' + err.message, 'red', btn)
-  });
-}
-
-// Helper de alerta — evita repetir className
-function mostrarAlertaImportacao(texto, cor, btn) {
-  const alertBox = $('importAlert');
-  const cores = {
-    red:     'bg-red-50 border-red-200 text-red-600',
-    emerald: 'bg-emerald-50 border-emerald-200 text-emerald-700',
-    amber:   'bg-amber-50 border-amber-200 text-amber-700',
-  };
-  alertBox.textContent = texto;
-  alertBox.className = `text-xs p-3 rounded-xl border font-medium ${cores[cor] || cores.red}`;
-  alertBox.classList.remove('hidden');
-  if (cor === 'red') {
-    btn.disabled = false;
-    btn.innerHTML = 'Processar';
-  }
-}
+    }
 
     /* ==========================================================
        BOOT
@@ -1597,10 +1441,6 @@ function mostrarAlertaImportacao(texto, cor, btn) {
       lucide.createIcons();
       verificarAuth();
     });
-
-    // Recria ícones após renderização dinâmica
-    const _originalCreate = lucide.createIcons;
-    lucide.createIcons = function() { try { _originalCreate(); } catch(e) {} };
   </script>
 </body>
 </html>
