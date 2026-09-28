@@ -229,9 +229,14 @@
         <!-- Logo / Branding -->
         <div class="fade-up mb-10">
           <div class="flex items-center gap-3 mb-8">
-            <div class="w-12 h-12 rounded-2xl bg-[#000033] flex items-center justify-center shadow-lg shadow-[#000033]/10">
-              <span class="text-[#E60000] text-2xl font-black leading-none">==</span>
-            </div>
+            <div class="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-sm overflow-hidden p-1">
+  <img
+    src="https://www.weebly.com/editor/uploads/1/3/4/2/134260582/custom_themes/529222669451491690/files/images/LOGO2023.png"
+    alt="Inforteca"
+    class="w-full h-full object-contain"
+    onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'text-[#E60000] text-2xl font-black leading-none\'>==</span>';"
+  >
+</div>
             <div>
               <h1 class="text-lg font-black text-[#000033] tracking-tight leading-none">INFORTECA</h1>
               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Loja TIM Dom José</p>
@@ -303,9 +308,31 @@
         </form>
 
         <!-- Rodapé -->
-        <p class="hide-short text-center text-[10px] text-slate-400 mt-10 tracking-wide uppercase font-medium">
-          © <span id="year"></span> Inforteca · Desenvolvido com dedicação
-        </p>
+       <div class="hide-short mt-10 pt-6 border-t border-slate-100 fade-up delay-5">
+  <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-[10px] text-slate-400 tracking-wide uppercase font-medium">
+
+    <!-- Copyright -->
+    <span class="order-2 sm:order-1">© <span id="year"></span> Inforteca</span>
+
+    <!-- Divider -->
+    <span class="hidden sm:block w-px h-4 bg-slate-200 order-3"></span>
+
+    <!-- Desenvolvido por Moviti Digital -->
+    <span class="order-1 sm:order-2 flex items-center gap-2">
+      <span class="text-slate-400">Desenvolvido por</span>
+      <a href="https://moviti-digital-site.vercel.app" target="_blank" rel="noopener"
+         class="inline-flex items-center transition-transform hover:scale-105 active:scale-95">
+        <img
+          src="https://moviti-digital-site.vercel.app/LOGOMOVITIDIGITALmenor.png"
+          alt="Moviti Digital"
+          class="h-5 sm:h-6 w-auto object-contain"
+          onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'font-black text-[#0e8890] text-[11px] tracking-wider\'>MOVITI DIGITAL</span>';"
+        >
+      </a>
+    </span>
+
+  </div>
+</div>
       </div>
     </main>
 
