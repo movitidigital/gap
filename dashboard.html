@@ -55,6 +55,10 @@
           class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer">
           <i data-lucide="search" class="w-5 h-5"></i><span class="text-sm font-medium">Clientes TIM</span>
         </button>
+        <button onclick="navegar('portabilidades')" data-nav="portabilidades"
+  class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer">
+  <i data-lucide="arrow-left-right" class="w-5 h-5"></i><span class="text-sm font-medium">Portabilidades</span>
+</button>
         <button onclick="navegar('faturas')" data-nav="faturas"
           class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer">
           <i data-lucide="file-text" class="w-5 h-5"></i><span class="text-sm font-medium">Faturas</span>
@@ -245,6 +249,97 @@
         </div>
       </div>
 
+      <!-- ===== PORTABILIDADES ===== -->
+<div id="view-portabilidades" class="hidden animate-fade-in">
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <div class="bg-white rounded-2xl p-6 border border-orange-100 shadow-sm flex justify-between items-start">
+      <div>
+        <p class="text-xs font-semibold text-orange-500 uppercase mb-1 flex items-center gap-1">
+          <i data-lucide="clock" class="w-3 h-3"></i> Pendentes de Validação
+        </p>
+        <h3 id="portPendentes" class="text-3xl font-bold text-orange-600">—</h3>
+      </div>
+      <div class="p-3 bg-orange-50 text-orange-500 rounded-xl"><i data-lucide="clock" class="w-6 h-6"></i></div>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 border border-emerald-100 shadow-sm flex justify-between items-start">
+      <div>
+        <p class="text-xs font-semibold text-emerald-500 uppercase mb-1 flex items-center gap-1">
+          <i data-lucide="check-circle-2" class="w-3 h-3"></i> Concluídas
+        </p>
+        <h3 id="portConcluidas" class="text-3xl font-bold text-emerald-600">—</h3>
+      </div>
+      <div class="p-3 bg-emerald-50 text-emerald-500 rounded-xl"><i data-lucide="check-circle-2" class="w-6 h-6"></i></div>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 border border-red-100 shadow-sm flex justify-between items-start">
+      <div>
+        <p class="text-xs font-semibold text-red-500 uppercase mb-1 flex items-center gap-1">
+          <i data-lucide="alert-octagon" class="w-3 h-3"></i> Com Falha
+        </p>
+        <h3 id="portFalhas" class="text-3xl font-bold text-red-600">—</h3>
+      </div>
+      <div class="p-3 bg-red-50 text-red-500 rounded-xl"><i data-lucide="alert-octagon" class="w-6 h-6"></i></div>
+    </div>
+  </div>
+
+  <!-- Barra de busca -->
+  <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
+    <div class="flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div class="relative w-full md:w-96">
+        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+        <input type="text" id="inputBuscaPortabilidade"
+          oninput="filtrarPortabilidades()"
+          placeholder="Buscar por Nome, CPF, Nº Portar ou Nº Provisório..."
+          class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-[#0e8890] focus:ring-2 focus:ring-[#0e8890]/20 transition-all"
+          autocomplete="off">
+      </div>
+      <div class="flex gap-3 w-full md:w-auto items-center">
+        <select id="selectPortStatus" onchange="filtrarPortabilidades()"
+          class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-3 focus:outline-none focus:border-[#0e8890]">
+          <option value="PENDENTE">Só Pendentes</option>
+          <option value="TODAS">Todas</option>
+          <option value="CONCLUIDA">Concluídas</option>
+          <option value="FALHA">Com Falha</option>
+        </select>
+        <button onclick="carregarPortabilidades()"
+          class="bg-slate-900 hover:bg-[#000033] text-white px-4 py-3 rounded-xl text-sm font-medium shadow-sm transition-colors flex items-center gap-2">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i><span class="hidden sm:inline">Atualizar</span>
+        </button>
+      </div>
+    </div>
+    <div id="portContador" class="mt-3 text-xs text-slate-500 font-medium">Carregando portabilidades…</div>
+  </div>
+
+  <!-- Tabela -->
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm whitespace-nowrap">
+        <thead class="bg-slate-800 text-white text-[10px] uppercase tracking-widest">
+          <tr>
+            <th class="px-4 py-4 font-bold">Data Venda</th>
+            <th class="px-4 py-4 font-bold">Nº Portar</th>
+            <th class="px-4 py-4 font-bold">Nº Provisório</th>
+            <th class="px-4 py-4 font-bold">Modalidade</th>
+            <th class="px-4 py-4 font-bold">Plano</th>
+            <th class="px-4 py-4 font-bold">Consultor</th>
+            <th class="px-4 py-4 font-bold">CPF</th>
+            <th class="px-4 py-4 font-bold">Nome</th>
+            <th class="px-4 py-4 font-bold text-center">Status</th>
+            <th class="px-4 py-4 font-bold text-center">Ação</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaPortabilidades" class="divide-y divide-slate-100">
+          <tr><td colspan="10" class="px-6 py-12 text-center text-slate-500">A carregar…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+      
       <!-- ===== PROSPECÇÃO (placeholder) ===== -->
       <div id="view-prospeccao" class="hidden animate-fade-in">
         <div class="bg-white p-12 rounded-2xl border border-slate-200 shadow-sm text-center text-slate-500">
@@ -338,6 +433,58 @@
     </div>
   </div>
 
+  <!-- ============ MODAL PORTABILIDADE ============ -->
+<div id="modalPortabilidade" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+    <div class="bg-[#000033] px-6 py-4 flex justify-between items-center">
+      <h3 class="text-white font-semibold flex items-center gap-2">
+        <i data-lucide="arrow-left-right" class="w-5 h-5 text-[#0e8890]"></i>
+        Atualizar Portabilidade
+      </h3>
+      <button onclick="fecharModalPortabilidade()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+
+    <div class="p-6 space-y-4">
+      <!-- Info do cliente -->
+      <div class="bg-slate-50 rounded-xl p-3 text-sm">
+        <p class="font-semibold text-slate-800" id="mpCliente">—</p>
+        <p class="text-xs text-slate-500 mt-1">
+          Nº Portar: <strong id="mpNumPortar" class="font-mono">—</strong> ·
+          Provisório: <strong id="mpNumProv" class="font-mono">—</strong>
+        </p>
+      </div>
+
+      <!-- Escolha -->
+      <div>
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Resultado</label>
+        <select id="mpStatus" onchange="toggleMotivoFalhaPorta()"
+          class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-[#0e8890]">
+          <option value="CONCLUIDA">✅ Concluída com Sucesso</option>
+          <option value="FALHA">❌ Falha na Portabilidade</option>
+        </select>
+      </div>
+
+      <!-- Motivo da falha -->
+      <div id="mpMotivoBox" class="hidden">
+        <label class="block text-xs font-bold text-red-500 uppercase tracking-wider mb-2">Motivo da Falha</label>
+        <textarea id="mpMotivo" rows="3"
+          placeholder="Ex: CPF divergente, prazo expirado, número bloqueado..."
+          class="w-full bg-red-50 border-2 border-red-100 rounded-xl px-4 py-3 text-sm text-red-700 focus:outline-none focus:border-red-400"></textarea>
+      </div>
+
+      <div id="mpAlert" class="hidden text-xs p-3 rounded-xl border font-medium"></div>
+    </div>
+
+    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+      <button onclick="fecharModalPortabilidade()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800">Cancelar</button>
+      <button id="mpBtnSalvar" onclick="salvarPortabilidade()"
+        class="bg-[#0e8890] hover:bg-[#0b6c72] text-white px-5 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+        <i data-lucide="save" class="w-4 h-4"></i> Salvar
+      </button>
+    </div>
+  </div>
+</div>
+
   <!-- ============ SCRIPTS ============ -->
   <script>
     /* ==========================================================
@@ -393,6 +540,8 @@
       perfil: null,
       clientes: [],
       clientesBusca: [],
+      portabilidades: [],
+      portabilidadeEmEdicao: null,
       filtros: { texto: '', situacao: 'aberto' },
       arquivoSelecionado: null,
       faturaEmEdicao: null,
@@ -594,6 +743,7 @@
       clientes: 'Base Geral de Clientes',
       faturas: 'Acompanhamento de Faturas TIM',
       suspensoes: 'Gestão de Suspensões',
+      portabilidades: 'Gestão de Portabilidades',
       prospeccao: 'Prospecção de Clientes',
     };
 
@@ -603,6 +753,8 @@
         if (view) view.classList.toggle('hidden', id !== destino);
       });
 
+      if (destino === 'portabilidades') carregarPortabilidades();
+      
       document.querySelectorAll('.nav-item').forEach(btn => {
         const ativo = btn.dataset.nav === destino;
         btn.className = ativo
@@ -1445,6 +1597,234 @@ ano_base: (() => {
       lucide.createIcons();
       verificarAuth();
     });
+    /* ==========================================================
+   MÓDULO: PORTABILIDADES
+   ========================================================== */
+
+async function carregarPortabilidades() {
+  const tbody = $('tabelaPortabilidades');
+  tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-12 text-center text-slate-500">
+    <i data-lucide="loader-2" class="w-6 h-6 animate-spin inline-block mr-2 text-[#0e8890]"></i>
+    A carregar portabilidades…
+  </td></tr>`;
+  lucide.createIcons();
+
+  // Contadores gerais
+  const { data: todas } = await supabaseClient
+    .from('clientes_faturas')
+    .select('id, portabilidade_status, modalidade')
+    .ilike('modalidade', '%PORT%')
+    .limit(2000);
+
+  if (todas) {
+    const pendentes = todas.filter(p => (p.portabilidade_status || 'PENDENTE') === 'PENDENTE').length;
+    const concluidas = todas.filter(p => p.portabilidade_status === 'CONCLUIDA').length;
+    const falhas = todas.filter(p => p.portabilidade_status === 'FALHA').length;
+    $('portPendentes').textContent = pendentes;
+    $('portConcluidas').textContent = concluidas;
+    $('portFalhas').textContent = falhas;
+  }
+
+  // Lista completa com filtro no servidor
+  const statusFiltro = $('selectPortStatus').value;
+
+  let query = supabaseClient
+    .from('clientes_faturas')
+    .select('*')
+    .ilike('modalidade', '%PORT%')
+    .order('data_venda', { ascending: false })
+    .limit(1000);
+
+  if (statusFiltro !== 'TODAS') {
+    if (statusFiltro === 'PENDENTE') {
+      // PENDENTE inclui null também
+      query = query.or('portabilidade_status.eq.PENDENTE,portabilidade_status.is.null');
+    } else {
+      query = query.eq('portabilidade_status', statusFiltro);
+    }
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error(error);
+    tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-12 text-center text-red-500">Erro: ${escapeHTML(error.message)}</td></tr>`;
+    return;
+  }
+
+  state.portabilidades = data || [];
+  filtrarPortabilidades();
+}
+
+function filtrarPortabilidades() {
+  const termo = $('inputBuscaPortabilidade').value.trim().toLowerCase();
+  const termoNum = termo.replace(/\D/g, '');
+
+  const filtrados = state.portabilidades.filter(p => {
+    if (!termo) return true;
+    const nome = String(p.nome || '').toLowerCase();
+    const cpf = normalizarCPF(p.cpf);
+    const tel = normalizarTelefone(p.telefone);
+    const prov = normalizarTelefone(p.telefone_provisorio);
+    const matchTexto = nome.includes(termo);
+    const matchNum = termoNum && (cpf.includes(termoNum) || tel.includes(termoNum) || prov.includes(termoNum));
+    return matchTexto || matchNum;
+  });
+
+  $('portContador').textContent =
+    `${filtrados.length} ${filtrados.length === 1 ? 'registro' : 'registros'} ` +
+    `(${state.portabilidades.length} carregados da base)`;
+
+  const tbody = $('tabelaPortabilidades');
+
+  if (!filtrados.length) {
+    tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-12 text-center text-slate-500">
+      Nenhuma portabilidade encontrada com estes critérios.
+    </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtrados.map(p => linhaPortabilidadeHTML(p)).join('');
+  lucide.createIcons();
+}
+
+function linhaPortabilidadeHTML(p) {
+  const status = p.portabilidade_status || 'PENDENTE';
+  const cpfFmt = normalizarCPF(p.cpf);
+  const portar = normalizarTelefone(p.telefone);
+  const prov = normalizarTelefone(p.telefone_provisorio);
+
+  // Estilo do status
+  const statusInfo = {
+    PENDENTE:  { label: 'Pendente',  cls: 'bg-orange-100 text-orange-700 border-orange-200', icon: 'clock' },
+    CONCLUIDA: { label: 'Concluída', cls: 'bg-emerald-100 text-emerald-700 border-emerald-200', icon: 'check-circle-2' },
+    FALHA:     { label: 'Falha',     cls: 'bg-red-100 text-red-700 border-red-200', icon: 'alert-octagon' },
+  }[status];
+
+  const rowClass = status === 'CONCLUIDA' ? 'opacity-60 bg-slate-50/40' : '';
+
+  return `
+    <tr class="hover:bg-[#0e8890]/5 transition-colors border-b border-slate-100 text-xs ${rowClass}">
+      <td class="px-4 py-4 font-bold text-slate-600">${p.data_venda ? fmtBR(p.data_venda) : '—'}</td>
+      <td class="px-4 py-4 font-mono font-bold text-indigo-700 cursor-pointer hover:underline"
+          onclick="copiarTexto('${portar}', this)">${escapeHTML(portar || '—')}</td>
+      <td class="px-4 py-4 font-mono font-bold text-sky-700 cursor-pointer hover:underline"
+          onclick="copiarTexto('${prov}', this)">${escapeHTML(prov || '—')}</td>
+      <td class="px-4 py-4">
+        <span class="inline-block bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold border border-slate-200 uppercase">
+          ${escapeHTML(p.modalidade || '—')}
+        </span>
+      </td>
+      <td class="px-4 py-4 text-[11px] text-slate-600 uppercase font-medium">${escapeHTML(p.plano || '—')}</td>
+      <td class="px-4 py-4 text-[11px] text-slate-500 uppercase">${escapeHTML(p.consultor || '—')}</td>
+      <td class="px-4 py-4 font-mono text-[10px] text-slate-500 cursor-pointer hover:text-[#0e8890]"
+          onclick="copiarTexto('${cpfFmt}', this)">${escapeHTML(cpfFmt)}</td>
+      <td class="px-4 py-4 font-bold text-slate-800 uppercase">${escapeHTML(capitalizar(p.nome) || '—')}</td>
+      <td class="px-4 py-4 text-center">
+        <span class="inline-flex items-center gap-1 px-2 py-1 rounded border text-[10px] font-bold uppercase ${statusInfo.cls}">
+          <i data-lucide="${statusInfo.icon}" class="w-3 h-3"></i>
+          ${statusInfo.label}
+        </span>
+        ${status === 'FALHA' && p.portabilidade_motivo ? `
+          <div class="mt-1 text-[9px] text-red-600 italic max-w-[140px] truncate mx-auto"
+               title="${escapeHTML(p.portabilidade_motivo)}">
+            ${escapeHTML(p.portabilidade_motivo)}
+          </div>` : ''}
+      </td>
+      <td class="px-4 py-4 text-center">
+        <button onclick="abrirModalPortabilidade(${p.id})"
+          class="bg-[#0e8890] hover:bg-[#0b6c72] text-white px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-tighter transition-all">
+          ${status === 'PENDENTE' ? 'Validar' : 'Editar'}
+        </button>
+      </td>
+    </tr>
+  `;
+}
+
+function abrirModalPortabilidade(id) {
+  const p = state.portabilidades.find(x => x.id === id);
+  if (!p) return;
+
+  state.portabilidadeEmEdicao = p;
+
+  $('mpCliente').textContent = capitalizar(p.nome);
+  $('mpNumPortar').textContent = p.telefone || '—';
+  $('mpNumProv').textContent = p.telefone_provisorio || '—';
+
+  const statusAtual = p.portabilidade_status === 'FALHA' ? 'FALHA' : 'CONCLUIDA';
+  $('mpStatus').value = statusAtual;
+  $('mpMotivo').value = p.portabilidade_motivo || '';
+  toggleMotivoFalhaPorta();
+
+  $('mpAlert').classList.add('hidden');
+  $('modalPortabilidade').classList.remove('hidden');
+  lucide.createIcons();
+}
+
+function fecharModalPortabilidade() {
+  $('modalPortabilidade').classList.add('hidden');
+  state.portabilidadeEmEdicao = null;
+}
+
+function toggleMotivoFalhaPorta() {
+  const st = $('mpStatus').value;
+  $('mpMotivoBox').classList.toggle('hidden', st !== 'FALHA');
+}
+
+async function salvarPortabilidade() {
+  const p = state.portabilidadeEmEdicao;
+  if (!p) return;
+
+  const novoStatus = $('mpStatus').value;
+  const motivo = $('mpMotivo').value.trim();
+  const alertBox = $('mpAlert');
+  const btn = $('mpBtnSalvar');
+
+  if (novoStatus === 'FALHA' && !motivo) {
+    alertBox.textContent = 'Informe o motivo da falha.';
+    alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+    alertBox.classList.remove('hidden');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Salvando…`;
+  lucide.createIcons();
+
+  try {
+    const { error } = await supabaseClient
+      .from('clientes_faturas')
+      .update({
+        portabilidade_status: novoStatus,
+        portabilidade_motivo: novoStatus === 'FALHA' ? motivo : null,
+        portabilidade_atualizado_em: new Date().toISOString(),
+      })
+      .eq('id', p.id);
+
+    if (error) throw error;
+
+    // Log
+    try {
+      await supabaseClient.rpc('registrar_log', {
+        p_tabela: 'clientes_faturas',
+        p_registro: p.id,
+        p_acao: `portabilidade_${novoStatus.toLowerCase()}`,
+        p_antes: null,
+        p_depois: { status: novoStatus, motivo }
+      });
+    } catch (_) {}
+
+    fecharModalPortabilidade();
+    await carregarPortabilidades();
+  } catch (err) {
+    alertBox.textContent = 'Erro: ' + err.message;
+    alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+    alertBox.classList.remove('hidden');
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Salvar';
+    lucide.createIcons();
+  }
+}
   </script>
 </body>
 </html>
