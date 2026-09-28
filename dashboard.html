@@ -466,6 +466,45 @@
     </div>
   </main>
 
+  <!-- ============ MODAL CONFIRMA ENVIO ============ -->
+<div id="modalConfirmaEnvio" class="fixed inset-0 z-[60] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+    <div class="bg-green-600 px-6 py-4 flex items-center gap-2">
+      <i data-lucide="message-circle" class="w-5 h-5 text-white"></i>
+      <h3 class="text-white font-bold text-sm">Confirmação de Envio</h3>
+    </div>
+    <div class="p-6 space-y-4">
+      <div class="bg-slate-50 rounded-xl p-3">
+        <p class="text-xs font-bold text-slate-400 uppercase mb-1">Cliente</p>
+        <p class="font-bold text-slate-800" id="ceCliente">—</p>
+        <p class="text-xs text-slate-500 mt-1">Nº: <strong id="ceTelefone" class="font-mono">—</strong></p>
+      </div>
+
+      <p class="text-sm text-slate-700 font-medium text-center leading-relaxed">
+        Você conseguiu enviar a mensagem de boas-vindas?
+      </p>
+
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
+        <p class="text-[11px] text-amber-800 leading-relaxed">
+          <strong>Número sem WhatsApp?</strong> Clique em "Não consegui" — o cliente
+          volta para a lista para você corrigir o número antes de tentar de novo.
+        </p>
+      </div>
+    </div>
+
+    <div class="px-6 py-4 bg-slate-50 border-t flex gap-3">
+      <button onclick="confirmarEnvioBoasVindas(false)"
+        class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 py-3 rounded-xl text-xs font-black uppercase">
+        ✗ Não consegui
+      </button>
+      <button onclick="confirmarEnvioBoasVindas(true)"
+        class="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-xs font-black uppercase">
+        ✓ Sim, enviado
+      </button>
+    </div>
+  </div>
+</div>
+  
   <!-- ============ MODAL IMPORT ============ -->
   <div id="modalImport" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
@@ -2128,6 +2167,7 @@ async function carregarBoasVindas() {
     .from('clientes_faturas')
     .select('*')
     .eq('status_thales', 'LIBERADO')
+    .not('data_nascimento', 'is', null)            // ✅ Exige nascimento preenchido
     .or('status_boas_vindas.is.null,status_boas_vindas.neq.ENVIADO')
     .order('data_venda', { ascending: false })
     .limit(500);
@@ -2168,6 +2208,7 @@ async function atualizarBadgeGestao() {
     .from('clientes_faturas')
     .select('*', { count: 'exact', head: true })
     .eq('status_thales', 'LIBERADO')
+    .not('data_nascimento', 'is', null)             // ✅ Exige nascimento preenchido
     .or('status_boas_vindas.is.null,status_boas_vindas.neq.ENVIADO');
 
   const total = (cntThales || 0) + (cntBoas || 0);
@@ -2253,6 +2294,8 @@ function linhaBoasVindasHTML(c) {
     </tr>
   `;
 }
+
+    
 /* ==========================================================
    MODAL SANEAMENTO (Verificação no Thales)
    ========================================================== */
@@ -2561,6 +2604,8 @@ async function salvarUserLine() {
 /* ==========================================================
    ENVIO WHATSAPP BOAS-VINDAS
    ========================================================== */
+let _envioAtual = null; // guarda o cliente que está sendo enviado
+
 async function enviarBoasVindas(id) {
   const c = (state.boasVindas || []).find(x => x.id === id);
   if (!c) return;
@@ -2574,7 +2619,10 @@ async function enviarBoasVindas(id) {
   const telDestino = normalizarTelefone(
     c.telefone_alt && c.telefone_alt.replace(/\D/g,'').length >= 10 ? c.telefone_alt : c.telefone
   );
-  if (!telDestino) { alert('Cliente sem telefone.'); return; }
+  if (!telDestino) {
+    alert('Cliente sem telefone cadastrado. Edite o usuário da linha primeiro.');
+    return;
+  }
 
   const isDebito = String(c.debito_automatico || '').toUpperCase() === 'SIM';
   const vencRaw = String(c.data_vencimento_base || '').toUpperCase().trim();
@@ -2597,22 +2645,51 @@ async function enviarBoasVindas(id) {
   const appUrl = `whatsapp://send?phone=55${telDestino}&text=${msgEnc}`;
   const webUrl = `https://wa.me/55${telDestino}?text=${msgEnc}`;
 
+  // Abre o WhatsApp (app desktop → fallback web)
   let appAbriu = false;
-  window.addEventListener('blur', () => { appAbriu = true; }, { once: true });
+  const handler = () => { appAbriu = true; };
+  window.addEventListener('blur', handler, { once: true });
   try { window.location.href = appUrl; } catch (_) {}
   setTimeout(() => {
+    window.removeEventListener('blur', handler);
     if (!appAbriu) window.open(webUrl, '_blank', 'noopener');
   }, 900);
 
+  // ✅ Guarda o cliente e abre o modal de confirmação
+  _envioAtual = { cliente: c, telefone: telDestino };
+  $('ceCliente').textContent = titular;
+  $('ceTelefone').textContent = telDestino;
+  $('modalConfirmaEnvio').classList.remove('hidden');
+  lucide.createIcons();
+}
+
+// Chamada pelas duas opções do modal
+async function confirmarEnvioBoasVindas(enviado) {
+  $('modalConfirmaEnvio').classList.add('hidden');
+  if (!_envioAtual) return;
+
+  const { cliente } = _envioAtual;
+  _envioAtual = null;
+
+  if (!enviado) {
+    // Não conseguiu → mantém USUARIO DEFINIDO (volta pra lista para corrigir)
+    mostrarToastCopy('Cliente mantido na lista para você corrigir o número.');
+    await carregarBoasVindas();
+    return;
+  }
+
   try {
-    await supabaseClient
+    const { error } = await supabaseClient
       .from('clientes_faturas')
       .update({ status_boas_vindas: 'ENVIADO' })
-      .eq('id', c.id);
-    setTimeout(() => carregarBoasVindas(), 1200);
+      .eq('id', cliente.id);
+    if (error) throw error;
+
+    mostrarToastCopy('Boas-vindas enviada com sucesso!');
+    await carregarBoasVindas();
     atualizarBadgeGestao();
   } catch (err) {
-    console.error('Erro ao marcar enviado:', err);
+    alert('Erro ao marcar como enviado: ' + err.message);
   }
 }
 
