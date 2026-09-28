@@ -1486,109 +1486,170 @@
       }
     }
 
-    async function processarCSV() {
-      const arquivo = state.arquivoSelecionado;
-      if (!arquivo) return;
+async function processarCSV() {
+  const arquivo = state.arquivoSelecionado;
+  if (!arquivo) return;
 
-      const btn = $('btnProcessar');
-      btn.disabled = true;
-      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Processando…`;
-      lucide.createIcons();
+  const btn = $('btnProcessar');
+  btn.disabled = true;
+  btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Processando…`;
+  lucide.createIcons();
 
-      Papa.parse(arquivo, {
-        header: true,
-        skipEmptyLines: 'greedy',
-        transformHeader: (h) => h.trim(),
-        complete: async ({ data }) => {
-          const brutos = data.map(row => {
-            const dtVenda = parseBR(row['DATA DA VENDA'] || row['DATA VENDA'] || '');
-            const dtNasc  = parseBR(row['DATA DE NASCIMENTO'] || row['NASCIMENTO'] || '');
+  Papa.parse(arquivo, {
+    header: true,
+    skipEmptyLines: 'greedy',
+    transformHeader: (h) => h.trim(),
+    complete: async ({ data, meta }) => {
 
-            return {
-ano_base: (() => {
-  // Ano da venda se disponível, senão ano atual
-  const dtVenda = parseBR(row['DATA DA VENDA'] || row['DATA VENDA'] || '');
-  return dtVenda ? String(dtVenda.getFullYear()) : String(new Date().getFullYear());
-})(),
-                data_vencimento_base: (() => {
-                const extrair = (txt) => {
-                  if (!txt) return null;
-                  const s = String(txt).trim();
-                  if (!s || s === '---' || s.toUpperCase() === 'N/A') return null;
-                  if (s.toUpperCase() === 'CC' || s.toUpperCase().includes(' CC')) return 'CC';
-                  const m = s.match(/(\d{2})\/\d{2}\/\d{4}/);
-                  return m ? String(parseInt(m[1], 10)) : null;
-                };
-                const fp = row['PRIMEIRA FATURA'] || row['1ª FATURA'] || '';
-                const fq = row['SEGUNDA FATURA']  || row['2ª FATURA'] || '';
-                const fr = row['TERCEIRA FATURA'] || row['3ª FATURA'] || '';
-                return extrair(fp) || extrair(fq) || extrair(fr);
-              })(),
-              data_nascimento: dtNasc ? dtNasc.toISOString().slice(0,10) : null,
-              status_thales: (row['STATUS'] || row['STATUS THALES'] || '').trim() || null,
-              data_venda: dtVenda ? dtVenda.toISOString().slice(0,10) : null,
-              imei: (row['IMEI'] || '').trim() || null,
-              telefone: normalizarTelefone(row['NÚMERO DA LINHA'] || row['LINHA'] || row['TELEFONE'] || ''),
-              telefone_provisorio: (row['NÚMERO PROVISÓRIO'] || row['PROVISORIO'] || '').trim() || null,
-              fidel_ap: (row['FIDELIZAÇÃO AP'] || row['FIDEL AP'] || '').trim() || null,
-              fidel_pl: (row['FIDELIZAÇÃO PLANO'] || row['FIDEL PL'] || '').trim() || null,
-              modalidade: (row['MODALIDADE'] || '').trim() || null,
-              plano: (row['PLANO'] || '').trim() || null,
-              consultor: (row['CONSULTOR'] || '').trim() || null,
-              cpf: normalizarCPF(row['CPF CLIENTE'] || row['CPF'] || ''),
-              nome: (row['NOME DO CLIENTE'] || row['CLIENTE'] || row['NOME'] || '').trim() || null,
-              nota_o: null,
-              fatura_p: (row['PRIMEIRA FATURA'] || row['1ª FATURA'] || '---').trim(),
-              fatura_q: (row['SEGUNDA FATURA'] || row['2ª FATURA'] || '---').trim(),
-              fatura_r: (row['TERCEIRA FATURA'] || row['3ª FATURA'] || '---').trim(),
-              telefone_alt: normalizarTelefone(row['TELEFONE ALTERNATIVO'] || row['TEL ALT'] || '') || null,
-              status_boas_vindas: null,
-              usuario_linha: null,
-              debito_automatico: 'NÃO',
-              status_saneamento: 'SANEADO',
-            };
-          }).filter(r => r.nome && r.cpf && r.telefone);
+      /* ===================================================
+         Helper: busca valor por vários nomes possíveis,
+         ignorando acento, maiúsculas e espaços extras
+         =================================================== */
+      const norm = (s) => String(s || '').toUpperCase().trim()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, ' ');
 
-          if (!brutos.length) {
-            return mostrarAlertaImportacao('Nenhum registro válido encontrado no CSV.', 'red', btn);
-          }
+      const findKey = (row, ...keys) => {
+        const map = {};
+        for (const k of Object.keys(row)) map[norm(k)] = row[k];
+        for (const k of keys) {
+          const v = map[norm(k)];
+          if (v !== undefined && v !== null && String(v).trim() !== '') return v;
+        }
+        return undefined;
+      };
 
-          // Deduplicação
-          const mapa = new Map();
-          brutos.forEach(reg => {
-            const chave = `${reg.ano_base}|${reg.cpf}|${reg.telefone}|${reg.data_venda || ''}`;
-            mapa.set(chave, reg);
-          });
-          const payload = Array.from(mapa.values());
-          const duplicatasRemovidas = brutos.length - payload.length;
+      /* ===================================================
+         Mapeamento com os NOMES REAIS do seu CSV
+         =================================================== */
+      const brutos = data.map(row => {
+        const rawVenda = findKey(row, 'DATA DA VENDA', 'DATA VENDA');
+        const rawNasc  = findKey(row, 'DATA DE NASC.', 'DATA DE NASC', 'DATA DE NASCIMENTO', 'NASCIMENTO');
+        const rawVenc  = findKey(row, 'DATA DE VENC.', 'DATA DE VENC', 'VENCIMENTO');
 
-          // Insert em lotes
-          const TAMANHO_LOTE = 200;
-          let inseridos = 0;
-          const erros = [];
+        const dtVenda = parseBR(rawVenda) || (rawVenda ? new Date(rawVenda) : null);
+        const dtNasc  = parseBR(rawNasc)  || (rawNasc  ? new Date(rawNasc)  : null);
 
-          for (let i = 0; i < payload.length; i += TAMANHO_LOTE) {
-            const lote = payload.slice(i, i + TAMANHO_LOTE);
-            const { error } = await supabaseClient.from('clientes_faturas').insert(lote);
-            if (error) erros.push(error.message);
-            else inseridos += lote.length;
-          }
+        const faturaP = String(findKey(row, 'PRIMEIRA FATURA', '1ª FATURA') || '---').trim();
+        const faturaQ = String(findKey(row, 'SEGUNDA FATURA',  '2ª FATURA') || '---').trim();
+        const faturaR = String(findKey(row, 'TERCEIRA FATURA', '3ª FATURA') || '---').trim();
 
-          if (erros.length) {
-            mostrarAlertaImportacao(
-              `⚠️ ${inseridos} importados, ${erros.length} lote(s) com erro. Primeiro erro: ${erros[0]}`,
-              'amber', btn
-            );
-          } else {
-            const msg = `✅ ${inseridos} clientes importados` +
-              (duplicatasRemovidas > 0 ? ` · ${duplicatasRemovidas} duplicata(s) do CSV removida(s)` : '') + '!';
-            mostrarAlertaImportacao(msg, 'emerald', btn);
-            setTimeout(() => { fecharModalImportacao(); carregarClientes(); }, 1200);
-          }
-        },
-        error: (err) => mostrarAlertaImportacao('Erro ao ler o CSV: ' + err.message, 'red', btn)
+        // Vencimento: lê o campo direto (DATA DE VENC.), senão deriva da fatura
+        const extrairDia = (txt) => {
+          if (!txt) return null;
+          const s = String(txt).trim().toUpperCase();
+          if (!s || s === '---' || s === 'N/A') return null;
+          if (s === 'CC' || s.includes('CC')) return 'CC';
+          // Casa tanto "07/11/2026" quanto "07"
+          const m = s.match(/^(\d{1,2})(?:\/\d{2}\/\d{4})?$/);
+          if (m) return String(parseInt(m[1], 10));
+          return null;
+        };
+
+        return {
+          ano_base: dtVenda ? String(dtVenda.getFullYear()) : String(new Date().getFullYear()),
+
+          // ✅ Agora lê direto da coluna A do CSV
+          data_vencimento_base:
+            extrairDia(rawVenc) || extrairDia(faturaP) || extrairDia(faturaQ) || extrairDia(faturaR),
+
+          data_nascimento: dtNasc && !isNaN(dtNasc) ? dtNasc.toISOString().slice(0,10) : null,
+
+          // ✅ CONTRATO (LIBERADO / VERIFICAR / ANOMALIA / etc.)
+          status_thales: findKey(row, 'CONTRATO', 'STATUS', 'STATUS THALES') || null,
+
+          data_venda: dtVenda && !isNaN(dtVenda) ? dtVenda.toISOString().slice(0,10) : null,
+          imei: findKey(row, 'IMEI') || null,
+
+          telefone: normalizarTelefone(findKey(row,
+            'NÚMERO DA LINHA', 'NUMERO DA LINHA', 'LINHA') || ''),
+
+          // ✅ NÚMERO PROV.
+          telefone_provisorio: normalizarTelefone(findKey(row,
+            'NÚMERO PROV.', 'NUMERO PROV', 'NÚMERO PROVISÓRIO', 'PROVISORIO') || '') || null,
+
+          // ✅ FIDEL AP. / FIDEL PL.
+          fidel_ap: findKey(row, 'FIDEL AP.', 'FIDEL AP') || null,
+          fidel_pl: findKey(row, 'FIDEL PL.', 'FIDEL PL', 'FIDELIZAÇÃO PLANO') || null,
+
+          modalidade: findKey(row, 'MODALIDADE') || null,
+          plano: findKey(row, 'PLANO') || null,
+          consultor: findKey(row, 'CONSULTOR') || null,
+          cpf: normalizarCPF(findKey(row, 'CPF CLIENTE', 'CPF') || ''),
+          nome: String(findKey(row, 'NOME DO CLIENTE', 'CLIENTE') || '').trim() || null,
+          nota_o: null,
+          fatura_p: faturaP,
+          fatura_q: faturaQ,
+          fatura_r: faturaR,
+
+          // ✅ CONTATO ALTERNATIVO
+          telefone_alt: normalizarTelefone(findKey(row,
+            'CONTATO ALTERNATIVO', 'TELEFONE ALTERNATIVO', 'TEL ALT') || '') || null,
+
+          // ✅ CONFIRMAÇÃO DE ENVIO DE BOAS VINDAS
+          status_boas_vindas: findKey(row,
+            'CONFIRMAÇÃO DE ENVIO DE BOAS VINDAS', 'BOAS VINDAS') || null,
+
+          // ✅ USUÁRIO DA LINHA
+          usuario_linha: findKey(row, 'USUÁRIO DA LINHA', 'USUARIO DA LINHA') || null,
+
+          // ✅ DACC (débito automático)
+          debito_automatico: (() => {
+            const v = String(findKey(row, 'DACC', 'DÉBITO AUTOMÁTICO') || 'NÃO').toUpperCase().trim();
+            return v === 'SIM' ? 'SIM' : 'NÃO';
+          })(),
+
+          status_saneamento: 'SANEADO',
+        };
+      }).filter(r => r.nome && r.cpf && r.telefone);
+
+      if (!brutos.length) {
+        return mostrarAlertaImportacao('Nenhum registro válido encontrado no CSV.', 'red', btn);
+      }
+
+      /* ===================================================
+         Deduplicação
+         =================================================== */
+      const mapa = new Map();
+      brutos.forEach(reg => {
+        const chave = `${reg.ano_base}|${reg.cpf}|${reg.telefone}|${reg.data_venda || ''}`;
+        mapa.set(chave, reg);
       });
-    }
+      const payload = Array.from(mapa.values());
+      const duplicatasRemovidas = brutos.length - payload.length;
+
+      /* ===================================================
+         Insert em lotes
+         =================================================== */
+      const TAMANHO_LOTE = 200;
+      let inseridos = 0;
+      const erros = [];
+
+      for (let i = 0; i < payload.length; i += TAMANHO_LOTE) {
+        const lote = payload.slice(i, i + TAMANHO_LOTE);
+        const { error } = await supabaseClient.from('clientes_faturas').insert(lote);
+        if (error) erros.push(error.message);
+        else inseridos += lote.length;
+      }
+
+      /* ===================================================
+         Feedback
+         =================================================== */
+      if (erros.length) {
+        mostrarAlertaImportacao(
+          `⚠️ ${inseridos} importados, ${erros.length} lote(s) com erro. Primeiro: ${erros[0]}`,
+          'amber', btn
+        );
+      } else {
+        const msg = `✅ ${inseridos} clientes importados` +
+          (duplicatasRemovidas > 0 ? ` · ${duplicatasRemovidas} duplicata(s) removida(s)` : '') + '!';
+        mostrarAlertaImportacao(msg, 'emerald', btn);
+        setTimeout(() => { fecharModalImportacao(); carregarClientes(); }, 1500);
+      }
+    },
+    error: (err) => mostrarAlertaImportacao('Erro ao ler o CSV: ' + err.message, 'red', btn)
+  });
+}
 
     /* ==========================================================
        BOOT
