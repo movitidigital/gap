@@ -2882,10 +2882,6 @@ function fecharModalUserLine() {
   _userLineAtual = null;
 }
 
-function fecharModalUserLine() {
-  $('modalUserLine').classList.add('hidden');
-  _userLineAtual = null;
-}
 
 async function salvarUserLine() {
   const c = _userLineAtual;
@@ -3665,6 +3661,9 @@ async function verDetalhesSuspensao(id) {
 
     ${renderArquivosSuspensao(s)}
   `;
+
+  $('modalSuspDetalhes').classList.remove('hidden');
+  lucide.createIcons();
 }
 
 function renderArquivosSuspensao(s) {
@@ -3697,10 +3696,6 @@ function renderArquivosSuspensao(s) {
         </div>` : ''}
     </div>
   `;
-}
-
-  $('modalSuspDetalhes').classList.remove('hidden');
-  lucide.createIcons();
 }
 
 function fecharModalDetalhesSusp() {
