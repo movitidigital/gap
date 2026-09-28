@@ -1,108 +1,499 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - PORTAL INFORTECA</title>
-    <!-- Tailwind CSS para UI/UX moderna e refinada -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-    </style>
-    <!-- SDK do Supabase v2 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#000033">
+  <title>Login — PORTAL INFORTECA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-8 space-y-6">
-        <!-- Cabeçalho / Branding -->
-        <div class="text-center space-y-2">
-            <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-600/10 text-blue-500 mb-2 border border-blue-500/20">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                </svg>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f8fafc;
+    }
+
+    /* ============ BACKGROUND ANIMADO DO PAINEL DIREITO ============ */
+    .aurora {
+      position: relative;
+      overflow: hidden;
+      background: #000033;
+    }
+
+    /* Esferas de luz animadas (mesma vibe da TIM) */
+    .aurora::before,
+    .aurora::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .aurora::before {
+      width: 60%;
+      height: 60%;
+      background: #0e8890;
+      top: -15%;
+      left: -10%;
+      animation: floatA 18s ease-in-out infinite;
+    }
+
+    .aurora::after {
+      width: 55%;
+      height: 55%;
+      background: #E60000;
+      bottom: -20%;
+      right: -15%;
+      opacity: 0.35;
+      animation: floatB 22s ease-in-out infinite;
+    }
+
+    @keyframes floatA {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50%      { transform: translate(40px, 30px) scale(1.15); }
+    }
+    @keyframes floatB {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50%      { transform: translate(-30px, -40px) scale(1.1); }
+    }
+
+    /* Camada de "grid" sutil sobre o painel */
+    .grid-overlay {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 44px 44px;
+      pointer-events: none;
+    }
+
+    /* ============ INPUT FLOATING LABEL ============ */
+    .field { position: relative; }
+
+    .field input {
+      width: 100%;
+      padding: 22px 16px 8px 46px;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 14px;
+      font-size: 14px;
+      color: #0f172a;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .field input:focus {
+      border-color: #0e8890;
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(14, 136, 144, 0.12);
+    }
+
+    .field label {
+      position: absolute;
+      left: 46px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-size: 14px;
+      font-weight: 500;
+      pointer-events: none;
+      transition: all 0.18s ease;
+    }
+
+    .field input:focus + label,
+    .field input:not(:placeholder-shown) + label {
+      top: 12px;
+      transform: translateY(0);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #0e8890;
+    }
+
+    .field .field-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      transition: color 0.2s;
+      pointer-events: none;
+    }
+
+    .field input:focus ~ .field-icon {
+      color: #0e8890;
+    }
+
+    /* Botão mostrar/ocultar senha */
+    .pwd-toggle {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      transition: all 0.15s;
+    }
+    .pwd-toggle:hover { color: #0e8890; background: rgba(14,136,144,0.06); }
+
+    /* ============ BOTÃO PRIMÁRIO ============ */
+    .btn-primary {
+      position: relative;
+      width: 100%;
+      padding: 16px;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 14px;
+      color: #ffffff;
+      background: linear-gradient(135deg, #0e8890 0%, #0b6c72 100%);
+      box-shadow: 0 10px 24px -8px rgba(14, 136, 144, 0.55);
+      cursor: pointer;
+      border: none;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+      transition: left 0.6s;
+    }
+    .btn-primary:hover::before { left: 100%; }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px -8px rgba(14, 136, 144, 0.7);
+    }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ============ ANIMAÇÕES DE ENTRADA ============ */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.5s ease both; }
+    .delay-1 { animation-delay: 0.05s; }
+    .delay-2 { animation-delay: 0.1s; }
+    .delay-3 { animation-delay: 0.15s; }
+    .delay-4 { animation-delay: 0.2s; }
+    .delay-5 { animation-delay: 0.25s; }
+
+    /* Pulso no erro */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+    .shake { animation: shake 0.4s ease; }
+
+    /* Esconde no desktop se preferir poupar espaço em telas muito pequenas */
+    @media (max-height: 640px) {
+      .hide-short { display: none !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen w-full">
+
+  <div class="min-h-screen grid grid-cols-1 lg:grid-cols-2">
+
+    <!-- ==========================================================
+         LADO ESQUERDO — FORMULÁRIO
+         ========================================================== -->
+    <main class="flex items-center justify-center p-6 sm:p-8 lg:p-12 bg-white">
+
+      <div class="w-full max-w-md">
+
+        <!-- Logo / Branding -->
+        <div class="fade-up mb-10">
+          <div class="flex items-center gap-3 mb-8">
+            <div class="w-12 h-12 rounded-2xl bg-[#000033] flex items-center justify-center shadow-lg shadow-[#000033]/10">
+              <span class="text-[#E60000] text-2xl font-black leading-none">==</span>
             </div>
-            <h1 class="text-2xl font-bold tracking-tight text-white">PORTAL INFORTECA</h1>
-            <p class="text-sm text-slate-400">Entre com suas credenciais para acessar o sistema</p>
+            <div>
+              <h1 class="text-lg font-black text-[#000033] tracking-tight leading-none">INFORTECA</h1>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Loja TIM Dom José</p>
+            </div>
+          </div>
+
+          <h2 class="text-3xl sm:text-4xl font-black text-[#000033] tracking-tight leading-tight">
+            Faça seu login<span class="text-[#E60000]">.</span>
+          </h2>
+          <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+            Acesse o painel de gestão do <strong class="text-[#0e8890]">PORTAL INFORTECA</strong> com suas credenciais.
+          </p>
         </div>
 
-        <!-- Formulário de Acesso -->
-        <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
-            <div>
-                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">E-mail</label>
-                <input type="email" id="email" required 
-                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm"
-                    placeholder="seu.email@inforteca.com">
-            </div>
+        <!-- Formulário -->
+        <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
 
-            <div>
-                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Senha</label>
-                <input type="password" id="password" required 
-                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm"
-                    placeholder="••••••••">
-            </div>
+          <!-- E-mail -->
+          <div class="field fade-up delay-1">
+            <input type="email" id="email" required placeholder=" " autocomplete="email">
+            <label for="email">E-mail</label>
+            <i data-lucide="mail" class="field-icon w-5 h-5"></i>
+          </div>
 
-            <!-- Caixa de Erro (Oculta por padrão) -->
-            <div id="errorAlert" class="hidden bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3 rounded-xl text-center"></div>
-
-            <button type="submit" id="submitBtn" 
-                class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-blue-600/20 transition-all duration-200 flex items-center justify-center space-x-2 text-sm active:scale-[0.98]">
-                <span>Acessar Sistema</span>
+          <!-- Senha -->
+          <div class="field fade-up delay-2">
+            <input type="password" id="password" required placeholder=" " autocomplete="current-password">
+            <label for="password">Senha</label>
+            <i data-lucide="lock" class="field-icon w-5 h-5"></i>
+            <button type="button" class="pwd-toggle" onclick="togglePassword()" aria-label="Mostrar senha">
+              <i data-lucide="eye" id="pwdEye" class="w-5 h-5"></i>
             </button>
+          </div>
+
+          <!-- Lembrar / Esqueci -->
+          <div class="fade-up delay-3 flex items-center justify-between">
+            <label class="inline-flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="remember" class="w-4 h-4 rounded border-slate-300 accent-[#0e8890]">
+              <span class="text-xs font-medium text-slate-600">Lembrar-me</span>
+            </label>
+            <a href="#" onclick="alert('Solicite redefinição ao administrador do sistema.'); return false;"
+               class="text-xs font-semibold text-[#0e8890] hover:text-[#0b6c72] transition-colors">
+              Esqueci minha senha
+            </a>
+          </div>
+
+          <!-- Alerta de erro -->
+          <div id="errorAlert"
+               class="hidden bg-red-50 border border-red-200 text-red-700 text-xs p-3.5 rounded-xl font-medium flex items-start gap-2">
+            <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 mt-0.5"></i>
+            <span id="errorText"></span>
+          </div>
+
+          <!-- Botão -->
+          <button type="submit" id="submitBtn" class="btn-primary fade-up delay-4">
+            <span class="flex items-center justify-center gap-2">
+              <span>Entrar no sistema</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </span>
+          </button>
+
+          <!-- Link para registro -->
+          <p class="fade-up delay-5 text-center text-xs text-slate-500 pt-2">
+            Ainda não tem acesso?
+            <a href="registrar.html" class="font-bold text-[#000033] hover:text-[#0e8890] transition-colors">
+              Criar conta
+            </a>
+          </p>
         </form>
-    </div>
 
-    <script>
-        // Inicialização do Cliente Supabase com as suas chaves oficiais
-        const SUPABASE_URL = 'https://zldugoqlcrzarpqvtaoh.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
-        
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        <!-- Rodapé -->
+        <p class="hide-short text-center text-[10px] text-slate-400 mt-10 tracking-wide uppercase font-medium">
+          © <span id="year"></span> Inforteca · Desenvolvido com dedicação
+        </p>
+      </div>
+    </main>
 
-        // Verificar se já existe sessão ativa ao abrir a página
-        async function checkSession() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (session) {
-                window.location.href = 'dashboard.html'; // Redireciona para o painel principal
-            }
+    <!-- ==========================================================
+         LADO DIREITO — PAINEL VISUAL
+         ========================================================== -->
+    <aside class="hidden lg:block aurora relative">
+      <div class="grid-overlay"></div>
+
+      <!-- Conteúdo sobreposto -->
+      <div class="relative h-full flex flex-col justify-between p-10 xl:p-14 text-white z-10">
+
+        <!-- Topo: badge -->
+        <div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.25em] text-white/70">
+          <span class="w-2 h-2 rounded-full bg-[#E60000] animate-pulse"></span>
+          Sistema em produção
+        </div>
+
+        <!-- Meio: mensagem -->
+        <div class="max-w-md">
+          <h3 class="text-5xl xl:text-6xl font-black tracking-tighter leading-[0.95]">
+            Tudo em<br>
+            <span class="text-[#0e8890]">um só lugar</span>.
+          </h3>
+          <p class="mt-6 text-white/70 text-base leading-relaxed font-medium">
+            Faturas, portabilidades, boas-vindas, contratos TIM e muito mais —
+            a operação completa da sua loja, do pós-venda à prospecção.
+          </p>
+
+          <!-- Features -->
+          <ul class="mt-8 space-y-3 text-sm">
+            <li class="flex items-center gap-3 text-white/85">
+              <span class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-[#0e8890]"></i>
+              </span>
+              Dashboard com prioridade operacional
+            </li>
+            <li class="flex items-center gap-3 text-white/85">
+              <span class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-[#0e8890]"></i>
+              </span>
+              Cobrança via WhatsApp com 1 clique
+            </li>
+            <li class="flex items-center gap-3 text-white/85">
+              <span class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-[#0e8890]"></i>
+              </span>
+              Gestão de contratos e portabilidades
+            </li>
+          </ul>
+        </div>
+
+        <!-- Base: créditos -->
+        <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-white/40">
+          <span>PORTAL INFORTECA</span>
+          <span>v1.0</span>
+        </div>
+
+      </div>
+
+      <!-- Faixa vermelha TIM no canto (detalhe de marca) -->
+      <div class="absolute top-0 right-0 w-1.5 h-32 bg-[#E60000] rounded-bl-full"></div>
+    </aside>
+
+  </div>
+
+  <script>
+    /* ============================================================
+       CONFIG
+       ============================================================ */
+    const SUPABASE_URL = 'https://zldugoqlcrzarpqvtaoh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Ano no rodapé
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Ícones
+    lucide.createIcons();
+
+    /* ============================================================
+       TOGGLE MOSTRAR SENHA
+       ============================================================ */
+    function togglePassword() {
+      const input = document.getElementById('password');
+      const eye   = document.getElementById('pwdEye');
+      const showing = input.type === 'text';
+      input.type = showing ? 'password' : 'text';
+      eye.setAttribute('data-lucide', showing ? 'eye' : 'eye-off');
+      lucide.createIcons();
+    }
+
+    /* ============================================================
+       MOSTRAR ERRO
+       ============================================================ */
+    function showError(msg) {
+      const box = document.getElementById('errorAlert');
+      document.getElementById('errorText').textContent = msg;
+      box.classList.remove('hidden');
+      box.classList.remove('shake');
+      void box.offsetWidth; // reinicia animação
+      box.classList.add('shake');
+    }
+    function hideError() {
+      document.getElementById('errorAlert').classList.add('hidden');
+    }
+
+    /* ============================================================
+       CHECK SESSÃO ATIVA
+       ============================================================ */
+    async function checkSession() {
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) window.location.href = 'dashboard.html';
+      } catch (e) {
+        console.warn('checkSession:', e);
+      }
+    }
+    checkSession();
+
+    /* ============================================================
+       LOGIN
+       ============================================================ */
+    async function handleLogin(event) {
+      event.preventDefault();
+
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const btn      = document.getElementById('submitBtn');
+
+      hideError();
+
+      // Feedback visual
+      btn.disabled = true;
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = `
+        <span class="flex items-center justify-center gap-2">
+          <svg class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"></circle>
+            <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" fill="currentColor" class="opacity-75"></path>
+          </svg>
+          Verificando credenciais...
+        </span>`;
+
+      try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+          email, password
+        });
+
+        if (error) throw error;
+
+        // Sucesso
+        btn.innerHTML = `
+          <span class="flex items-center justify-center gap-2">
+            <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+            Conectado! Redirecionando...
+          </span>`;
+        lucide.createIcons();
+
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 400);
+
+      } catch (err) {
+        console.error(err);
+        const msg = (err.message === 'Invalid login credentials')
+          ? 'E-mail ou senha incorretos.'
+          : (err.message || 'Falha ao autenticar. Tente novamente.');
+
+        showError(msg);
+
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+        lucide.createIcons();
+      }
+    }
+
+    /* ============================================================
+       ENTER para logar
+       ============================================================ */
+    document.querySelectorAll('input').forEach(el => {
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          document.getElementById('loginForm').requestSubmit();
         }
-        checkSession();
-
-        // Função de Login
-        async function handleLogin(event) {
-            event.preventDefault();
-            
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const errorAlert = document.getElementById('errorAlert');
-            const submitBtn = document.getElementById('submitBtn');
-
-            // Feedback visual de carregamento (UX Avançada)
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Entrando...`;
-            errorAlert.classList.add('hidden');
-
-            try {
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-
-                if (error) throw error;
-
-                // Sucesso! Redireciona
-                window.location.href = 'dashboard.html';
-
-            } catch (error) {
-                errorAlert.textContent = "Erro ao autenticar: " + (error.message === "Invalid login credentials" ? "E-mail ou senha incorretos." : error.message);
-                errorAlert.classList.remove('hidden');
-                
-                // Restaura o botão
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = `<span>Acessar Sistema</span>`;
-            }
-        }
-    </script>
+      });
+    });
+  </script>
 </body>
 </html>
