@@ -700,32 +700,40 @@ function navegar(destino) {
     /* ==========================================================
        CARREGAR CLIENTES DO SUPABASE
        ========================================================== */
-    async function carregarClientes() {
-      $('tabelaFaturas').innerHTML =
-        `<tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">
-          <i data-lucide="loader-2" class="w-6 h-6 animate-spin inline-block mr-2 text-[#0e8890]"></i>
-          A carregar faturas…
-        </td></tr>`;
-      lucide.createIcons();
+async function carregarClientes() {
+  $('tabelaFaturas').innerHTML =
+    `<tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">
+      <i data-lucide="loader-2" class="w-6 h-6 animate-spin inline-block mr-2 text-[#0e8890]"></i>
+      A carregar faturas…
+    </td></tr>`;
+  lucide.createIcons();
 
-      const { data, error } = await supabaseClient
-        .from('clientes_faturas')
-        .select('*')
-        .order('data_venda', { ascending: false })
-        .limit(2000);
+  // 1. Busca o total REAL (só count, é instantâneo)
+  const { count: totalReal } = await supabaseClient
+    .from('clientes_faturas')
+    .select('*', { count: 'exact', head: true });
 
-      if (error) {
-        console.error(error);
-        $('tabelaFaturas').innerHTML =
-          `<tr><td colspan="6" class="px-6 py-12 text-center text-red-500">Erro: ${escapeHTML(error.message)}</td></tr>`;
-        return;
-      }
+  $('clientesBaseTotal').textContent = (totalReal || 0).toLocaleString('pt-BR');
 
-      state.clientes = data || [];
-      atualizarStats();
-      filtrar();
-    }
+  // 2. Carrega APENAS os registros do ano mais recente para o dashboard/faturas
+  // (evita os 1000 no limite e mantém performance)
+  const { data, error } = await supabaseClient
+    .from('clientes_faturas')
+    .select('*')
+    .order('data_venda', { ascending: false })
+    .limit(1000);
 
+  if (error) {
+    console.error(error);
+    $('tabelaFaturas').innerHTML =
+      `<tr><td colspan="6" class="px-6 py-12 text-center text-red-500">Erro: ${escapeHTML(error.message)}</td></tr>`;
+    return;
+  }
+
+  state.clientes = data || [];
+  atualizarStats();
+  filtrar();
+}
 function atualizarStats() {
   const total = state.clientes.length;
   const pendentes = state.clientes.filter(c => !clienteQuitado(c)).length;
@@ -956,7 +964,7 @@ function renderCelulaFatura(cliente, mes, valor) {
 let _buscaClientesTimer = null;
 function debounceBuscarClientes() {
   clearTimeout(_buscaClientesTimer);
-  _buscaClientesTimer = setTimeout(buscarClientes, 220);
+  _buscaClientesTimer = setTimeout(buscarClientes, 350);
 }
 
 // Normaliza texto (remove acentos + lowercase)
@@ -966,7 +974,13 @@ function _norm(s) {
 }
 
 // Busca local (state.clientes) — instantânea, sem ir no servidor
-function buscarClientes() {
+let _buscaClientesTimer = null;
+function debounceBuscarClientes() {
+  clearTimeout(_buscaClientesTimer);
+  _buscaClientesTimer = setTimeout(buscarClientes, 350);
+}
+
+async function buscarClientes() {
   const termo = $('inputBuscaClientes').value.trim();
   const contador = $('clientesContador');
   const resultados = $('clientesResultados');
@@ -984,25 +998,50 @@ function buscarClientes() {
     return;
   }
 
-  const termoNorm = _norm(termo);
+  // Feedback de carregamento
+  contador.textContent = 'Buscando...';
+  resultados.innerHTML = `
+    <div class="bg-white p-12 rounded-2xl border border-slate-200 shadow-sm text-center">
+      <i data-lucide="loader-2" class="w-8 h-8 mx-auto text-[#0e8890] animate-spin mb-3"></i>
+      <p class="text-slate-500">Consultando banco de dados...</p>
+    </div>`;
+  lucide.createIcons();
+
+  // Prepara filtros
   const termoNum = termo.replace(/\D/g, '');
+  const termoNorm = _norm(termo);
 
-  const encontrados = state.clientes.filter(c => {
-    const nome = _norm(c.nome);
-    const cons = _norm(c.consultor);
-    const cpf = normalizarCPF(c.cpf);
-    const tel = normalizarTelefone(c.telefone);
-    const alt = normalizarTelefone(c.telefone_alt);
+  // Monta a query com OR em várias colunas
+  // Usa ilike (case-insensitive) e envia os números para CPF/telefone
+  let query = supabaseClient
+    .from('clientes_faturas')
+    .select('*');
 
-    const matchNome = nome.includes(termoNorm);
-    const matchCons = cons.includes(termoNorm);
-    const matchNum = termoNum.length >= 3 &&
-      (cpf.includes(termoNum) || tel.includes(termoNum) || alt.includes(termoNum));
+  if (termoNum.length >= 3 && /^\d+$/.test(termo.replace(/\D/g, '')) && termo.replace(/\D/g,'').length > 0) {
+    // Busca numérica: tenta em cpf, telefone, telefone_alt
+    query = query.or(`cpf.ilike.%${termoNum}%,telefone.ilike.%${termoNum}%,telefone_alt.ilike.%${termoNum}%,nome.ilike.%${termo}%,consultor.ilike.%${termo}%`);
+  } else {
+    // Busca textual: nome ou consultor
+    query = query.or(`nome.ilike.%${termo}%,consultor.ilike.%${termo}%`);
+  }
 
-    return matchNome || matchCons || matchNum;
-  });
+  // Traz até 500 resultados (suficiente para qualquer busca real)
+  const { data, error } = await query.limit(500);
 
-  // Ordena alfabeticamente
+  if (error) {
+    console.error(error);
+    contador.textContent = 'Erro na busca';
+    resultados.innerHTML = `
+      <div class="bg-white p-12 rounded-2xl border border-red-200 shadow-sm text-center">
+        <i data-lucide="alert-circle" class="w-12 h-12 mx-auto text-red-400 mb-3"></i>
+        <p class="text-slate-600 font-semibold">Erro ao buscar</p>
+        <p class="text-xs text-slate-500 mt-1">${escapeHTML(error.message)}</p>
+      </div>`;
+    lucide.createIcons();
+    return;
+  }
+
+  const encontrados = data || [];
   encontrados.sort((a, b) => String(a.nome || '').localeCompare(String(b.nome || '')));
 
   contador.textContent = `${encontrados.length} ${encontrados.length === 1 ? 'cliente encontrado' : 'clientes encontrados'}`;
@@ -1018,6 +1057,8 @@ function buscarClientes() {
     return;
   }
 
+  // Guarda o resultado atual para as ações (copiar)
+  state.clientesBusca = encontrados;
   resultados.innerHTML = encontrados.map(c => renderClienteCard(c)).join('');
   lucide.createIcons();
 }
@@ -1162,7 +1203,7 @@ function renderClienteCard(c) {
 
 // Copia dados completos do cliente formatados
 function copiarClienteCard(cpf) {
-  const c = state.clientes.find(x => normalizarCPF(x.cpf) === cpf);
+  const c = (state.clientesBusca || []).find(x => normalizarCPF(x.cpf) === cpf);
   if (!c) return;
 
   const telefone = normalizarTelefone(c.telefone);
@@ -1180,11 +1221,9 @@ function copiarClienteCard(cpf) {
     `VENCIMENTO: Dia ${c.data_vencimento_base || '—'}\n` +
     `BASE: ${c.ano_base || '—'}`;
 
-  // Copia e dá feedback
   navigator.clipboard.writeText(texto).then(() => {
     mostrarToastCopy('Dados do cliente copiados!');
   }).catch(() => {
-    // fallback
     const ta = document.createElement('textarea');
     ta.value = texto;
     document.body.appendChild(ta);
