@@ -280,6 +280,27 @@
   <option value="todos">Todos</option>
 </select>
             </div>
+
+<!-- ─── NOVO: Filtro por Vencimento ─── -->
+<div class="flex items-center gap-2">
+  <span class="text-xs font-semibold text-slate-500 uppercase">Vencimento:</span>
+  <select id="selectVencFiltro" onchange="filtrar()"
+    class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#0e8890]">
+    <option value="">Todos</option>
+    <option value="vencidos">🔴 Só vencidos</option>
+    <option value="hoje">Vencem hoje</option>
+    <option value="7dias">Próximos 7 dias</option>
+    <option value="30dias">Próximos 30 dias</option>
+    <option value="mes_atual">Este mês</option>
+    <option value="proximo_mes">Próximo mês</option>
+  </select>
+
+  <input type="text" id="inputVencDia" oninput="filtrar()" maxlength="2"
+    placeholder="Dia"
+    class="w-16 bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#0e8890]"
+    title="Filtrar por dia do mês (ex: 7, 10, 15)">
+</div>
+            
             <button onclick="abrirModalImportacao()"
               class="bg-slate-900 hover:bg-[#000033] text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm transition-colors flex items-center gap-2">
               <i data-lucide="upload-cloud" class="w-4 h-4"></i><span class="hidden sm:inline">Importar</span>
@@ -1402,6 +1423,55 @@ function maiorAtraso(c) {
   });
   return maior;
 }
+
+    /* ────────────────────────────────────────────────────────────
+   FILTRO DE VENCIMENTO
+   ──────────────────────────────────────────────────────────── */
+
+// Verifica se UMA data de fatura passa o filtro de vencimento
+function _faturaVencMatch(dataVencStr, rangeFiltro, diaFiltro) {
+  const dataFat = parseBR(dataVencStr);
+  if (!dataFat) return false;
+
+  // Filtro por dia específico do mês
+  if (diaFiltro && dataFat.getDate() !== diaFiltro) return false;
+
+  // Sem filtro de range → basta o dia
+  if (!rangeFiltro) return true;
+
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const dt = new Date(dataFat); dt.setHours(0, 0, 0, 0);
+  const diffDias = Math.floor((dt - hoje) / 86400000);
+
+  switch (rangeFiltro) {
+    case 'vencidos':      return diffDias < 0;
+    case 'hoje':          return diffDias === 0;
+    case '7dias':         return diffDias >= 0 && diffDias <= 7;
+    case '30dias':        return diffDias >= 0 && diffDias <= 30;
+    case 'mes_atual':
+      return dt.getMonth() === hoje.getMonth() && dt.getFullYear() === hoje.getFullYear();
+    case 'proximo_mes': {
+      const prox = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
+      return dt.getMonth() === prox.getMonth() && dt.getFullYear() === prox.getFullYear();
+    }
+    default: return true;
+  }
+}
+
+// Cliente passa o filtro se ALGUMA fatura em aberto casa
+function clientePassaFiltroVencimento(c, rangeFiltro, diaFiltro) {
+  if (!rangeFiltro && !diaFiltro) return true;
+
+  const faturas = [c.fatura_p, c.fatura_q, c.fatura_r];
+  return faturas.some(f => {
+    const st = statusFatura(f);
+    // Só considera faturas EM ABERTO (pendentes ou enviadas)
+    if (st !== 'pendente' && st !== 'enviada') return false;
+    const data = extrairDataFatura(f);
+    if (!data) return false;
+    return _faturaVencMatch(data, rangeFiltro, diaFiltro);
+  });
+}
     
     function deveOcultar(c) {
       return String(c.modalidade || '').toUpperCase().includes('TROCA DE APARELHO');
@@ -1672,27 +1742,23 @@ function filtrar() {
     const temPrej = temPrejuizoAtivo(c);
     const atraso = maiorAtraso(c);
 
+    let passaSituacao = false;
     switch (state.filtros.situacao) {
-      case 'aberto':
-        // Em Aberto: só o que precisa cobrança ativa — fora quitados E fora prejuízo
-        return !quitado && !temPrej;
-
-      case 'atrasados':
-        // Só Atrasados: só quem tem pelo menos 1 fatura vencida e não paga
-        return atraso > 0 && !quitado && !temPrej;
-
-      case 'prejuizo':
-        // Só Prejuízo: quem já foi marcado como prejuízo
-        return temPrej;
-
-      case 'pagos':
-        // Pagos / CC: só quitados
-        return quitado;
-
+      case 'aberto':    passaSituacao = !quitado && !temPrej; break;
+      case 'atrasados': passaSituacao = atraso > 0 && !quitado && !temPrej; break;
+      case 'prejuizo':  passaSituacao = temPrej; break;
+      case 'pagos':     passaSituacao = quitado; break;
       case 'todos':
-      default:
-        return true;
+      default:          passaSituacao = true;
     }
+    if (!passaSituacao) return false;
+
+    // 4. Filtro por vencimento (NOVO)
+    const rangeVenc = $('selectVencFiltro')?.value || '';
+    const diaVenc = parseInt($('inputVencDia')?.value) || 0;
+    if (!clientePassaFiltroVencimento(c, rangeVenc, diaVenc)) return false;
+
+    return true;
   });
 
   // Contador com detalhe de atraso
