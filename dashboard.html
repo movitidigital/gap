@@ -3245,27 +3245,113 @@ async function processarDatasys(input) {
       return;
     }
 
+    /* ===================================================
+       1. DETECTA A LINHA DE CABEÇALHO
+       Procura nas primeiras 15 linhas a que tem mais
+       palavras-chave conhecidas (NOME, CPF, IMEI, etc).
+       =================================================== */
+    const norm = (s) => String(s || '').toUpperCase().trim()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ');
+
+    const PALAVRAS_CHAVE = [
+      'NOME', 'CPF', 'IMEI', 'MODALIDADE', 'PLANO', 'CONSULTOR',
+      'DATA', 'LINHA', 'TELEFONE', 'NUMERO', 'FIDEL', 'VENDEDOR',
+    ];
+
+    let headerIdx = -1;
+    let melhorMatch = 0;
+
+    for (let i = 0; i < Math.min(15, linhas.length); i++) {
+      const row = linhas[i] || [];
+      const txt = row.map(norm).join(' ');
+      let matches = 0;
+      for (const p of PALAVRAS_CHAVE) if (txt.includes(p)) matches++;
+      if (matches > melhorMatch) {
+        melhorMatch = matches;
+        headerIdx = i;
+      }
+    }
+
+    if (headerIdx === -1 || melhorMatch < 3) {
+      statusEl.textContent = '❌ Não consegui identificar o cabeçalho na planilha.';
+      statusEl.className = 'text-xs font-semibold text-red-600 mt-1';
+      input.value = '';
+      return;
+    }
+
+    const header = linhas[headerIdx].map(norm);
+    console.log('[Datasys] Cabeçalho detectado na linha', headerIdx + 1, ':', linhas[headerIdx]);
+
+    /* ===================================================
+       2. MAPEIA COLUNAS POR NOME (ignora acentos/maiúsculas)
+       Cada campo testa vários nomes possíveis do cabeçalho.
+       =================================================== */
+    const acharColuna = (...nomes) => {
+      for (const nome of nomes) {
+        const alvo = norm(nome);
+        for (let i = 0; i < header.length; i++) {
+          if (header[i] === alvo) return i;
+        }
+        // Segundo passo: match parcial (contains)
+        for (let i = 0; i < header.length; i++) {
+          if (header[i].includes(alvo) || alvo.includes(header[i])) return i;
+        }
+      }
+      return -1;
+    };
+
+    const COL = {
+      dataVenda:  acharColuna('DATA DA VENDA', 'DATA VENDA', 'DT VENDA', 'VENDA'),
+      nome:       acharColuna('NOME DO CLIENTE', 'NOME CLIENTE', 'CLIENTE', 'NOME'),
+      cpf:        acharColuna('CPF CLIENTE', 'CPF'),
+      imei:       acharColuna('IMEI', 'IMEI APARELHO'),
+      linha:      acharColuna('NÚMERO DA LINHA', 'NUMERO DA LINHA', 'Nº LINHA', 'NUM LINHA', 'LINHA'),
+      provisorio: acharColuna('NÚMERO PROVISÓRIO', 'NUMERO PROVISORIO', 'Nº PROVISÓRIO', 'PROVISORIO'),
+      modalidade: acharColuna('MODALIDADE', 'MODALIDADES'),
+      plano:      acharColuna('PLANO', 'NOME PLANO', 'NOME DO PLANO'),
+      consultor:  acharColuna('CONSULTOR', 'VENDEDOR', 'CONSULTOR VENDA', 'NOME CONSULTOR'),
+      fidelAp:    acharColuna('FIDELIZAÇÃO AP', 'FIDELIZACAO AP', 'FIDEL AP', 'FIDELIDADE AP'),
+      fidelPl:    acharColuna('FIDELIZAÇÃO PLANO', 'FIDELIZACAO PLANO', 'FIDEL PL', 'FIDELIDADE PLANO'),
+    };
+
+    console.log('[Datasys] Colunas mapeadas:', COL);
+
+    // Validação mínima: precisa de nome, cpf, linha
+    const faltando = [];
+    if (COL.nome < 0)      faltando.push('NOME');
+    if (COL.cpf < 0)       faltando.push('CPF');
+    if (COL.linha < 0)     faltando.push('NÚMERO DA LINHA');
+    if (COL.modalidade < 0) faltando.push('MODALIDADE');
+
+    if (faltando.length) {
+      statusEl.textContent = `❌ Não encontrei no cabeçalho: ${faltando.join(', ')}. Verifique a planilha.`;
+      statusEl.className = 'text-xs font-semibold text-red-600 mt-1';
+      input.value = '';
+      return;
+    }
+
+    /* ===================================================
+       3. PROCESSA AS LINHAS DE DADOS
+       =================================================== */
     const registros = [];
     const ignorados = { esim: 0, invalido: 0, semData: 0, semNome: 0 };
 
-    for (let i = 1; i < linhas.length; i++) {
+    for (let i = headerIdx + 1; i < linhas.length; i++) {
       const r = linhas[i];
       if (!r || !r.length) continue;
 
       const colE = String(r[4] || '').toUpperCase().trim();
       if (colE.includes('TROCA DE TECNOLOGIA E-SIM')) { ignorados.esim++; continue; }
 
-      const modalidade = String(r[18] || '').toUpperCase().trim();
+      const modalidade = String(r[COL.modalidade] || '').toUpperCase().trim();
       const invalidas = ['ATIVAÇÃO PRÉ-PAGO', 'TROCA DE CHIP POS', 'TROCA DE CHIP PRÉ'];
       if (invalidas.some(inv => modalidade.includes(inv))) { ignorados.invalido++; continue; }
 
-      const rawData = r[6];
+      const rawData = r[COL.dataVenda];
       if (!rawData) { ignorados.semData++; continue; }
 
-      // Extrai direto como string ISO, sem passar por Date (evita shift de timezone)
       let dtVendaISO = null;
       if (rawData instanceof Date && !isNaN(rawData.getTime())) {
-        // SheetJS retorna datas em UTC → pega os campos UTC
         const y = rawData.getUTCFullYear();
         const m = String(rawData.getUTCMonth() + 1).padStart(2, '0');
         const d = String(rawData.getUTCDate()).padStart(2, '0');
@@ -3282,22 +3368,24 @@ async function processarDatasys(input) {
       }
       if (!dtVendaISO) { ignorados.semData++; continue; }
 
-      const nome = String(r[38] || '').trim();
+      const nome = String(r[COL.nome] || '').trim();
       if (!nome) { ignorados.semNome++; continue; }
 
-      const cpf = String(r[37] || '').replace(/\D/g, '').padStart(11, '0');
+      const cpf = String(r[COL.cpf] || '').replace(/\D/g, '').padStart(11, '0');
+      const linha = COL.linha >= 0 ? normalizarTelefone(r[COL.linha]) : '';
+      const prov = COL.provisorio >= 0 ? normalizarTelefone(r[COL.provisorio]) : '';
 
       registros.push({
         ano_base: dtVendaISO.slice(0, 4),
         data_venda: dtVendaISO,
-        imei: String(r[10] || '').trim() || null,
-        telefone: normalizarTelefone(r[12]),
-        telefone_provisorio: normalizarTelefone(r[13]) || null,
-        fidel_ap: String(r[16] || '').trim() || null,
-        fidel_pl: String(r[17] || '').trim() || null,
+        imei: COL.imei >= 0 ? String(r[COL.imei] || '').trim() || null : null,
+        telefone: linha,
+        telefone_provisorio: prov || null,
+        fidel_ap: COL.fidelAp >= 0 ? String(r[COL.fidelAp] || '').trim() || null : null,
+        fidel_pl: COL.fidelPl >= 0 ? String(r[COL.fidelPl] || '').trim() || null : null,
         modalidade,
-        plano: String(r[19] || '').trim() || null,
-        consultor: String(r[26] || '').trim() || null,
+        plano: COL.plano >= 0 ? String(r[COL.plano] || '').trim() || null : null,
+        consultor: COL.consultor >= 0 ? String(r[COL.consultor] || '').trim() || null : null,
         cpf,
         nome,
         status_thales: null,
@@ -3313,13 +3401,14 @@ async function processarDatasys(input) {
       return;
     }
 
-    // Dedup interno
+    /* ===================================================
+       4. DEDUP + VERIFICA DUPLICATAS NO BANCO
+       =================================================== */
     const mapa = new Map();
     registros.forEach(r => mapa.set(`${r.cpf}|${r.telefone}`, r));
     let payload = Array.from(mapa.values());
     const dupInternas = registros.length - payload.length;
 
-    // Verifica duplicatas no banco
     statusEl.textContent = `🔍 Verificando ${payload.length} registros contra a base...`;
 
     const cpfs = payload.map(r => r.cpf);
@@ -3341,7 +3430,9 @@ async function processarDatasys(input) {
       return;
     }
 
-    // Insert em lotes
+    /* ===================================================
+       5. INSERT EM LOTES
+       =================================================== */
     statusEl.textContent = `💾 Importando ${novos.length} registros...`;
 
     const TAMANHO_LOTE = 200;
@@ -3355,7 +3446,9 @@ async function processarDatasys(input) {
       else inseridos += lote.length;
     }
 
-    // Feedback
+    /* ===================================================
+       6. FEEDBACK
+       =================================================== */
     if (erros.length) {
       statusEl.textContent = `⚠️ ${inseridos} importados, ${erros.length} lote(s) com erro. ${erros[0]}`;
       statusEl.className = 'text-xs font-semibold text-amber-600 mt-1';
