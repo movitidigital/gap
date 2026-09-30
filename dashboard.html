@@ -745,21 +745,22 @@
     <div id="abaContent-thales" class="block">
       <div class="overflow-x-auto">
         <table class="w-full text-left text-sm whitespace-nowrap">
-          <thead class="bg-slate-800 text-white text-[10px] uppercase tracking-widest">
-            <tr>
-              <th class="px-4 py-3">Data Venda</th>
-              <th class="px-4 py-3">Nº Linha</th>
-              <th class="px-4 py-3">IMEI</th>
-              <th class="px-4 py-3 text-center">Fidel. AP</th>
-              <th class="px-4 py-3">Modalidade</th>
-              <th class="px-4 py-3">Consultor</th>
-              <th class="px-4 py-3">CPF</th>
-              <th class="px-4 py-3">Nome</th>
-              <th class="px-4 py-3 text-center">Ação</th>
-            </tr>
-          </thead>
+        <thead class="bg-slate-800 text-white text-[10px] uppercase tracking-widest">
+  <tr>
+    <th class="px-4 py-3">Data Venda</th>
+    <th class="px-4 py-3">Nº Linha</th>
+    <th class="px-4 py-3">IMEI</th>
+    <th class="px-4 py-3 text-center">Fidel. AP</th>
+    <th class="px-4 py-3">Modalidade</th>
+    <th class="px-4 py-3">Plano</th>
+    <th class="px-4 py-3">Consultor</th>
+    <th class="px-4 py-3">CPF</th>
+    <th class="px-4 py-3">Nome</th>
+    <th class="px-4 py-3 text-center">Ação</th>
+  </tr>
+</thead>
           <tbody id="tabelaContratos" class="divide-y divide-slate-100">
-            <tr><td colspan="9" class="px-6 py-12 text-center text-slate-500">A carregar…</td></tr>
+            <tr><td colspan="10" class="px-6 py-12 text-center text-slate-500">A carregar…</td></tr>
           </tbody>
         </table>
       </div>
@@ -2705,6 +2706,7 @@ function linhaContratoHTML(c) {
   const tel = normalizarTelefone(c.telefone);
   const prov = normalizarTelefone(c.telefone_provisorio);
   const isPort = String(c.modalidade || '').toUpperCase().includes('PORT');
+  const plano = String(c.plano || '').trim();
 
   return `
     <tr class="hover:bg-indigo-50/50 transition-colors border-b border-slate-100 text-xs">
@@ -2721,6 +2723,9 @@ function linhaContratoHTML(c) {
         </span>
       </td>
       <td class="px-4 py-3 text-[10px] text-slate-600 uppercase">${escapeHTML(c.modalidade || '—')}</td>
+      <td class="px-4 py-3">
+        <span class="inline-block text-[11px] font-bold text-[#E60000] uppercase leading-tight">${escapeHTML(plano || '—')}</span>
+      </td>
       <td class="px-4 py-3 text-[10px] text-slate-500 uppercase">${escapeHTML(c.consultor || '—')}</td>
       <td class="px-4 py-3 font-mono text-[10px] text-slate-500">${escapeHTML(normalizarCPF(c.cpf))}</td>
       <td class="px-4 py-3 font-bold text-slate-800 uppercase">${escapeHTML(capitalizar(c.nome) || '—')}</td>
