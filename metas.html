@@ -20,6 +20,7 @@
       --xl-gray:    #D9D9D9;
       --xl-gray-lt: #F2F2F2;
       --xl-pos:     #305496;
+      --xl-fat-bg:  #EAF4FB;
       --border:     #b8c2cc;
     }
     * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
@@ -34,17 +35,15 @@
     ::-webkit-scrollbar-track { background: #f1f5f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-    /* ═══ TABELA ESTILO EXCEL — 7 COLUNAS EXATAS ═══ */
+    /* ═══ TABELA EXCEL ═══ */
     .xl-table {
       border-collapse: collapse;
       width: 100%;
       table-layout: fixed;
       font-size: 11px;
       font-variant-numeric: tabular-nums;
-      border: 2px dashed #00B050;
     }
-    .xl-table th,
-    .xl-table td {
+    .xl-table th, .xl-table td {
       border: 1px solid var(--border);
       padding: 0;
       height: 34px;
@@ -53,8 +52,6 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-
-    /* Cabeçalho da tabela (linha com nomes das colunas) */
     .xl-table thead th {
       background: var(--xl-gray);
       color: #1e293b;
@@ -67,7 +64,6 @@
       line-height: 1.15;
     }
 
-    /* Célula da categoria vertical */
     .xl-vertical {
       writing-mode: vertical-rl;
       transform: rotate(180deg);
@@ -84,7 +80,6 @@
     .xl-vertical.gross   { background: #2E75B6; }
     .xl-vertical.produto { background: #305496; }
 
-    /* Células de conteúdo */
     .xl-label {
       padding: 5px 8px;
       font-size: 10.5px;
@@ -102,16 +97,13 @@
     .xl-value.center { text-align: center; }
     .xl-value.num    { font-variant-numeric: tabular-nums; }
 
-    /* Coluna FALTA e FAZER POR DIA — fundo levemente azulado */
     .xl-value.falta-col { background: #F7FBFD; }
     .xl-value.dia-col   { background: #F0F9FB; }
 
-    /* Células coloridas */
     .xl-cell-green  { background: var(--xl-green);  color: #1a3d00; font-weight: 900; text-align: center; }
     .xl-cell-yellow { background: var(--xl-yellow); color: #1e293b; font-weight: 900; text-align: center; }
     .xl-cell-red    { background: var(--xl-red);    color: #fff;    font-weight: 900; text-align: center; }
 
-    /* Célula META ENTREGUE (mescla FALTA + FAZER POR DIA) */
     .xl-entrega {
       background: var(--xl-green);
       color: #1a3d00;
@@ -123,8 +115,16 @@
       padding: 5px 10px;
     }
 
-    /* Valor FAZER POR DIA (destaque teal) */
     .xl-dia-val { color: #0e8890; font-weight: 800; }
+
+    /* FAT TOTAL TIM — fundo azul discreto */
+    .row-fat td {
+      background: var(--xl-fat-bg) !important;
+    }
+    .row-fat td.xl-label {
+      color: #1F4E78;
+      font-weight: 900;
+    }
 
     /* Tabela diário */
     .table-diario {
@@ -181,7 +181,6 @@
     .cell-input.filled { background: #f0fdf4; color: #166534; font-weight: 700; }
     .cell-input.total-cell { background: #dbeafe; color: #1e40af; font-weight: 800; cursor: not-allowed; }
 
-    /* Inputs de config */
     .config-input {
       width: 100%;
       border: 1.5px solid #cbd5e1;
@@ -233,7 +232,6 @@
     }
     .saved-anim { animation: pulse-save 0.8s ease; }
 
-    /* Cabeçalho de cada card de consultor */
     .card-header {
       background: var(--xl-blue);
       color: #fff;
@@ -267,7 +265,6 @@
     .status-badge.yellow { background: var(--xl-yellow); color: #1e293b; }
     .status-badge.red    { background: #E60000; }
 
-    /* Card consultor */
     .consultor-card {
       background: #fff;
       border-radius: 4px;
@@ -329,16 +326,16 @@
     </header>
 
     <div class="flex-1 overflow-y-auto p-4 md:p-6">
-      <div id="exportArea" class="bg-[#1F4E78] rounded-t-2xl p-4 md:p-5 shadow-md mb-0 flex flex-col md:flex-row justify-between items-center text-white">
+
+      <!-- CABEÇALHO DA PÁGINA -->
+      <div class="bg-[#1F4E78] rounded-t-2xl p-4 md:p-5 shadow-md flex flex-col md:flex-row justify-between items-center text-white">
         <div class="flex items-center gap-4">
           <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center p-1 shrink-0">
             <img src="/LOGOINFORTECATIM2026.png" alt="Inforteca" class="h-8 w-auto object-contain" onerror="this.style.display='none'">
           </div>
           <div>
             <h1 class="text-lg md:text-2xl font-black tracking-tight uppercase">Acompanhamento de Vendas Diário</h1>
-            <div class="flex flex-wrap gap-x-6 gap-y-1 mt-1 text-[11px] font-bold text-blue-200">
-              <span id="headerResultado">RESULTADO LOJA DE 01 A —</span>
-            </div>
+            <p class="text-[11px] font-bold text-blue-100 uppercase tracking-widest mt-1">LOJA TIM DOM JOSÉ · INFORTECA GARANHUNS</p>
           </div>
         </div>
         <div class="text-right mt-3 md:mt-0">
@@ -350,7 +347,8 @@
         </div>
       </div>
 
-      <div class="bg-white border border-slate-200 border-t-0 px-4 py-3 flex flex-wrap gap-2 items-center justify-between">
+      <!-- BARRA DE AÇÕES -->
+      <div class="bg-white border border-slate-200 border-t-0 px-4 py-3 flex flex-wrap gap-3 items-center justify-between">
         <div class="flex flex-wrap gap-2">
           <button data-tab="resumo" class="tab-btn active px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
             <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Resumo
@@ -362,20 +360,29 @@
             <i data-lucide="sliders-horizontal" class="w-4 h-4"></i> Parâmetros & Metas
           </button>
         </div>
-        <div class="flex items-center gap-2">
+
+        <div class="flex flex-wrap items-center gap-2">
+          <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Mês:</label>
+          <select id="selectMes" onchange="selecionarMes(this.value)"
+            class="bg-slate-50 border border-slate-200 text-slate-800 font-bold rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0e8890]"></select>
+          <button onclick="adicionarMes()" class="bg-[#0e8890] hover:bg-[#0b6c72] text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors">
+            <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i> Novo Mês
+          </button>
+          <button onclick="removerMesAtual()" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 border border-red-200 transition-colors" title="Remover mês atual">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+          <div class="w-px h-6 bg-slate-200 mx-1"></div>
           <button onclick="exportarImagem()" id="btnExport" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors">
             <i data-lucide="image-down" class="w-3.5 h-3.5"></i> Baixar Imagem
-          </button>
-          <button onclick="resetarDados()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors">
-            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Resetar
           </button>
         </div>
       </div>
 
       <div class="bg-white border border-slate-200 border-t-0 rounded-b-2xl shadow-sm p-4 md:p-6">
 
+        <!-- ABA RESUMO -->
         <div id="tab-resumo" class="tab-content">
-          <div class="rounded-md overflow-hidden mb-8 border-2 border-dashed" style="border-color:#00B050;">
+          <div class="rounded-md overflow-hidden mb-8 border border-slate-300">
             <div class="bg-[#1F4E78] px-4 py-2.5 flex justify-between items-center">
               <h3 class="text-white font-black tracking-widest text-xs uppercase">INFORTECA — LOJA GERAL</h3>
               <span class="bg-white/10 text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/20">
@@ -418,6 +425,7 @@
           <div class="grid grid-cols-1 xl:grid-cols-2 gap-6" id="gridConsultores"></div>
         </div>
 
+        <!-- ABA DIÁRIO -->
         <div id="tab-diario" class="tab-content hidden">
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
             <div class="flex items-center gap-3">
@@ -435,12 +443,13 @@
           <div id="gridDiario" class="space-y-8"></div>
         </div>
 
+        <!-- ABA CONFIG -->
         <div id="tab-config" class="tab-content hidden">
           <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-6 flex items-start gap-2">
             <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
             <div>
               <p class="text-xs text-amber-800 font-bold">Todos os valores abaixo são editáveis.</p>
-              <p class="text-[11px] text-amber-700">Salvos automaticamente e refletidos em todas as abas.</p>
+              <p class="text-[11px] text-amber-700">Salvos automaticamente por mês. Ao criar um novo mês, as metas são copiadas mas os valores do diário vêm em branco.</p>
             </div>
           </div>
 
@@ -533,11 +542,14 @@
   </div>
 
   <script>
+    /* ═══════════════════════════════════════════════════════
+       CONFIG
+       ═══════════════════════════════════════════════════════ */
     const SUPABASE_URL = 'https://zldugoqlcrzarpqvtaoh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const STORAGE_KEY = 'inforteca_metas_v5';
+    const STORAGE_KEY = 'inforteca_metas_v6';
     const DIAS_NO_MES = 30;
 
     const TIPO_VALOR = {
@@ -552,24 +564,63 @@
       { cat: 'PRODUTO',  keys: ['APARELHO', 'ACESSÓRIOS'],                     cls: 'produto' },
     ];
 
+    /* ═══════════════════════════════════════════════════════
+       HELPERS DE DATA/MÊS
+       ═══════════════════════════════════════════════════════ */
+    const MESES = ['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
+    function nomeMesAtual() {
+      const d = new Date();
+      return `${MESES[d.getMonth()]} / ${d.getFullYear()}`;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ESTRUTURA DE MÊS
+       ═══════════════════════════════════════════════════════ */
     function criarDiarioZerado() {
       const d = {};
       LINHAS_DIARIO.forEach(k => d[k] = new Array(DIAS_NO_MES).fill(0));
       return d;
     }
 
-    function gerarEstadoPadrao() {
-      const dGab = criarDiarioZerado();
-      // Preenchido com os dados da imagem do Gabriel
-      dGab['CONTROLE FAT.'] = new Array(DIAS_NO_MES).fill(0); dGab['CONTROLE FAT.'][0] = 1124.82;
-      dGab['PÓS FAT.']      = new Array(DIAS_NO_MES).fill(0); dGab['PÓS FAT.'][0]      = 429.96;
-      dGab['CONTROLE']      = new Array(DIAS_NO_MES).fill(0); dGab['CONTROLE'][0]      = 20;
-      dGab['PÓS']           = new Array(DIAS_NO_MES).fill(0); dGab['PÓS'][0]           = 4;
-      dGab['PORTABILIDADE'] = new Array(DIAS_NO_MES).fill(0); dGab['PORTABILIDADE'][0] = 9;
-      dGab['APARELHO']      = new Array(DIAS_NO_MES).fill(0); dGab['APARELHO'][0]      = 5467;
-      dGab['ACESSÓRIOS']    = new Array(DIAS_NO_MES).fill(0); dGab['ACESSÓRIOS'][0]    = 3031.10;
+    function criarMes(nomeMes, baseMetas) {
+      const metas = baseMetas || {
+        metaLoja:      { 'FAT TOTAL TIM': 5700, 'CONTROLE FAT.': 3600, 'PÓS FAT.': 2100, 'CONTROLE': 60, 'PÓS': 18, 'PORTABILIDADE': 24, 'APARELHO': 22500, 'ACESSÓRIOS': 18000 },
+        metaConsultor: { 'FAT TOTAL TIM': 1900, 'CONTROLE FAT.': 1200, 'PÓS FAT.': 700, 'CONTROLE': 20, 'PÓS': 6, 'PORTABILIDADE': 8, 'APARELHO': 7500, 'ACESSÓRIOS': 6000 },
+        metaPos:       { 'FAT TOTAL TIM': 1900, 'CONTROLE FAT.': 1200, 'PÓS FAT.': 700, 'CONTROLE': 20, 'PÓS': 6, 'PORTABILIDADE': 8, 'APARELHO': 7500, 'ACESSÓRIOS': 6000 },
+        diasTrabalhados: 21,
+        diasRestantes: 1,
+        qualControle: '58,18%',
+        qualPos: '85%',
+        consultoresNomes: ['DANIEL ALVES FERREIRA', 'GABRIEL VALENÇA DE LIMA', 'JEAN BRENO CARNEIRO DA SILVA'],
+      };
 
-      const dDaniel = criarDiarioZerado();
+      return {
+        parametros: {
+          mes: nomeMes,
+          diasTrabalhados: metas.diasTrabalhados,
+          diasRestantes: metas.diasRestantes,
+          qualControle: metas.qualControle,
+          qualPos: metas.qualPos,
+        },
+        metaLoja:      { ...metas.metaLoja },
+        metaConsultor: { ...metas.metaConsultor },
+        metaPos:       { ...metas.metaPos },
+        consultores: metas.consultoresNomes.map((nome, i) => ({
+          id: 'c' + Date.now() + '_' + i,
+          nome,
+          diario: criarDiarioZerado()
+        }))
+      };
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ESTADO PADRÃO (primeira vez)
+       ═══════════════════════════════════════════════════════ */
+    function gerarEstadoPadrao() {
+      const setembro = criarMes('SETEMBRO / 2026');
+
+      // Popula diário do Daniel com dados reais
+      const dDaniel = setembro.consultores[0].diario;
       dDaniel['CONTROLE FAT.'] = [75.99, 0, 279.95, 59.99, 99.98, 0, 0, 99.98, 0, 149.97, 0, 0, 0, 67.99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       dDaniel['PÓS FAT.']      = [119.99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       dDaniel['CONTROLE']      = [2, 0, 5, 1, 2, 0, 0, 2, 0, 3, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -579,18 +630,15 @@
       dDaniel['ACESSÓRIOS']    = [354, 35, 813, 0, 70, 0, 0, 294, 773, 55, 0, 230, 0, 155, 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
       return {
-        parametros: { mes: 'SETEMBRO / 2026', diasTrabalhados: 21, diasRestantes: 1, qualControle: '58,18%', qualPos: '85%' },
-        metaLoja:      { 'FAT TOTAL TIM': 5700, 'CONTROLE FAT.': 3600, 'PÓS FAT.': 2100, 'CONTROLE': 60, 'PÓS': 18, 'PORTABILIDADE': 24, 'APARELHO': 22500, 'ACESSÓRIOS': 18000 },
-        metaConsultor: { 'FAT TOTAL TIM': 1900, 'CONTROLE FAT.': 1200, 'PÓS FAT.': 700, 'CONTROLE': 20, 'PÓS': 6, 'PORTABILIDADE': 8, 'APARELHO': 7500, 'ACESSÓRIOS': 6000 },
-        metaPos:       { 'FAT TOTAL TIM': 1900, 'CONTROLE FAT.': 1200, 'PÓS FAT.': 700, 'CONTROLE': 20, 'PÓS': 6, 'PORTABILIDADE': 8, 'APARELHO': 7500, 'ACESSÓRIOS': 6000 },
-        consultores: [
-          { id: 'c1', nome: 'DANIEL ALVES FERREIRA', diario: dDaniel },
-          { id: 'c2', nome: 'GABRIEL VALENÇA DE LIMA', diario: dGab },
-          { id: 'c3', nome: 'JEAN BRENO CARNEIRO DA SILVA', diario: criarDiarioZerado() },
-        ]
+        versao: 6,
+        mesAtual: 'SETEMBRO / 2026',
+        meses: { 'SETEMBRO / 2026': setembro }
       };
     }
 
+    /* ═══════════════════════════════════════════════════════
+       STATE
+       ═══════════════════════════════════════════════════════ */
     let state = null;
 
     function carregarEstado() {
@@ -598,27 +646,32 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          parsed.consultores.forEach(c => {
-            LINHAS_DIARIO.forEach(k => {
-              if (!Array.isArray(c.diario[k])) c.diario[k] = new Array(DIAS_NO_MES).fill(0);
-              while (c.diario[k].length < DIAS_NO_MES) c.diario[k].push(0);
+          // Sanity + migração de arrays de diário
+          Object.keys(parsed.meses).forEach(nomeMes => {
+            const m = parsed.meses[nomeMes];
+            m.consultores.forEach(c => {
+              LINHAS_DIARIO.forEach(k => {
+                if (!Array.isArray(c.diario[k])) c.diario[k] = new Array(DIAS_NO_MES).fill(0);
+                while (c.diario[k].length < DIAS_NO_MES) c.diario[k].push(0);
+              });
             });
           });
           return parsed;
         }
-      } catch (e) { console.warn(e); }
+      } catch (e) { console.warn('Erro ao carregar estado:', e); }
       return gerarEstadoPadrao();
     }
-    function salvarEstado() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {} }
-    function resetarDados() {
-      if (!confirm('Apagar TODOS os dados e voltar ao padrão?')) return;
-      localStorage.removeItem(STORAGE_KEY);
-      state = gerarEstadoPadrao();
-      salvarEstado();
-      recalcAll();
-      toast('Dados resetados!');
+
+    function salvarEstado() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+      catch (e) { console.warn('Erro ao salvar:', e); }
     }
 
+    function mesAtivo() { return state.meses[state.mesAtual]; }
+
+    /* ═══════════════════════════════════════════════════════
+       FORMATAÇÃO
+       ═══════════════════════════════════════════════════════ */
     const fmtMoeda  = (v) => 'R$ ' + (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const fmtNumero = (v) => String(Number(v) || 0);
     const fmtValor  = (v, tipo) => tipo === 'moeda' ? fmtMoeda(v) : fmtNumero(v);
@@ -636,15 +689,30 @@
       return somaDiario(c, key);
     }
     function calcRealizadoLoja(key) {
-      return state.consultores.reduce((s, c) => s + calcRealizadoConsultor(c, key), 0);
+      return mesAtivo().consultores.reduce((s, c) => s + calcRealizadoConsultor(c, key), 0);
+    }
+
+    // Descobre o último dia com valor > 0
+    function ultimoDiaComValor() {
+      const m = mesAtivo();
+      let ultimo = 0;
+      m.consultores.forEach(c => {
+        LINHAS_DIARIO.forEach(k => {
+          (c.diario[k] || []).forEach((v, i) => {
+            if (Number(v) > 0 && (i + 1) > ultimo) ultimo = i + 1;
+          });
+        });
+      });
+      return ultimo;
     }
 
     /* ═══════════════════════════════════════════════════════
-       RENDER: TABELA LOJA (mesmo padrão do consultor)
+       RENDER: TABELA LOJA
        ═══════════════════════════════════════════════════════ */
     function renderResumoLoja() {
       const tbody = document.getElementById('tbody-loja');
-      const meta = state.metaLoja;
+      const m = mesAtivo();
+      const meta = m.metaLoja;
       let html = '';
 
       CATEGORIAS.forEach(cat => {
@@ -654,11 +722,12 @@
           const tipo  = TIPO_VALOR[key];
           const pct   = calcPct(realV, metaV);
           const falta = Math.max(0, metaV - realV);
-          const fazerDia = state.parametros.diasRestantes > 0 ? falta / state.parametros.diasRestantes : falta;
+          const fazerDia = m.parametros.diasRestantes > 0 ? falta / m.parametros.diasRestantes : falta;
           const cls = cellClass(pct);
           const entregue = pct >= 100;
+          const isFat = key === 'FAT TOTAL TIM';
 
-          html += '<tr>';
+          html += `<tr class="${isFat ? 'row-fat' : ''}">`;
           if (idx === 0) {
             html += `<td rowspan="${cat.keys.length}" class="xl-vertical ${cat.cls}">${cat.cat}</td>`;
           }
@@ -679,14 +748,15 @@
     }
 
     /* ═══════════════════════════════════════════════════════
-       RENDER: CONSULTORES — LAYOUT IDÊNTICO AO PRINT
+       RENDER: CONSULTORES
        ═══════════════════════════════════════════════════════ */
     function renderConsultores() {
       const grid = document.getElementById('gridConsultores');
-      const meta = state.metaConsultor;
+      const m = mesAtivo();
+      const meta = m.metaConsultor;
       let html = '';
 
-      state.consultores.forEach(consult => {
+      m.consultores.forEach(consult => {
         const metaFat = meta['FAT TOTAL TIM'] || 0;
         const realFat = calcRealizadoConsultor(consult, 'FAT TOTAL TIM');
         const pctFat  = calcPct(realFat, metaFat);
@@ -702,7 +772,6 @@
               <h3>${cap(consult.nome)}</h3>
               <span class="status-badge ${statusCls}">${statusTxt}</span>
             </div>
-
             <table class="xl-table">
               <colgroup>
                 <col style="width:34px;">
@@ -733,11 +802,12 @@
             const tipo  = TIPO_VALOR[key];
             const pct   = calcPct(realV, metaV);
             const falta = Math.max(0, metaV - realV);
-            const fazerDia = state.parametros.diasRestantes > 0 ? falta / state.parametros.diasRestantes : falta;
+            const fazerDia = m.parametros.diasRestantes > 0 ? falta / m.parametros.diasRestantes : falta;
             const cls = cellClass(pct);
             const entregue = pct >= 100;
+            const isFat = key === 'FAT TOTAL TIM';
 
-            html += '<tr>';
+            html += `<tr class="${isFat ? 'row-fat' : ''}">`;
             if (idx === 0) {
               html += `<td rowspan="${cat.keys.length}" class="xl-vertical ${cat.cls}">${cat.cat}</td>`;
             }
@@ -765,9 +835,10 @@
        ═══════════════════════════════════════════════════════ */
     function renderDiario() {
       const grid = document.getElementById('gridDiario');
+      const m = mesAtivo();
       let html = '';
 
-      state.consultores.forEach((consult, cIdx) => {
+      m.consultores.forEach((consult, cIdx) => {
         html += `
           <div class="bg-white rounded-xl shadow-sm overflow-hidden border-2 border-slate-300">
             <div class="bg-[#1F4E78] px-4 py-2 border-b border-slate-400 flex justify-between items-center">
@@ -808,7 +879,7 @@
         const cIdx = parseInt(input.dataset.c);
         const row  = input.dataset.row;
         const day  = parseInt(input.dataset.day);
-        const consult = state.consultores[cIdx];
+        const consult = mesAtivo().consultores[cIdx];
 
         let valor;
         if (row === 'FAT TOTAL TIM') {
@@ -844,7 +915,7 @@
       const day   = parseInt(input.dataset.day);
       const novoValor = parseValorInput(input.value);
 
-      state.consultores[cIdx].diario[row][day] = novoValor;
+      mesAtivo().consultores[cIdx].diario[row][day] = novoValor;
       input.value = formatarInput(novoValor, TIPO_VALOR[row]);
       input.classList.toggle('filled', novoValor > 0);
       input.classList.remove('saved-anim');
@@ -856,7 +927,7 @@
       renderConsultores();
     }
     function atualizarFatTotalDia(cIdx, day) {
-      const consult = state.consultores[cIdx];
+      const consult = mesAtivo().consultores[cIdx];
       const total = (Number(consult.diario['CONTROLE FAT.'][day]) || 0) + (Number(consult.diario['PÓS FAT.'][day]) || 0);
       const input = document.querySelector(`.cell-input[data-c="${cIdx}"][data-row="FAT TOTAL TIM"][data-day="${day}"]`);
       if (input) input.value = total > 0 ? total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
@@ -866,23 +937,24 @@
        RENDER: CONFIG
        ═══════════════════════════════════════════════════════ */
     function renderConfig() {
-      const p = state.parametros;
+      const m = mesAtivo();
+      const p = m.parametros;
       document.getElementById('cfgMes').value = p.mes;
       document.getElementById('cfgDiasTrab').value = p.diasTrabalhados;
       document.getElementById('cfgDiasRest').value = p.diasRestantes;
       document.getElementById('cfgQualControle').value = p.qualControle;
       document.getElementById('cfgQualPos').value = p.qualPos;
 
-      bindConfig('cfgMes',          v => state.parametros.mes = v);
-      bindConfig('cfgDiasTrab',     v => state.parametros.diasTrabalhados = Number(v) || 0);
-      bindConfig('cfgDiasRest',     v => state.parametros.diasRestantes = Number(v) || 0);
-      bindConfig('cfgQualControle', v => state.parametros.qualControle = v);
-      bindConfig('cfgQualPos',      v => state.parametros.qualPos = v);
+      bindConfig('cfgMes',          v => p.mes = v);
+      bindConfig('cfgDiasTrab',     v => p.diasTrabalhados = Number(v) || 0);
+      bindConfig('cfgDiasRest',     v => p.diasRestantes = Number(v) || 0);
+      bindConfig('cfgQualControle', v => p.qualControle = v);
+      bindConfig('cfgQualPos',      v => p.qualPos = v);
 
       renderListaConsultores();
-      renderBlocoMeta('tbody-meta-loja',      state.metaLoja,      'metaLoja');
-      renderBlocoMeta('tbody-meta-consultor', state.metaConsultor, 'metaConsultor');
-      renderBlocoMeta('tbody-meta-pos',       state.metaPos,       'metaPos');
+      renderBlocoMeta('tbody-meta-loja',      m.metaLoja,      'metaLoja');
+      renderBlocoMeta('tbody-meta-consultor', m.metaConsultor, 'metaConsultor');
+      renderBlocoMeta('tbody-meta-pos',       m.metaPos,       'metaPos');
     }
 
     function bindConfig(id, cb) {
@@ -897,8 +969,9 @@
 
     function renderListaConsultores() {
       const cont = document.getElementById('listaConsultores');
+      const m = mesAtivo();
       let html = '';
-      state.consultores.forEach((c, idx) => {
+      m.consultores.forEach((c, idx) => {
         html += `
           <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg p-2">
             <span class="w-7 h-7 rounded-full bg-[#1F4E78] text-white text-[10px] font-black flex items-center justify-center shrink-0">${idx + 1}</span>
@@ -914,20 +987,21 @@
       lucide.createIcons();
     }
     function renomearConsultor(id, novo) {
-      const c = state.consultores.find(x => x.id === id);
+      const c = mesAtivo().consultores.find(x => x.id === id);
       if (!c) return;
       c.nome = novo.trim() || c.nome;
       salvarEstado(); renderConsultores(); renderDiario();
       toast('Nome atualizado!');
     }
     function adicionarConsultor() {
-      state.consultores.push({ id: 'c' + Date.now(), nome: 'NOVO CONSULTOR', diario: criarDiarioZerado() });
+      mesAtivo().consultores.push({ id: 'c' + Date.now(), nome: 'NOVO CONSULTOR', diario: criarDiarioZerado() });
       salvarEstado(); renderConfig(); renderConsultores(); renderDiario();
       toast('Consultor adicionado!');
     }
     function removerConsultor(id) {
       if (!confirm('Remover este consultor e TODOS os seus dados?')) return;
-      state.consultores = state.consultores.filter(x => x.id !== id);
+      const m = mesAtivo();
+      m.consultores = m.consultores.filter(x => x.id !== id);
       salvarEstado(); renderConfig(); renderConsultores(); renderDiario(); renderResumoLoja();
       toast('Consultor removido!');
     }
@@ -940,12 +1014,14 @@
           const tipo = TIPO_VALOR[key];
           const valor = metaObj[key] || 0;
           const disabled = key === 'FAT TOTAL TIM' ? 'disabled' : '';
-          html += '<tr>';
+          const isFat = key === 'FAT TOTAL TIM';
+
+          html += `<tr class="${isFat ? 'row-fat' : ''}">`;
           if (idx === 0) {
             html += `<td rowspan="${cat.keys.length}" class="xl-vertical ${cat.cls}" style="font-size:9px;">${cat.cat}</td>`;
           }
-          html += `<td class="xl-label" style="font-size:10px;">${key}${key === 'FAT TOTAL TIM' ? ' <span style="font-size:8px;color:#94a3b8;">(auto)</span>' : ''}</td>`;
-          html += `<td style="padding:3px 5px;background:#fff;">
+          html += `<td class="xl-label" style="font-size:10px;">${key}${isFat ? ' <span style="font-size:8px;color:#94a3b8;">(auto)</span>' : ''}</td>`;
+          html += `<td style="padding:3px 5px;background:${isFat ? '#EAF4FB' : '#fff'};">
             <input type="text" inputmode="decimal" class="config-input"
                    value="${tipo === 'moeda' ? valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : valor}"
                    data-state="${chaveState}" data-key="${key}" ${disabled}>
@@ -957,11 +1033,11 @@
       tbody.querySelectorAll('input[data-state]').forEach(inp => {
         inp.addEventListener('change', () => {
           const st = inp.dataset.state, key = inp.dataset.key;
-          state[st][key] = parseValorInput(inp.value);
+          mesAtivo()[st][key] = parseValorInput(inp.value);
           if (key === 'CONTROLE FAT.' || key === 'PÓS FAT.') {
-            state[st]['FAT TOTAL TIM'] = (state[st]['CONTROLE FAT.'] || 0) + (state[st]['PÓS FAT.'] || 0);
+            mesAtivo()[st]['FAT TOTAL TIM'] = (mesAtivo()[st]['CONTROLE FAT.'] || 0) + (mesAtivo()[st]['PÓS FAT.'] || 0);
             const fatInput = tbody.querySelector(`input[data-state="${st}"][data-key="FAT TOTAL TIM"]`);
-            if (fatInput) fatInput.value = state[st]['FAT TOTAL TIM'].toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            if (fatInput) fatInput.value = mesAtivo()[st]['FAT TOTAL TIM'].toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
           }
           salvarEstado(); renderResumoLoja(); renderConsultores();
         });
@@ -969,44 +1045,192 @@
       });
     }
 
+    /* ═══════════════════════════════════════════════════════
+       HEADER
+       ═══════════════════════════════════════════════════════ */
     function atualizarHeader() {
-      document.getElementById('headerMes').textContent = `MÊS: ${state.parametros.mes}`;
-      document.getElementById('infoDiasTrab').textContent = state.parametros.diasTrabalhados;
-      document.getElementById('infoDiasRest').textContent = state.parametros.diasRestantes;
-      document.getElementById('headerQualControle').textContent = '| ' + state.parametros.qualControle;
-      document.getElementById('headerQualPos').textContent = '| ' + state.parametros.qualPos;
+      const m = mesAtivo();
+      document.getElementById('headerMes').textContent = `MÊS: ${m.parametros.mes}`;
+      document.getElementById('infoDiasTrab').textContent = m.parametros.diasTrabalhados;
+      document.getElementById('infoDiasRest').textContent = m.parametros.diasRestantes;
+      document.getElementById('headerQualControle').textContent = '| ' + m.parametros.qualControle;
+      document.getElementById('headerQualPos').textContent = '| ' + m.parametros.qualPos;
     }
 
+    /* ═══════════════════════════════════════════════════════
+       SELETOR DE MÊS
+       ═══════════════════════════════════════════════════════ */
+    function renderSelectMes() {
+      const sel = document.getElementById('selectMes');
+      const meses = Object.keys(state.meses).sort();
+      sel.innerHTML = meses.map(m =>
+        `<option value="${m}" ${m === state.mesAtual ? 'selected' : ''}>${m}</option>`
+      ).join('');
+    }
+
+    function selecionarMes(nome) {
+      if (!state.meses[nome]) return;
+      state.mesAtual = nome;
+      salvarEstado();
+      recalcAll();
+      renderSelectMes();
+      toast(`Mês alterado: ${nome}`);
+    }
+
+    function adicionarMes() {
+      const sugestao = (() => {
+        const d = new Date();
+        // se o último mês cadastrado for futuro, sugere o próximo
+        const nomes = Object.keys(state.meses).sort();
+        if (nomes.length) {
+          const ultimo = nomes[nomes.length - 1];
+          const match = ultimo.match(/([A-ZÇ]+)\s*\/\s*(\d{4})/);
+          if (match) {
+            const idx = MESES.indexOf(match[1]);
+            const ano = parseInt(match[2]);
+            if (idx >= 0) {
+              const nextIdx = (idx + 1) % 12;
+              const nextAno = idx === 11 ? ano + 1 : ano;
+              return `${MESES[nextIdx]} / ${nextAno}`;
+            }
+          }
+        }
+        return nomeMesAtual();
+      })();
+
+      const nomeMes = prompt('Digite o nome do novo mês (ex: OUTUBRO / 2026):', sugestao);
+      if (!nomeMes) return;
+      const nomeLimpo = nomeMes.trim();
+      if (!nomeLimpo) return;
+      if (state.meses[nomeLimpo]) {
+        alert('Já existe um mês com esse nome.');
+        return;
+      }
+
+      // Copia metas do mês atual (mas diário vem zerado)
+      const atual = mesAtivo();
+      const baseMetas = {
+        metaLoja: { ...atual.metaLoja },
+        metaConsultor: { ...atual.metaConsultor },
+        metaPos: { ...atual.metaPos },
+        diasTrabalhados: atual.parametros.diasTrabalhados,
+        diasRestantes: atual.parametros.diasRestantes,
+        qualControle: atual.parametros.qualControle,
+        qualPos: atual.parametros.qualPos,
+        consultoresNomes: atual.consultores.map(c => c.nome)
+      };
+
+      state.meses[nomeLimpo] = criarMes(nomeLimpo, baseMetas);
+      state.mesAtual = nomeLimpo;
+      salvarEstado();
+      recalcAll();
+      renderSelectMes();
+      toast(`Novo mês criado: ${nomeLimpo}`);
+    }
+
+    function removerMesAtual() {
+      if (Object.keys(state.meses).length <= 1) {
+        alert('Não é possível remover o único mês cadastrado.');
+        return;
+      }
+      if (!confirm(`Remover o mês "${state.mesAtual}" e TODOS os seus dados?`)) return;
+      delete state.meses[state.mesAtual];
+      const nomes = Object.keys(state.meses).sort();
+      state.mesAtual = nomes[0];
+      salvarEstado();
+      recalcAll();
+      renderSelectMes();
+      toast('Mês removido!');
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       EXPORTAR IMAGEM — estratégia robusta
+       ═══════════════════════════════════════════════════════ */
     async function exportarImagem() {
       const btn = document.getElementById('btnExport');
       const original = btn.innerHTML;
       btn.disabled = true;
       btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> Gerando...`;
       lucide.createIcons();
+
+      let wrapper = null;
       try {
         const tabAtiva = document.querySelector('.tab-content:not(.hidden)');
+        const ultimoDia = ultimoDiaComValor();
+        const diaTexto = ultimoDia > 0 ? String(ultimoDia).padStart(2, '0') : '—';
+        const mesLabel = mesAtivo().parametros.mes;
+
+        // Wrapper fora do fluxo normal, mas no viewport (0,0) — método confiável para html2canvas
+        wrapper = document.createElement('div');
+        wrapper.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: max-content;
+          max-width: none;
+          z-index: -1;
+          background: #ffffff;
+          padding: 32px;
+          pointer-events: none;
+          font-family: 'Inter', sans-serif;
+          opacity: 0.001;
+        `;
+
+        // Cabeçalho customizado
+        const header = document.createElement('div');
+        header.style.cssText = 'margin-bottom:24px;padding-bottom:16px;border-bottom:3px solid #1F4E78;font-family:\'Inter\',sans-serif;';
+        header.innerHTML = `
+          <h1 style="font-size:22px;font-weight:900;color:#1F4E78;margin:0;text-transform:uppercase;letter-spacing:0.02em;">Acompanhamento de Vendas Diário</h1>
+          <p style="font-size:13px;font-weight:800;color:#475569;margin:6px 0 0 0;text-transform:uppercase;letter-spacing:0.08em;">LOJA TIM DOM JOSÉ - INFORTECA GARANHUNS</p>
+          <p style="font-size:12px;font-weight:700;color:#0e8890;margin:6px 0 0 0;text-transform:uppercase;letter-spacing:0.06em;">RESULTADO LOJA DE 01 A ${diaTexto} — MÊS: ${mesLabel}</p>
+        `;
+        wrapper.appendChild(header);
+
+        // Clona a aba ativa
         const clone = tabAtiva.cloneNode(true);
-        clone.querySelectorAll('.overflow-x-auto').forEach(el => { el.style.overflow = 'visible'; el.style.width = 'auto'; });
-        const wrapper = document.createElement('div');
-        wrapper.style.cssText = `position:fixed;top:0;left:-10000px;background:#fff;padding:24px;z-index:-1;width:max-content;max-width:none;font-family:'Inter',sans-serif;`;
-        wrapper.appendChild(clone);
-        document.body.appendChild(wrapper);
-        await new Promise(r => setTimeout(r, 100));
-        const canvas = await html2canvas(wrapper, {
-          scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false,
-          width: wrapper.scrollWidth, height: wrapper.scrollHeight,
-          windowWidth: wrapper.scrollWidth, windowHeight: wrapper.scrollHeight,
+        clone.querySelectorAll('.overflow-x-auto').forEach(el => {
+          el.style.overflow = 'visible';
+          el.style.width = 'max-content';
+          el.style.maxWidth = 'none';
         });
+        wrapper.appendChild(clone);
+
+        document.body.appendChild(wrapper);
+
+        // Aguarda layout/renders
+        await new Promise(r => setTimeout(r, 250));
+
+        const canvas = await html2canvas(wrapper, {
+          scale: 2,
+          backgroundColor: '#ffffff',
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          width: wrapper.scrollWidth,
+          height: wrapper.scrollHeight,
+          windowWidth: wrapper.scrollWidth,
+          windowHeight: wrapper.scrollHeight,
+          x: 0,
+          y: 0,
+          scrollX: 0,
+          scrollY: 0,
+        });
+
         document.body.removeChild(wrapper);
+        wrapper = null;
+
         const link = document.createElement('a');
-        const mes = state.parametros.mes.replace(/[^\w]/g, '_');
-        link.download = `acompanhamento_${tabAtiva.id.replace('tab-','')}_${mes}.png`;
+        const mesArquivo = state.mesAtual.replace(/[^\w]/g, '_');
+        const aba = tabAtiva.id.replace('tab-', '');
+        link.download = `acompanhamento_${aba}_${mesArquivo}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
+
         toast('Imagem baixada!');
       } catch (err) {
-        console.error(err);
-        alert('Erro: ' + err.message);
+        console.error('Erro ao exportar:', err);
+        alert('Erro ao gerar imagem: ' + err.message);
+        if (wrapper && wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
       } finally {
         btn.disabled = false;
         btn.innerHTML = original;
@@ -1014,6 +1238,9 @@
       }
     }
 
+    /* ═══════════════════════════════════════════════════════
+       TABS
+       ═══════════════════════════════════════════════════════ */
     function initTabs() {
       const botoes = document.querySelectorAll('[data-tab]');
       const conteudos = document.querySelectorAll('.tab-content');
@@ -1038,9 +1265,17 @@
     }
 
     function recalcAll() {
-      renderResumoLoja(); renderConsultores(); renderDiario(); renderConfig(); atualizarHeader();
+      renderResumoLoja();
+      renderConsultores();
+      renderDiario();
+      renderConfig();
+      atualizarHeader();
+      renderSelectMes();
     }
 
+    /* ═══════════════════════════════════════════════════════
+       AUTH
+       ═══════════════════════════════════════════════════════ */
     async function verificarAuth() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) { window.location.href = 'index.html'; return; }
@@ -1060,6 +1295,9 @@
       s.classList.toggle('z-40');
     }
 
+    /* ═══════════════════════════════════════════════════════
+       BOOT
+       ═══════════════════════════════════════════════════════ */
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
       state = carregarEstado();
