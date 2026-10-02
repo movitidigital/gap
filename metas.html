@@ -41,7 +41,10 @@
       width: 100%;
       table-layout: fixed;
       font-size: 11px;
+      table-layout: fixed;
     }
+    .table-excel td.text-right { font-variant-numeric: tabular-nums; }
+    .table-excel td.vertical-text { padding: 0 !important; width: 30px; }
     .table-excel th, .table-excel td {
       border: 1px solid #b8c2cc;
       padding: 5px 6px;
@@ -280,27 +283,27 @@
             </div>
             <div class="overflow-x-auto">
               <table class="table-excel" id="tabela-loja">
-                <colgroup>
-                  <col style="width:32px;">
-                  <col style="width:120px;">
-                  <col style="width:110px;">
-                  <col style="width:110px;">
-                  <col style="width:70px;">
-                  <col style="width:110px;">
-                  <col style="width:120px;">
-                </colgroup>
-                <thead>
-                  <tr>
-                    <th class="bg-excel-blue text-white"></th>
-                    <th>META LOJA</th>
-                    <th>REALIZADO</th>
-                    <th>PERCENT. REAL %</th>
-                    <th>FALTA</th>
-                    <th>FAZER POR DIA</th>
-                  </tr>
-                </thead>
-                <tbody id="tbody-loja"></tbody>
-              </table>
+  <colgroup>
+    <col style="width:34px;">
+    <col style="width:130px;">
+    <col style="width:110px;">
+    <col style="width:110px;">
+    <col style="width:75px;">
+    <col style="width:110px;">
+    <col style="width:130px;">
+  </colgroup>
+  <thead>
+    <tr>
+      <th class="bg-excel-blue text-white"></th>
+      <th>META LOJA</th>
+      <th>REALIZADO</th>
+      <th>PERCENT. REAL %</th>
+      <th>FALTA</th>
+      <th>FAZER POR DIA</th>
+    </tr>
+  </thead>
+  <tbody id="tbody-loja"></tbody>
+</table>
             </div>
           </div>
 
@@ -608,34 +611,34 @@
         else if (pctFat >= 70) { statusBadge = 'TENDÊNCIA'; statusCor = 'bg-excel-yellow'; }
         else { statusBadge = 'FORA DA TENDÊNCIA'; statusCor = 'bg-excel-red'; }
 
-        html += `
-          <div class="bg-white rounded-xl shadow-sm overflow-hidden border-2 border-slate-300">
-            <div class="bg-excel-blue px-4 py-2.5 border-b border-slate-400 flex justify-between items-center">
-              <h3 class="text-white font-black tracking-widest text-[11px] uppercase truncate">${cap(consult.nome)}</h3>
-              <span class="${statusCor} text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider shrink-0 ml-2">${statusBadge}</span>
-            </div>
-            <table class="table-excel">
-              <colgroup>
-                <col style="width:28px;">
-                <col style="width:100px;">
-                <col style="width:90px;">
-                <col style="width:90px;">
-                <col style="width:55px;">
-                <col style="width:90px;">
-                <col style="width:100px;">
-              </colgroup>
-              <thead>
-                <tr>
-                  <th class="bg-excel-blue text-white"></th>
-                  <th>META LOJA</th>
-                  <th>REALIZADO</th>
-                  <th>%</th>
-                  <th>FALTA</th>
-                  <th>FAZER/DIA</th>
-                </tr>
-              </thead>
-              <tbody>`;
-
+       html += `
+  <div class="bg-white rounded-xl shadow-sm overflow-hidden border-2 border-slate-300">
+    <div class="bg-excel-blue px-4 py-2.5 border-b border-slate-400 flex justify-between items-center">
+      <h3 class="text-white font-black tracking-widest text-[11px] uppercase truncate">${cap(consult.nome)}</h3>
+      <span class="${statusCor} text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider shrink-0 ml-2">${statusBadge}</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="table-excel">
+        <colgroup>
+          <col style="width:30px;">
+          <col style="width:105px;">
+          <col style="width:95px;">
+          <col style="width:95px;">
+          <col style="width:60px;">
+          <col style="width:95px;">
+          <col style="width:105px;">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="bg-excel-blue text-white"></th>
+            <th>META CONSULTOR</th>
+            <th>REALIZADO</th>
+            <th>%</th>
+            <th>FALTA</th>
+            <th>FAZER/DIA</th>
+          </tr>
+        </thead>
+        <tbody>`;
         const todasLinhas = [
           { cat: 'FATURAMENTO', keys: ['FAT TOTAL TIM', 'CONTROLE FAT.', 'PÓS FAT.'] },
           { cat: 'GROSS',       keys: ['CONTROLE', 'PÓS', 'PORTABILIDADE'] },
@@ -866,56 +869,54 @@
       toast('Consultor removido!');
     }
 
-    function renderBlocoMeta(tbodyId, metaObj, chaveState) {
-      const tbody = document.getElementById(tbodyId);
-      let html = '';
+function renderBlocoMeta(tbodyId, metaObj, chaveState) {
+  const tbody = document.getElementById(tbodyId);
+  let html = '';
 
-      const todasLinhas = [
-        { cat: 'FATURAMENTO', keys: ['FAT TOTAL TIM', 'CONTROLE FAT.', 'PÓS FAT.'] },
-        { cat: 'GROSS',       keys: ['CONTROLE', 'PÓS', 'PORTABILIDADE'] },
-        { cat: 'PRODUTO',     keys: ['APARELHO', 'ACESSÓRIOS'] },
-      ];
+  const todasLinhas = [
+    { cat: 'FATURAMENTO', keys: ['FAT TOTAL TIM', 'CONTROLE FAT.', 'PÓS FAT.'] },
+    { cat: 'GROSS',       keys: ['CONTROLE', 'PÓS', 'PORTABILIDADE'] },
+    { cat: 'PRODUTO',     keys: ['APARELHO', 'ACESSÓRIOS'] },
+  ];
 
-      todasLinhas.forEach(cat => {
-        cat.keys.forEach((key, idx) => {
-          const tipo = TIPO_VALOR[key];
-          const valor = metaObj[key] || 0;
-          const disabled = key === 'FAT TOTAL TIM' ? 'disabled' : '';
+  todasLinhas.forEach(cat => {
+    cat.keys.forEach((key, idx) => {
+      const tipo = TIPO_VALOR[key];
+      const valor = metaObj[key] || 0;
+      const disabled = key === 'FAT TOTAL TIM' ? 'disabled' : '';
 
-          html += '<tr>';
-          if (idx === 0) {
-            html += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-green text-white" style="border:1px solid #b8c2cc;font-size:9px;">${cat.cat}</td>`;
-          }
-          html += `<td class="font-bold text-slate-700 text-[10px]">${key}${key === 'FAT TOTAL TIM' ? ' <span class="text-[8px] text-slate-400">(auto)</span>' : ''}</td>`;
-          html += `<td class="p-1">
-            <input type="text" inputmode="decimal" class="config-input"
-                   value="${tipo === 'moeda' ? valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : valor}"
-                   data-state="${chaveState}" data-key="${key}" ${disabled}>
-          </td>`;
-          html += '</tr>';
-        });
-      });
-      tbody.innerHTML = html;
+      html += '<tr>';
+      if (idx === 0) {
+        html += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-green text-white" style="border:1px solid #b8c2cc;font-size:9px;width:28px;">${cat.cat}</td>`;
+      }
+      html += `<td class="font-bold text-slate-700 text-[10px]" style="width:105px;">${key}${key === 'FAT TOTAL TIM' ? ' <span class="text-[8px] text-slate-400">(auto)</span>' : ''}</td>`;
+      html += `<td class="p-1" style="width:115px;">
+        <input type="text" inputmode="decimal" class="config-input"
+               value="${tipo === 'moeda' ? valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : valor}"
+               data-state="${chaveState}" data-key="${key}" ${disabled}>
+      </td>`;
+      html += '</tr>';
+    });
+  });
+  tbody.innerHTML = html;
 
-      tbody.querySelectorAll('input[data-state]').forEach(inp => {
-        inp.addEventListener('change', () => {
-          const st = inp.dataset.state;
-          const key = inp.dataset.key;
-          const tipo = TIPO_VALOR[key];
-          state[st][key] = parseValorInput(inp.value);
-          // Auto-cálculo de FAT TOTAL TIM
-          if (key === 'CONTROLE FAT.' || key === 'PÓS FAT.') {
-            state[st]['FAT TOTAL TIM'] = (state[st]['CONTROLE FAT.'] || 0) + (state[st]['PÓS FAT.'] || 0);
-            const fatInput = tbody.querySelector(`input[data-state="${st}"][data-key="FAT TOTAL TIM"]`);
-            if (fatInput) fatInput.value = state[st]['FAT TOTAL TIM'].toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-          }
-          salvarEstado();
-          renderResumoLoja();
-          renderConsultores();
-        });
-        inp.addEventListener('focus', e => e.target.select());
-      });
-    }
+  tbody.querySelectorAll('input[data-state]').forEach(inp => {
+    inp.addEventListener('change', () => {
+      const st = inp.dataset.state;
+      const key = inp.dataset.key;
+      state[st][key] = parseValorInput(inp.value);
+      if (key === 'CONTROLE FAT.' || key === 'PÓS FAT.') {
+        state[st]['FAT TOTAL TIM'] = (state[st]['CONTROLE FAT.'] || 0) + (state[st]['PÓS FAT.'] || 0);
+        const fatInput = tbody.querySelector(`input[data-state="${st}"][data-key="FAT TOTAL TIM"]`);
+        if (fatInput) fatInput.value = state[st]['FAT TOTAL TIM'].toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+      salvarEstado();
+      renderResumoLoja();
+      renderConsultores();
+    });
+    inp.addEventListener('focus', e => e.target.select());
+  });
+}
 
     function atualizarHeader() {
       document.getElementById('headerMes').textContent = `MÊS: ${state.parametros.mes}`;
