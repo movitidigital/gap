@@ -1084,109 +1084,173 @@
       toast('Mês removido!');
     }
 
-    /* ═══════════════════════════════════════════════════════
-       EXPORTAR IMAGEM — estratégia VISÍVEL (com overlay)
-       ═══════════════════════════════════════════════════════ */
-    async function exportarImagem() {
-      const btn = document.getElementById('btnExport');
-      const original = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> Gerando...`;
-      lucide.createIcons();
+/* ═══════════════════════════════════════════════════════
+   EXPORTAR IMAGEM — estratégia robusta com múltiplos fallbacks
+   ═══════════════════════════════════════════════════════ */
+async function exportarImagem() {
+  const btn = document.getElementById('btnExport');
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> Gerando...`;
+  lucide.createIcons();
 
-      // Overlay de loading (fica ATRÁS do wrapper de exportação)
-      const overlay = document.createElement('div');
-      overlay.id = 'exportOverlay';
-      overlay.innerHTML = `<div class="spinner"></div> Gerando imagem...`;
-      document.body.appendChild(overlay);
+  // Overlay de loading
+  const overlay = document.createElement('div');
+  overlay.id = 'exportOverlay';
+  overlay.innerHTML = `<div class="spinner"></div> Gerando imagem...`;
+  document.body.appendChild(overlay);
 
-      let wrapper = null;
+  let wrapper = null;
 
-      try {
-        const tabAtiva = document.querySelector('.tab-content:not(.hidden)');
-        const ultimoDia = ultimoDiaComValor();
-        const diaTexto = ultimoDia > 0 ? String(ultimoDia).padStart(2, '0') : '—';
-        const mesLabel = mesAtivo().parametros.mes;
+  try {
+    const tabAtiva = document.querySelector('.tab-content:not(.hidden)');
+    const ultimoDia = ultimoDiaComValor();
+    const diaTexto = ultimoDia > 0 ? String(ultimoDia).padStart(2, '0') : '—';
+    const mesLabel = mesAtivo().parametros.mes;
 
-        // Wrapper VISÍVEL acima do overlay
-        wrapper = document.createElement('div');
-        wrapper.style.cssText = `
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: max-content;
-          max-width: none;
-          background: #ffffff;
-          padding: 32px;
-          font-family: 'Inter', sans-serif;
-          z-index: 99999;
-          box-shadow: 0 0 60px rgba(0,0,0,0.5);
-        `;
+    // Wrapper FORA da tela (esquerda) mas renderizado — método mais confiável
+    wrapper = document.createElement('div');
+    wrapper.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: -99999px;
+      width: max-content;
+      max-width: none;
+      background: #ffffff;
+      padding: 32px;
+      font-family: 'Inter', sans-serif;
+      display: block;
+      z-index: 1;
+    `;
 
-        // Cabeçalho customizado
-        const header = document.createElement('div');
-        header.style.cssText = 'margin-bottom:24px;padding-bottom:16px;border-bottom:3px solid #1F4E78;';
-        header.innerHTML = `
-          <h1 style="font-size:22px;font-weight:900;color:#1F4E78;margin:0;text-transform:uppercase;letter-spacing:0.02em;font-family:'Inter',sans-serif;">Acompanhamento de Vendas Diário</h1>
-          <p style="font-size:13px;font-weight:800;color:#475569;margin:6px 0 0 0;text-transform:uppercase;letter-spacing:0.08em;font-family:'Inter',sans-serif;">LOJA TIM DOM JOSÉ - INFORTECA GARANHUNS</p>
-          <p style="font-size:12px;font-weight:700;color:#0e8890;margin:6px 0 0 0;text-transform:uppercase;letter-spacing:0.06em;font-family:'Inter',sans-serif;">RESULTADO LOJA DE 01 A ${diaTexto} — MÊS: ${mesLabel}</p>
-        `;
-        wrapper.appendChild(header);
+    // Cabeçalho customizado
+    const header = document.createElement('div');
+    header.style.cssText = "margin-bottom:24px;padding-bottom:16px;border-bottom:3px solid #1F4E78;";
+    header.innerHTML = `
+      <h1 style="font-size:22px;font-weight:900;color:#1F4E78;margin:0;text-transform:uppercase;letter-spacing:0.02em;">Acompanhamento de Vendas Diário</h1>
+      <p style="font-size:13px;font-weight:800;color:#475569;margin:6px 0 0 0;text-transform:uppercase;letter-spacing:0.08em;">LOJA TIM DOM JOSÉ - INFORTECA GARANHUNS</p>
+      <p style="font-size:12px;font-weight:700;color:#0e8890;margin:6px 0 0 0;text-transform:uppercase;letter-spacing:0.06em;">RESULTADO LOJA DE 01 A ${diaTexto} — MÊS: ${mesLabel}</p>
+    `;
+    wrapper.appendChild(header);
 
-        // Clona a aba ativa
-        const clone = tabAtiva.cloneNode(true);
-        clone.querySelectorAll('.overflow-x-auto').forEach(el => {
-          el.style.overflow = 'visible';
-          el.style.width = 'max-content';
-          el.style.maxWidth = 'none';
-        });
-        wrapper.appendChild(clone);
+    // Clona a aba ativa
+    const clone = tabAtiva.cloneNode(true);
+    clone.style.width = 'max-content';
+    clone.style.display = 'block';
+    clone.querySelectorAll('.overflow-x-auto').forEach(el => {
+      el.style.overflow = 'visible';
+      el.style.width = 'max-content';
+      el.style.maxWidth = 'none';
+    });
+    clone.querySelectorAll('.hidden').forEach(el => el.classList.remove('hidden'));
+    wrapper.appendChild(clone);
 
-        document.body.appendChild(wrapper);
+    document.body.appendChild(wrapper);
 
-        // Aguarda layout
-        await new Promise(r => setTimeout(r, 300));
+    // Aguarda imagens (logo) carregarem
+    const imgs = wrapper.querySelectorAll('img');
+    await Promise.all(Array.from(imgs).map(img => {
+      if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+      return new Promise(resolve => {
+        img.onload = resolve;
+        img.onerror = resolve;
+        setTimeout(resolve, 3000); // timeout de segurança
+      });
+    }));
 
-        const canvas = await html2canvas(wrapper, {
-          scale: 2,
-          backgroundColor: '#ffffff',
-          useCORS: true,
-          logging: false,
-          width: wrapper.offsetWidth,
-          height: wrapper.offsetHeight,
-          windowWidth: wrapper.offsetWidth,
-          windowHeight: wrapper.offsetHeight,
-          scrollX: 0,
-          scrollY: 0,
-        });
+    // Aguarda um frame extra para o layout estabilizar
+    await new Promise(r => setTimeout(r, 400));
 
-        // Converte para blob e força download
-        canvas.toBlob((blob) => {
-          if (!blob) { alert('Erro ao gerar imagem: blob vazio'); return; }
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          const mesArquivo = state.mesAtual.replace(/[^\w]/g, '_');
-          const aba = tabAtiva.id.replace('tab-', '');
-          link.download = `acompanhamento_${aba}_${mesArquivo}.png`;
-          link.href = url;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          setTimeout(() => URL.revokeObjectURL(url), 1000);
-          toast('Imagem baixada!');
-        }, 'image/png', 1.0);
+    // Calcula scale dinâmico para não estourar o limite do Chrome (~16384px)
+    const larguraNatural = wrapper.scrollWidth;
+    const alturaNatural = wrapper.scrollHeight;
+    const LIMITE = 8000; // margem segura
+    let scale = 2;
+    if (larguraNatural * 2 > LIMITE || alturaNatural * 2 > LIMITE) scale = 1;
+    if (larguraNatural * 1.5 > LIMITE || alturaNatural * 1.5 > LIMITE) scale = 1;
 
-      } catch (err) {
-        console.error('Erro ao exportar:', err);
-        alert('Erro ao gerar imagem: ' + err.message);
-      } finally {
-        if (wrapper && wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
-        if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
-        btn.disabled = false;
-        btn.innerHTML = original;
-        lucide.createIcons();
-      }
+    console.log('[Export] Largura:', larguraNatural, 'Altura:', alturaNatural, 'Scale:', scale);
+
+    // Renderiza
+    const canvas = await html2canvas(wrapper, {
+      scale: scale,
+      backgroundColor: '#ffffff',
+      useCORS: true,
+      allowTaint: false,
+      logging: false,
+      imageTimeout: 15000,
+      removeContainer: false,
+      width: larguraNatural,
+      height: alturaNatural,
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth: larguraNatural,
+      windowHeight: alturaNatural,
+    });
+
+    // Validações
+    if (!canvas) throw new Error('Canvas não foi gerado');
+    if (canvas.width === 0 || canvas.height === 0) throw new Error('Canvas com dimensões inválidas');
+
+    console.log('[Export] Canvas:', canvas.width, 'x', canvas.height);
+
+    const mesArquivo = state.mesAtual.replace(/[^\w]/g, '_');
+    const aba = tabAtiva.id.replace('tab-', '');
+    const nomeArquivo = `acompanhamento_${aba}_${mesArquivo}.png`;
+
+    // Estratégia 1: toBlob + createObjectURL
+    let sucesso = false;
+    try {
+      const blob = await new Promise((resolve, reject) => {
+        try {
+          canvas.toBlob(b => {
+            if (b && b.size > 0) resolve(b);
+            else reject(new Error('Blob vazio ou nulo'));
+          }, 'image/png', 1.0);
+        } catch (e) { reject(e); }
+      });
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = nomeArquivo;
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      sucesso = true;
+    } catch (e) {
+      console.warn('[Export] toBlob falhou, tentando toDataURL:', e.message);
     }
+
+    // Estratégia 2 (fallback): toDataURL direto
+    if (!sucesso) {
+      const dataUrl = canvas.toDataURL('image/png');
+      if (!dataUrl || dataUrl === 'data:,' || dataUrl.length < 100) {
+        throw new Error('Canvas tainted — não foi possível exportar. Verifique se as imagens têm CORS habilitado.');
+      }
+      const link = document.createElement('a');
+      link.download = nomeArquivo;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      sucesso = true;
+    }
+
+    if (sucesso) toast('Imagem baixada!');
+
+  } catch (err) {
+    console.error('[Export] Erro:', err);
+    alert('Erro ao gerar imagem:\n\n' + err.message + '\n\nVerifique o console (F12) para mais detalhes.');
+  } finally {
+    if (wrapper && wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
+    if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    btn.disabled = false;
+    btn.innerHTML = original;
+    lucide.createIcons();
+  }
+}
 
     /* ═══ TABS ═══ */
     function initTabs() {
