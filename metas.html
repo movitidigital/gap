@@ -293,7 +293,7 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ═══ HEADER TIM PARA EXPORTAÇÃO ═══ */
+    /* Header TIM para exportação */
     .export-header {
       background: linear-gradient(135deg, #00417F 0%, #1F4E78 100%);
       padding: 20px 24px;
@@ -316,15 +316,12 @@
       background: #E60000;
       display: block;
     }
-
-    /* Esconde na exportação */
-    .no-export { display: none !important; }
   </style>
 </head>
 <body class="text-slate-800 h-screen flex overflow-hidden">
 
   <!-- ═══ SIDEBAR ═══ -->
-  <aside id="sidebar" class="w-64 bg-[#000033] text-white flex flex-col justify-between hidden md:flex transition-all duration-300 z-30 shadow-xl shrink-0 no-export">
+  <aside id="sidebar" class="w-64 bg-[#000033] text-white flex flex-col justify-between hidden md:flex transition-all duration-300 z-30 shadow-xl shrink-0">
     <div>
       <div class="h-20 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
         <div class="flex items-center gap-2 min-w-0">
@@ -358,8 +355,7 @@
   <!-- ═══ MAIN ═══ -->
   <main class="flex-1 flex flex-col h-screen min-w-0 relative overflow-hidden">
 
-    <!-- Header (fora da exportação) -->
-    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10 shrink-0 no-export">
+    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10 shrink-0">
       <div class="flex items-center gap-3">
         <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
           <i data-lucide="menu" class="w-6 h-6"></i>
@@ -379,11 +375,10 @@
 
     <div class="flex-1 overflow-y-auto p-4 md:p-6">
 
-      <!-- Cabeçalho TIM da página -->
-      <div class="rounded-t-2xl p-4 md:p-5 shadow-md flex flex-col md:flex-row justify-between items-center text-white no-export"
+      <!-- Cabeçalho TIM -->
+      <div class="rounded-t-2xl p-4 md:p-5 shadow-md flex flex-col md:flex-row justify-between items-center text-white"
            style="background: linear-gradient(135deg, #00417F 0%, #1F4E78 100%); position:relative; overflow:hidden;">
 
-        <!-- Quadrados TIM -->
         <div style="position:absolute;top:14px;right:16px;display:grid;grid-template-columns:repeat(2,14px);gap:4px;opacity:0.9;">
           <span style="width:14px;height:14px;background:#E60000;display:block;"></span>
           <span style="width:14px;height:14px;background:#E60000;display:block;"></span>
@@ -410,7 +405,7 @@
       </div>
 
       <!-- Barra de ações -->
-      <div class="bg-white border border-slate-200 border-t-0 px-4 py-3 flex flex-wrap gap-3 items-center justify-between no-export">
+      <div class="bg-white border border-slate-200 border-t-0 px-4 py-3 flex flex-wrap gap-3 items-center justify-between">
         <div class="flex flex-wrap gap-2">
           <button data-tab="resumo" class="tab-btn active px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
             <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Resumo
@@ -489,7 +484,7 @@
 
         <!-- ABA DIÁRIO -->
         <div id="tab-diario" class="tab-content hidden">
-          <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200 no-export">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
             <div class="flex items-center gap-3">
               <div class="bg-[#1F4E78] p-2 rounded-lg text-white">
                 <i data-lucide="calendar-days" class="w-4 h-4"></i>
@@ -589,7 +584,7 @@
         </div>
       </div>
 
-      <div class="mt-6 flex flex-wrap items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm no-export">
+      <div class="mt-6 flex flex-wrap items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Legenda:</span>
         <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-sm" style="background:#FF6B6B;"></span><span class="text-[10px] font-bold text-slate-600 uppercase">Fora da Tendência &lt; 70%</span></div>
         <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-sm" style="background:#FFC000;"></span><span class="text-[10px] font-bold text-slate-600 uppercase">Tendência de Entregar &gt; 70%</span></div>
@@ -1127,7 +1122,7 @@
     }
 
     /* ═══════════════════════════════════════════════════════
-       EXPORTAR IMAGEM — v4 (header TIM + clone limpo)
+       EXPORTAR IMAGEM — v5 (no-export só no clone)
        ═══════════════════════════════════════════════════════ */
     async function exportarImagem() {
       const btn = document.getElementById('btnExport');
@@ -1199,8 +1194,10 @@
           if (img.parentNode) img.parentNode.replaceChild(ph, img);
         });
 
-        // Remove no-export
-        clone.querySelectorAll('.no-export').forEach(el => el.remove());
+        // ═══ ESCONDE .no-export APENAS NO CLONE ═══
+        clone.querySelectorAll('.no-export').forEach(el => {
+          el.style.display = 'none';
+        });
 
         // Overflow
         clone.querySelectorAll('.overflow-x-auto').forEach(el => {
