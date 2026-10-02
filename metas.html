@@ -10,20 +10,55 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
+    body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     
-    .badge-meta { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-    .meta-entregue { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-    .meta-tendencia { background-color: #fef08a; color: #854d0e; border: 1px solid #fde047; }
-    .meta-fora { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    /* Cores exatas da planilha */
+    .bg-excel-blue { background-color: #1F4E78; }
+    .bg-excel-green { background-color: #00B050; }
+    .bg-excel-yellow { background-color: #FFC000; }
+    .bg-excel-red { background-color: #FF0000; }
+    
+    .text-excel-blue { color: #1F4E78; }
+    .text-excel-green { color: #00B050; }
+    .text-excel-yellow { color: #BF8F00; }
+    .text-excel-red { color: #FF0000; }
+
+    /* Cabeçalho vertical */
+    .vertical-text {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      text-align: center;
+      letter-spacing: 0.15em;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    /* Tabelas */
+    .table-excel {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    .table-excel th, .table-excel td {
+      border: 1px solid #cbd5e1;
+      padding: 6px 8px;
+      font-size: 11px;
+    }
+    .table-excel th {
+      background-color: #f8fafc;
+      color: #475569;
+      font-weight: 700;
+      text-transform: uppercase;
+      text-align: center;
+    }
   </style>
 </head>
 <body class="text-slate-800 h-screen flex overflow-hidden">
 
-  <!-- SIDEBAR (Reaproveitada do dashboard) -->
+  <!-- SIDEBAR (Reaproveitada) -->
   <aside id="sidebar" class="w-64 bg-[#000033] text-white flex flex-col justify-between hidden md:flex transition-all duration-300 z-30 shadow-xl shrink-0">
     <div>
       <div class="h-20 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
@@ -42,7 +77,6 @@
           <i data-lucide="layout-dashboard" class="w-5 h-5 shrink-0"></i>
           <span class="text-sm font-medium">Dashboard</span>
         </a>
-        <!-- Adicione os outros links aqui, se necessário, ou apenas mantenha o Dashboard -->
         <a href="metas.html" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium transition-colors shadow-md shadow-[#0e8890]/20 cursor-pointer">
           <i data-lucide="target" class="w-5 h-5 shrink-0"></i>
           <span class="text-sm font-medium">Acompanhamento de Metas</span>
@@ -59,275 +93,428 @@
   </aside>
 
   <!-- MAIN CONTENT -->
-  <main class="flex-1 flex flex-col h-screen min-w-0 relative overflow-y-auto">
+  <main class="flex-1 flex flex-col h-screen min-w-0 relative overflow-y-auto p-4 md:p-6">
     
-    <!-- Header -->
-    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10 shrink-0">
-      <div class="flex items-center gap-3">
-        <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
-          <i data-lucide="menu" class="w-6 h-6"></i>
-        </button>
-        <h2 class="text-lg font-bold text-[#000033]">Acompanhamento de Vendas Diário</h2>
-      </div>
+    <!-- CABEÇALHO PRINCIPAL (Estilo Planilha) -->
+    <div class="bg-excel-blue rounded-t-2xl p-4 md:p-6 shadow-md mb-2 flex flex-col md:flex-row justify-between items-center text-white">
       <div class="flex items-center gap-4">
-        <div class="text-right hidden sm:block">
-          <p id="userName" class="text-sm font-semibold text-slate-700 leading-none">Carregando...</p>
-          <p id="userPerm" class="text-xs text-slate-500 mt-1">...</p>
+        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center p-1">
+          <img src="/LOGOINFORTECATIM2026.png" alt="Inforteca" class="h-8 w-auto object-contain" onerror="this.style.display='none'">
         </div>
-        <div class="w-10 h-10 rounded-full bg-[#0e8890]/10 border border-[#0e8890]/20 flex items-center justify-center text-[#0e8890] font-bold">
-          <i data-lucide="user" class="w-5 h-5"></i>
+        <div>
+          <h1 class="text-xl md:text-2xl font-black tracking-tight uppercase">Acompanhamento de Vendas Diário</h1>
+          <div class="flex gap-4 mt-1 text-xs font-bold text-blue-200">
+            <span>RESULTADO LOJA DE 01 A 29</span>
+          </div>
         </div>
       </div>
-    </header>
-
-    <!-- Conteúdo da Página -->
-    <div class="p-6 md:p-8 space-y-6">
       
-      <!-- Filtros e Resumo Geral -->
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
-        <div class="flex items-center gap-4">
-          <div class="bg-slate-100 p-3 rounded-xl">
-            <i data-lucide="calendar" class="w-6 h-6 text-[#0e8890]"></i>
-          </div>
-          <div>
-            <p class="text-xs font-bold text-slate-500 uppercase">Mês de Referência</p>
-            <select id="selectMes" class="mt-1 bg-slate-50 border border-slate-200 text-slate-800 font-bold rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#0e8890]">
-              <option value="SETEMBRO/2026">SETEMBRO / 2026</option>
-              <option value="AGOSTO/2026">AGOSTO / 2026</option>
-              <option value="JULHO/2026">JULHO / 2026</option>
-            </select>
-          </div>
-        </div>
-        
-        <div class="flex gap-6 text-center">
-          <div>
-            <p class="text-[10px] font-black text-slate-400 uppercase">Qualidade Controle</p>
-            <p class="text-xl font-black text-[#0e8890]">58,18%</p>
-          </div>
-          <div class="w-px bg-slate-200"></div>
-          <div>
-            <p class="text-[10px] font-black text-slate-400 uppercase">Qualidade Pós</p>
-            <p class="text-xl font-black text-[#0e8890]">85%</p>
-          </div>
+      <div class="text-right mt-4 md:mt-0">
+        <div class="text-sm font-bold">MÊS: SETEMBRO / 2026</div>
+        <div class="flex gap-4 mt-1 justify-end">
+          <div class="text-[10px] font-bold uppercase text-blue-200">QUALIDADE CONTROLE <span class="text-white">| 58,18%</span></div>
+          <div class="text-[10px] font-bold uppercase text-blue-200">QUALIDADE PÓS <span class="text-white">| 85%</span></div>
         </div>
       </div>
+    </div>
 
-      <!-- Painel Resumo da Loja (INFORTECA) -->
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="bg-[#000033] px-6 py-3 border-b border-slate-700">
-          <h3 class="text-white font-black tracking-widest text-sm text-center">INFORTECA (LOJA GERAL)</h3>
+    <!-- PAINEL INFORTECA (Loja Geral) -->
+    <div class="bg-white rounded-b-2xl shadow-sm overflow-hidden mb-6 border border-slate-200">
+      <div class="bg-excel-blue px-4 py-2 border-b border-slate-300">
+        <h3 class="text-white font-black tracking-widest text-xs text-center uppercase">INFORTECA</h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="table-excel">
+          <thead>
+            <tr>
+              <th class="w-8 bg-excel-blue text-white border-excel-blue"></th>
+              <th class="w-24">META LOJA</th>
+              <th class="w-24">REALIZADO</th>
+              <th class="w-20">PERCENT. REAL %</th>
+              <th class="w-24">FALTA</th>
+              <th class="w-24">FAZER POR DIA</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- FATURAMENTO -->
+            <tr class="bg-blue-50/50">
+              <td rowspan="3" class="vertical-text bg-excel-blue text-white border-excel-blue">Faturamento</td>
+              <td class="font-bold text-slate-600">FAT TOTAL TIM</td>
+              <td class="text-right">R$ 5.700,00</td>
+              <td class="text-right">R$ 4.672,45</td>
+              <td class="text-center bg-excel-yellow text-white font-bold">82%</td>
+              <td class="text-right">R$ 1.027,55</td>
+              <td class="text-right font-bold text-[#0e8890]">R$ 1.027,55</td>
+            </tr>
+            <tr class="bg-blue-50/50">
+              <td class="font-bold text-slate-600">CONTROLE FAT.</td>
+              <td class="text-right">R$ 3.600,00</td>
+              <td class="text-right">R$ 2.697,55</td>
+              <td class="text-center bg-excel-yellow text-white font-bold">75%</td>
+              <td class="text-right">R$ 902,45</td>
+              <td class="text-right font-bold text-[#0e8890]">R$ 902,45</td>
+            </tr>
+            <tr class="bg-blue-50/50">
+              <td class="font-bold text-slate-600">PÓS FAT.</td>
+              <td class="text-right">R$ 2.100,00</td>
+              <td class="text-right">R$ 1.974,90</td>
+              <td class="text-center bg-excel-yellow text-white font-bold">94%</td>
+              <td class="text-right">R$ 125,10</td>
+              <td class="text-right font-bold text-[#0e8890]">R$ 125,10</td>
+            </tr>
+
+            <!-- GROSS -->
+            <tr class="bg-slate-50">
+              <td rowspan="3" class="vertical-text bg-excel-blue text-white border-excel-blue">Gross</td>
+              <td class="font-bold text-slate-600">CONTROLE</td>
+              <td class="text-right">60</td>
+              <td class="text-right">49</td>
+              <td class="text-center bg-excel-yellow text-white font-bold">82%</td>
+              <td class="text-right">11</td>
+              <td class="text-right font-bold text-[#0e8890]">11</td>
+            </tr>
+            <tr class="bg-slate-50">
+              <td class="font-bold text-slate-600">PÓS</td>
+              <td class="text-right">18</td>
+              <td class="text-right">15</td>
+              <td class="text-center bg-excel-yellow text-white font-bold">83%</td>
+              <td class="text-right">3</td>
+              <td class="text-right font-bold text-[#0e8890]">3</td>
+            </tr>
+            <tr class="bg-slate-50">
+              <td class="font-bold text-slate-600">PORTABILIDADE</td>
+              <td class="text-right">24</td>
+              <td class="text-right">21</td>
+              <td class="text-center bg-excel-yellow text-white font-bold">88%</td>
+              <td class="text-right">3</td>
+              <td class="text-right font-bold text-[#0e8890]">3</td>
+            </tr>
+
+            <!-- PRODUTO -->
+            <tr class="bg-blue-50/50">
+              <td rowspan="2" class="vertical-text bg-excel-blue text-white border-excel-blue">Produto</td>
+              <td class="font-bold text-slate-600">APARELHO</td>
+              <td class="text-right">R$ 22.500,00</td>
+              <td class="text-right">R$ 14.363,00</td>
+              <td class="text-center bg-excel-red text-white font-bold">64%</td>
+              <td class="text-right">R$ 8.137,00</td>
+              <td class="text-right font-bold text-[#0e8890]">R$ 8.137,00</td>
+            </tr>
+            <tr class="bg-blue-50/50">
+              <td class="font-bold text-slate-600">ACESSÓRIOS</td>
+              <td class="text-right">R$ 18.000,00</td>
+              <td class="text-right">R$ 11.711,10</td>
+              <td class="text-center bg-excel-red text-white font-bold">65%</td>
+              <td class="text-right">R$ 6.288,90</td>
+              <td class="text-right font-bold text-[#0e8890]">R$ 6.288,90</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- GRID DE CONSULTORES -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6" id="gridConsultores">
+      
+      <!-- Card Daniel Alves Ferreira -->
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
+        <div class="bg-excel-blue px-4 py-2 border-b border-slate-300 flex justify-between items-center">
+          <h3 class="text-white font-black tracking-widest text-xs uppercase">DANIEL ALVES FERREIRA</h3>
+          <span class="bg-excel-green text-white text-[9px] font-black px-2 py-0.5 rounded uppercase">Meta Entregue</span>
         </div>
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm whitespace-nowrap">
-            <thead class="bg-slate-50 text-[10px] uppercase text-slate-500 tracking-wider">
+          <table class="table-excel">
+            <thead>
               <tr>
-                <th class="px-4 py-3 font-bold text-center border-r border-slate-200">Categoria</th>
-                <th class="px-4 py-3 font-bold text-right">Meta Loja</th>
-                <th class="px-4 py-3 font-bold text-right">Realizado</th>
-                <th class="px-4 py-3 font-bold text-center">Percent. Real %</th>
-                <th class="px-4 py-3 font-bold text-right">Falta</th>
-                <th class="px-4 py-3 font-bold text-right">Fazer por Dia</th>
+                <th class="w-8 bg-excel-blue text-white border-excel-blue"></th>
+                <th class="w-20">META LOJA</th>
+                <th class="w-20">REALIZADO</th>
+                <th class="w-16">PERCENT. REAL %</th>
+                <th class="w-20">FALTA</th>
+                <th class="w-20">FAZER POR DIA</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody>
               <!-- FATURAMENTO -->
-              <tr class="bg-blue-50/30">
-                <td class="px-4 py-2 font-black text-blue-800 text-xs uppercase text-center border-r border-slate-200">Faturamento</td>
-                <td class="px-4 py-2"></td><td class="px-4 py-2"></td><td class="px-4 py-2"></td><td class="px-4 py-2"></td><td class="px-4 py-2"></td>
+              <tr class="bg-blue-50/50">
+                <td rowspan="3" class="vertical-text bg-excel-blue text-white border-excel-blue">Faturamento</td>
+                <td class="font-bold text-slate-600 text-[10px]">FAT TOTAL TIM</td>
+                <td class="text-right text-[10px]">R$ 1.900,00</td>
+                <td class="text-right text-[10px]">R$ 2.267,76</td>
+                <td class="text-center bg-excel-green text-white font-bold text-[10px]">119%</td>
+                <td colspan="2" class="text-center bg-excel-green text-white font-bold text-[10px] uppercase">Meta Entregue</td>
               </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 text-center border-r border-slate-200 font-semibold text-slate-600">FAT TOTAL TIM</td>
-                <td class="px-4 py-3 text-right font-medium">R$ 5.700,00</td>
-                <td class="px-4 py-3 text-right font-medium">R$ 4.672,45</td>
-                <td class="px-4 py-3 text-center"><span class="badge-meta meta-tendencia">82%</span></td>
-                <td class="px-4 py-3 text-right text-slate-500">R$ 1.027,55</td>
-                <td class="px-4 py-3 text-right font-bold text-[#0e8890]">R$ 1.027,55</td>
+              <tr class="bg-blue-50/50">
+                <td class="font-bold text-slate-600 text-[10px]">CONTROLE FAT.</td>
+                <td class="text-right text-[10px]">R$ 1.200,00</td>
+                <td class="text-right text-[10px]">R$ 1.107,81</td>
+                <td class="text-center bg-excel-yellow text-white font-bold text-[10px]">92%</td>
+                <td class="text-right text-[10px]">R$ 92,19</td>
+                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 92,19</td>
               </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 text-center border-r border-slate-200 font-semibold text-slate-600">CONTROLE FAT.</td>
-                <td class="px-4 py-3 text-right font-medium">R$ 3.600,00</td>
-                <td class="px-4 py-3 text-right font-medium">R$ 2.697,55</td>
-                <td class="px-4 py-3 text-center"><span class="badge-meta meta-tendencia">75%</span></td>
-                <td class="px-4 py-3 text-right text-slate-500">R$ 902,45</td>
-                <td class="px-4 py-3 text-right font-bold text-[#0e8890]">R$ 902,45</td>
-              </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 text-center border-r border-slate-200 font-semibold text-slate-600">PÓS FAT.</td>
-                <td class="px-4 py-3 text-right font-medium">R$ 2.100,00</td>
-                <td class="px-4 py-3 text-right font-medium">R$ 1.974,90</td>
-                <td class="px-4 py-3 text-center"><span class="badge-meta meta-tendencia">94%</span></td>
-                <td class="px-4 py-3 text-right text-slate-500">R$ 125,10</td>
-                <td class="px-4 py-3 text-right font-bold text-[#0e8890]">R$ 125,10</td>
+              <tr class="bg-blue-50/50">
+                <td class="font-bold text-slate-600 text-[10px]">PÓS FAT.</td>
+                <td class="text-right text-[10px]">R$ 700,00</td>
+                <td class="text-right text-[10px]">R$ 1.159,95</td>
+                <td class="text-center bg-excel-green text-white font-bold text-[10px]">166%</td>
+                <td colspan="2" class="text-center bg-excel-green text-white font-bold text-[10px] uppercase">Meta Entregue</td>
               </tr>
 
               <!-- GROSS -->
-              <tr class="bg-blue-50/30">
-                <td class="px-4 py-2 font-black text-blue-800 text-xs uppercase text-center border-r border-slate-200">Gross</td>
-                <td class="px-4 py-2"></td><td class="px-4 py-2"></td><td class="px-4 py-2"></td><td class="px-4 py-2"></td><td class="px-4 py-2"></td>
+              <tr class="bg-slate-50">
+                <td rowspan="3" class="vertical-text bg-excel-blue text-white border-excel-blue">Gross</td>
+                <td class="font-bold text-slate-600 text-[10px]">CONTROLE</td>
+                <td class="text-right text-[10px]">20</td>
+                <td class="text-right text-[10px]">20</td>
+                <td class="text-center bg-excel-green text-white font-bold text-[10px]">100%</td>
+                <td colspan="2" class="text-center bg-excel-green text-white font-bold text-[10px] uppercase">Meta Entregue</td>
               </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 text-center border-r border-slate-200 font-semibold text-slate-600">CONTROLE</td>
-                <td class="px-4 py-3 text-right font-medium">60</td>
-                <td class="px-4 py-3 text-right font-medium">49</td>
-                <td class="px-4 py-3 text-center"><span class="badge-meta meta-tendencia">82%</span></td>
-                <td class="px-4 py-3 text-right text-slate-500">11</td>
-                <td class="px-4 py-3 text-right font-bold text-[#0e8890]">11</td>
+              <tr class="bg-slate-50">
+                <td class="font-bold text-slate-600 text-[10px]">PÓS</td>
+                <td class="text-right text-[10px]">6</td>
+                <td class="text-right text-[10px]">8</td>
+                <td class="text-center bg-excel-green text-white font-bold text-[10px]">133%</td>
+                <td colspan="2" class="text-center bg-excel-green text-white font-bold text-[10px] uppercase">Meta Entregue</td>
               </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 text-center border-r border-slate-200 font-semibold text-slate-600">PÓS</td>
-                <td class="px-4 py-3 text-right font-medium">18</td>
-                <td class="px-4 py-3 text-right font-medium">15</td>
-                <td class="px-4 py-3 text-center"><span class="badge-meta meta-tendencia">83%</span></td>
-                <td class="px-4 py-3 text-right text-slate-500">3</td>
-                <td class="px-4 py-3 text-right font-bold text-[#0e8890]">3</td>
-              </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 text-center border-r border-slate-200 font-semibold text-slate-600">PORTABILIDADE</td>
-                <td class="px-4 py-3 text-right font-medium">24</td>
-                <td class="px-4 py-3 text-right font-medium">21</td>
-                <td class="px-4 py-3 text-center"><span class="badge-meta meta-tendencia">88%</span></td>
-                <td class="px-4 py-3 text-right text-slate-500">3</td>
-                <td class="px-4 py-3 text-right font-bold text-[#0e8890]">3</td>
+              <tr class="bg-slate-50">
+                <td class="font-bold text-slate-600 text-[10px]">PORTABILIDADE</td>
+                <td class="text-right text-[10px]">8</td>
+                <td class="text-right text-[10px]">9</td>
+                <td class="text-center bg-excel-green text-white font-bold text-[10px]">113%</td>
+                <td colspan="2" class="text-center bg-excel-green text-white font-bold text-[10px] uppercase">Meta Entregue</td>
               </tr>
 
               <!-- PRODUTO -->
-              <tr class="bg-blue-50/30">
-                <td class="px-4 py-2 font-black text-blue-800 text-xs uppercase text-center border-r border-slate-200">Produto</td>
-                <td class="px-4 py-2"></td><td class="px-4 py-2"></td><td class="px-4 py-2"></td><td class="px-4 py-2"></td><td class="px-4 py-2"></td>
+              <tr class="bg-blue-50/50">
+                <td rowspan="2" class="vertical-text bg-excel-blue text-white border-excel-blue">Produto</td>
+                <td class="font-bold text-slate-600 text-[10px]">APARELHO</td>
+                <td class="text-right text-[10px]">R$ 7.500,00</td>
+                <td class="text-right text-[10px]">R$ 8.896,00</td>
+                <td class="text-center bg-excel-green text-white font-bold text-[10px]">119%</td>
+                <td colspan="2" class="text-center bg-excel-green text-white font-bold text-[10px] uppercase">Meta Entregue</td>
               </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 text-center border-r border-slate-200 font-semibold text-slate-600">APARELHO</td>
-                <td class="px-4 py-3 text-right font-medium">R$ 22.500,00</td>
-                <td class="px-4 py-3 text-right font-medium">R$ 14.363,00</td>
-                <td class="px-4 py-3 text-center"><span class="badge-meta meta-fora">64%</span></td>
-                <td class="px-4 py-3 text-right text-slate-500">R$ 8.137,00</td>
-                <td class="px-4 py-3 text-right font-bold text-[#0e8890]">R$ 8.137,00</td>
-              </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 text-center border-r border-slate-200 font-semibold text-slate-600">ACESSÓRIOS</td>
-                <td class="px-4 py-3 text-right font-medium">R$ 18.000,00</td>
-                <td class="px-4 py-3 text-right font-medium">R$ 11.711,10</td>
-                <td class="px-4 py-3 text-center"><span class="badge-meta meta-fora">65%</span></td>
-                <td class="px-4 py-3 text-right text-slate-500">R$ 6.288,90</td>
-                <td class="px-4 py-3 text-right font-bold text-[#0e8890]">R$ 6.288,90</td>
+              <tr class="bg-blue-50/50">
+                <td class="font-bold text-slate-600 text-[10px]">ACESSÓRIOS</td>
+                <td class="text-right text-[10px]">R$ 6.000,00</td>
+                <td class="text-right text-[10px]">R$ 5.320,00</td>
+                <td class="text-center bg-excel-yellow text-white font-bold text-[10px]">89%</td>
+                <td class="text-right text-[10px]">R$ 680,00</td>
+                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 680,00</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- Grid de Consultores -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="gridConsultores">
-        
-        <!-- Card Consultor 1 -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div class="bg-[#000033] px-6 py-3 border-b border-slate-700 flex justify-between items-center">
-            <h3 class="text-white font-black tracking-widest text-sm">DANIEL ALVES FERREIRA</h3>
-            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded border border-emerald-400/20">META ENTREGUE</span>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs whitespace-nowrap">
-              <thead class="bg-slate-50 text-[9px] uppercase text-slate-500 tracking-wider">
-                <tr>
-                  <th class="px-3 py-2 font-bold text-center border-r border-slate-200">Categoria</th>
-                  <th class="px-3 py-2 font-bold text-right">Meta</th>
-                  <th class="px-3 py-2 font-bold text-right">Realizado</th>
-                  <th class="px-3 py-2 font-bold text-center">%</th>
-                  <th class="px-3 py-2 font-bold text-right">Falta</th>
-                  <th class="px-3 py-2 font-bold text-right">Fazer/Dia</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100">
-                <!-- FATURAMENTO -->
-                <tr class="bg-blue-50/30">
-                  <td class="px-3 py-1.5 font-black text-blue-800 text-[10px] uppercase text-center border-r border-slate-200">Faturamento</td>
-                  <td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td>
-                </tr>
-                <tr class="hover:bg-slate-50">
-                  <td class="px-3 py-2 text-center border-r border-slate-200 font-semibold text-slate-600">FAT TOTAL TIM</td>
-                  <td class="px-3 py-2 text-right">R$ 1.900,00</td>
-                  <td class="px-3 py-2 text-right">R$ 2.267,76</td>
-                  <td class="px-3 py-2 text-center"><span class="badge-meta meta-entregue">119%</span></td>
-                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">META ENTREGUE</td>
-                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">-</td>
-                </tr>
-                <tr class="hover:bg-slate-50">
-                  <td class="px-3 py-2 text-center border-r border-slate-200 font-semibold text-slate-600">CONTROLE FAT.</td>
-                  <td class="px-3 py-2 text-right">R$ 1.200,00</td>
-                  <td class="px-3 py-2 text-right">R$ 1.107,81</td>
-                  <td class="px-3 py-2 text-center"><span class="badge-meta meta-tendencia">92%</span></td>
-                  <td class="px-3 py-2 text-right text-slate-500">R$ 92,19</td>
-                  <td class="px-3 py-2 text-right font-bold text-[#0e8890]">R$ 92,19</td>
-                </tr>
-                <tr class="hover:bg-slate-50">
-                  <td class="px-3 py-2 text-center border-r border-slate-200 font-semibold text-slate-600">PÓS FAT.</td>
-                  <td class="px-3 py-2 text-right">R$ 700,00</td>
-                  <td class="px-3 py-2 text-right">R$ 1.159,95</td>
-                  <td class="px-3 py-2 text-center"><span class="badge-meta meta-entregue">166%</span></td>
-                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">META ENTREGUE</td>
-                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">-</td>
-                </tr>
-
-                <!-- GROSS -->
-                <tr class="bg-blue-50/30">
-                  <td class="px-3 py-1.5 font-black text-blue-800 text-[10px] uppercase text-center border-r border-slate-200">Gross</td>
-                  <td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td>
-                </tr>
-                <tr class="hover:bg-slate-50">
-                  <td class="px-3 py-2 text-center border-r border-slate-200 font-semibold text-slate-600">CONTROLE</td>
-                  <td class="px-3 py-2 text-right">20</td>
-                  <td class="px-3 py-2 text-right">20</td>
-                  <td class="px-3 py-2 text-center"><span class="badge-meta meta-entregue">100%</span></td>
-                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">META ENTREGUE</td>
-                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">-</td>
-                </tr>
-                <tr class="hover:bg-slate-50">
-                  <td class="px-3 py-2 text-center border-r border-slate-200 font-semibold text-slate-600">PÓS</td>
-                  <td class="px-3 py-2 text-right">6</td>
-                  <td class="px-3 py-2 text-right">8</td>
-                  <td class="px-3 py-2 text-center"><span class="badge-meta meta-entregue">133%</span></td>
-                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">META ENTREGUE</td>
-                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">-</td>
-                </tr>
-                <tr class="hover:bg-slate-50">
-                  <td class="px-3 py-2 text-center border-r border-slate-200 font-semibold text-slate-600">PORTABILIDADE</td>
-                  <td class="px-3 py-2 text-right">8</td>
-                  <td class="px-3 py-2 text-right">9</td>
-                  <td class="px-3 py-2 text-center"><span class="badge-meta meta-entregue">113%</span></td>
-                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">META ENTREGUE</td>
-                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">-</td>
-                </tr>
-
-                <!-- PRODUTO -->
-                <tr class="bg-blue-50/30">
-                  <td class="px-3 py-1.5 font-black text-blue-800 text-[10px] uppercase text-center border-r border-slate-200">Produto</td>
-                  <td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td>
-                </tr>
-                <tr class="hover:bg-slate-50">
-                  <td class="px-3 py-2 text-center border-r border-slate-200 font-semibold text-slate-600">APARELHO</td>
-                  <td class="px-3 py-2 text-right">R$ 7.500,00</td>
-                  <td class="px-3 py-2 text-right">R$ 8.896,00</td>
-                  <td class="px-3 py-2 text-center"><span class="badge-meta meta-entregue">119%</span></td>
-                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">META ENTREGUE</td>
-                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">-</td>
-                </tr>
-                <tr class="hover:bg-slate-50">
-                  <td class="px-3 py-2 text-center border-r border-slate-200 font-semibold text-slate-600">ACESSÓRIOS</td>
-                  <td class="px-3 py-2 text-right">R$ 6.000,00</td>
-                  <td class="px-3 py-2 text-right">R$ 5.320,00</td>
-                  <td class="px-3 py-2 text-center"><span class="badge-meta meta-tendencia">89%</span></td>
-                  <td class="px-3 py-2 text-right text-slate-500">R$ 680,00</td>
-                  <td class="px-3 py-2 text-right font-bold text-[#0e8890]">R$ 680,00</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+      <!-- Card Gabriel Valença de Lima -->
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
+        <div class="bg-excel-blue px-4 py-2 border-b border-slate-300 flex justify-between items-center">
+          <h3 class="text-white font-black tracking-widest text-xs uppercase">GABRIEL VALENÇA DE LIMA</h3>
+          <span class="bg-excel-yellow text-white text-[9px] font-black px-2 py-0.5 rounded uppercase">Tendência</span>
         </div>
+        <div class="overflow-x-auto">
+          <table class="table-excel">
+            <thead>
+              <tr>
+                <th class="w-8 bg-excel-blue text-white border-excel-blue"></th>
+                <th class="w-20">META LOJA</th>
+                <th class="w-20">REALIZADO</th>
+                <th class="w-16">PERCENT. REAL %</th>
+                <th class="w-20">FALTA</th>
+                <th class="w-20">FAZER POR DIA</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- FATURAMENTO -->
+              <tr class="bg-blue-50/50">
+                <td rowspan="3" class="vertical-text bg-excel-blue text-white border-excel-blue">Faturamento</td>
+                <td class="font-bold text-slate-600 text-[10px]">FAT TOTAL TIM</td>
+                <td class="text-right text-[10px]">R$ 1.900,00</td>
+                <td class="text-right text-[10px]">R$ 1.554,78</td>
+                <td class="text-center bg-excel-yellow text-white font-bold text-[10px]">82%</td>
+                <td class="text-right text-[10px]">R$ 345,22</td>
+                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 345,22</td>
+              </tr>
+              <tr class="bg-blue-50/50">
+                <td class="font-bold text-slate-600 text-[10px]">CONTROLE FAT.</td>
+                <td class="text-right text-[10px]">R$ 1.200,00</td>
+                <td class="text-right text-[10px]">R$ 1.124,82</td>
+                <td class="text-center bg-excel-yellow text-white font-bold text-[10px]">94%</td>
+                <td class="text-right text-[10px]">R$ 75,18</td>
+                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 75,18</td>
+              </tr>
+              <tr class="bg-blue-50/50">
+                <td class="font-bold text-slate-600 text-[10px]">PÓS FAT.</td>
+                <td class="text-right text-[10px]">R$ 700,00</td>
+                <td class="text-right text-[10px]">R$ 429,96</td>
+                <td class="text-center bg-excel-red text-white font-bold text-[10px]">61%</td>
+                <td class="text-right text-[10px]">R$ 270,04</td>
+                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 270,04</td>
+              </tr>
 
-        <!-- Você pode adicionar os outros consultores aqui, seguindo o mesmo padrão -->
+              <!-- GROSS -->
+              <tr class="bg-slate-50">
+                <td rowspan="3" class="vertical-text bg-excel-blue text-white border-excel-blue">Gross</td>
+                <td class="font-bold text-slate-600 text-[10px]">CONTROLE</td>
+                <td class="text-right text-[10px]">20</td>
+                <td class="text-right text-[10px]">20</td>
+                <td class="text-center bg-excel-green text-white font-bold text-[10px]">100%</td>
+                <td colspan="2" class="text-center bg-excel-green text-white font-bold text-[10px] uppercase">Meta Entregue</td>
+              </tr>
+              <tr class="bg-slate-50">
+                <td class="font-bold text-slate-600 text-[10px]">PÓS</td>
+                <td class="text-right text-[10px]">6</td>
+                <td class="text-right text-[10px]">4</td>
+                <td class="text-center bg-excel-red text-white font-bold text-[10px]">67%</td>
+                <td class="text-right text-[10px]">2</td>
+                <td class="text-right font-bold text-[#0e8890] text-[10px]">2</td>
+              </tr>
+              <tr class="bg-slate-50">
+                <td class="font-bold text-slate-600 text-[10px]">PORTABILIDADE</td>
+                <td class="text-right text-[10px]">8</td>
+                <td class="text-right text-[10px]">9</td>
+                <td class="text-center bg-excel-green text-white font-bold text-[10px]">113%</td>
+                <td colspan="2" class="text-center bg-excel-green text-white font-bold text-[10px] uppercase">Meta Entregue</td>
+              </tr>
 
+              <!-- PRODUTO -->
+              <tr class="bg-blue-50/50">
+                <td rowspan="2" class="vertical-text bg-excel-blue text-white border-excel-blue">Produto</td>
+                <td class="font-bold text-slate-600 text-[10px]">APARELHO</td>
+                <td class="text-right text-[10px]">R$ 7.500,00</td>
+                <td class="text-right text-[10px]">R$ 5.467,00</td>
+                <td class="text-center bg-excel-yellow text-white font-bold text-[10px]">73%</td>
+                <td class="text-right text-[10px]">R$ 2.033,00</td>
+                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 2.033,00</td>
+              </tr>
+              <tr class="bg-blue-50/50">
+                <td class="font-bold text-slate-600 text-[10px]">ACESSÓRIOS</td>
+                <td class="text-right text-[10px]">R$ 6.000,00</td>
+                <td class="text-right text-[10px]">R$ 3.031,10</td>
+                <td class="text-center bg-excel-red text-white font-bold text-[10px]">51%</td>
+                <td class="text-right text-[10px]">R$ 2.968,90</td>
+                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 2.968,90</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Card Jean Breno Carneiro da Silva -->
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
+        <div class="bg-excel-blue px-4 py-2 border-b border-slate-300 flex justify-between items-center">
+          <h3 class="text-white font-black tracking-widest text-xs uppercase">JEAN BRENO CARNEIRO DA SILVA</h3>
+          <span class="bg-excel-red text-white text-[9px] font-black px-2 py-0.5 rounded uppercase">Fora da Tendência</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="table-excel">
+            <thead>
+              <tr>
+                <th class="w-8 bg-excel-blue text-white border-excel-blue"></th>
+                <th class="w-20">META LOJA</th>
+                <th class="w-20">REALIZADO</th>
+                <th class="w-16">PERCENT. REAL %</th>
+                <th class="w-20">FALTA</th>
+                <th class="w-20">FAZER POR DIA</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- FATURAMENTO -->
+              <tr class="bg-blue-50/50">
+                <td rowspan="3" class="vertical-text bg-excel-blue text-white border-excel-blue">Faturamento</td>
+                <td class="font-bold text-slate-600 text-[10px]">FAT TOTAL TIM</td>
+                <td class="text-right text-[10px]">R$ 1.900,00</td>
+                <td class="text-right text-[10px]">R$ 849,91</td>
+                <td class="text-center bg-excel-red text-white font-bold text-[10px]">45%</td>
+                <td class="text-right text-[10px]">R$ 1.050,09</td>
+                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 1.050,09</td>
+              </tr>
+              <tr class="bg-blue-50/50">
+                <td class="font-bold text-slate-600 text-[10px]">CONTROLE FAT.</td>
+                <td class="text-right text-[10px]">R$ 1.200,00</td>
+                <td class="text-right text-[10px]">R$ 464,92</td>
+                <td class="text-center bg-excel-red text-white font-bold text-[10px]">39%</td>
+                <td class="text-right text-[10px]">R$ 735,08</td>
+                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 735,08</td>
+              </tr>
+              <tr class="bg-blue-50/50">
+                <td class="font-bold text-slate-600 text-[10px]">PÓS FAT.</td>
+                <td class="text-right text-[10px]">R$ 700,00</td>
+                <td class="text-right text-[10px]">R$ 384,99</td>
+                <td class="text-center bg-excel-red text-white font-bold text-[10px]">55%</td>
+                <td class="text-right text-[10px]">R$ 315,01</td>
+                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 315,01</td>
+              </tr>
+
+              <!-- GROSS -->
+              <tr class="bg-slate-50">
+                <td rowspan="3" class="vertical-text bg-excel-blue text-white border-excel-blue">Gross</td>
+                <td class="font-bold text-slate-600 text-[10px]">CONTROLE</td>
+                <td class="text-right text-[10px]">20</td>
+                <td class="text-right text-[10px]">9</td>
+                <td class="text-center bg-excel-red text-white font-bold text-[10px]">45%</td>
+                <td class="text-right text-[10px]">-</td>
+                <td class="text-right font-bold text-[#0e8890] text-[10px]">-</td>
+              </tr>
+              <tr class="bg-slate-50">
+                <td class="font-bold text-slate-600 text-[10px]">PÓS</td>
+                <td class="text-right text-[10px]">6</td>
+                <td class="text-right text-[10px]">3</td>
+                <td class="text-center bg-excel-red text-white font-bold text-[10px]">50%</td>
+                <td class="text-right text-[10px]">3</td>
+                <td class="text-right font-bold text-[#0e8890] text-[10px]">3</td>
+              </tr>
+              <tr class="bg-slate-50">
+                <td class="font-bold text-slate-600 text-[10px]">PORTABILIDADE</td>
+                <td class="text-right text-[10px]">8</td>
+                <td class="text-right text-[10px]">3</td>
+                <td class="text-center bg-excel-red text-white font-bold text-[10px]">38%</td>
+                <td class="text-right text-[10px]">5</td>
+                <td class="text-right font-bold text-[#0e8890] text-[10px]">5</td>
+              </tr>
+
+              <!-- PRODUTO -->
+              <tr class="bg-blue-50/50">
+                <td rowspan="2" class="vertical-text bg-excel-blue text-white border-excel-blue">Produto</td>
+                <td class="font-bold text-slate-600 text-[10px]">APARELHO</td>
+                <td class="text-right text-[10px]">R$ 7.500,00</td>
+                <td class="text-right text-[10px]">R$ -</td>
+                <td class="text-center bg-excel-red text-white font-bold text-[10px]">0%</td>
+                <td class="text-right text-[10px]">R$ 7.500,00</td>
+                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 7.500,00</td>
+              </tr>
+              <tr class="bg-blue-50/50">
+                <td class="font-bold text-slate-600 text-[10px]">ACESSÓRIOS</td>
+                <td class="text-right text-[10px]">R$ 6.000,00</td>
+                <td class="text-right text-[10px]">R$ 3.360,00</td>
+                <td class="text-center bg-excel-red text-white font-bold text-[10px]">56%</td>
+                <td class="text-right text-[10px]">R$ 2.640,00</td>
+                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 2.640,00</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- LEGENDA -->
+    <div class="mt-6 flex flex-wrap items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+      <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Legenda:</span>
+      <div class="flex items-center gap-2">
+        <span class="w-4 h-4 bg-excel-red rounded-sm"></span>
+        <span class="text-[10px] font-bold text-slate-600 uppercase">Fora da Tendência < 70%</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-4 h-4 bg-excel-yellow rounded-sm"></span>
+        <span class="text-[10px] font-bold text-slate-600 uppercase">Tendência de Entregar > 70%</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-4 h-4 bg-excel-green rounded-sm"></span>
+        <span class="text-[10px] font-bold text-slate-600 uppercase">Meta Entregue/Superada > 100%</span>
       </div>
     </div>
+
   </main>
 
   <!-- Scripts -->
