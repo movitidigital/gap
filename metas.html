@@ -6,51 +6,91 @@
   <title>Acompanhamento de Metas — PORTAL INFORTECA</title>
   <link rel="icon" type="image/png" href="favicon-portalinforteca.png">
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
-    body { font-family: 'Inter', sans-serif; background-color: #eef2f7; }
+    /* ═══════════════════════════════════════════════════════════
+       DESIGN TOKENS
+       ═══════════════════════════════════════════════════════════ */
+    :root {
+      --excel-blue:   #1F4E78;
+      --excel-blue-2: #2E75B6;
+      --excel-green:  #00B050;
+      --excel-yellow: #FFC000;
+      --excel-red:    #FF0000;
+      --excel-gray:   #D9D9D9;
+      --excel-light:  #F2F2F2;
+      --excel-pos:    #305496;
+      --border-color: #b8c2cc;
+      --cell-radius:  4px;
+    }
+
+    * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #eef2f7;
+      font-feature-settings: 'tnum' 1, 'cv11' 1;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       SCROLLBAR
+       ═══════════════════════════════════════════════════════════ */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-    .bg-excel-blue   { background-color: #1F4E78; }
-    .bg-excel-green  { background-color: #00B050; }
-    .bg-excel-yellow { background-color: #FFC000; }
-    .bg-excel-red    { background-color: #FF0000; }
-    .bg-excel-gray   { background-color: #D9D9D9; }
-    .bg-excel-light  { background-color: #F2F2F2; }
-    .bg-excel-pos    { background-color: #305496; }
+    /* ═══════════════════════════════════════════════════════════
+       EXCEL COLOR UTILITIES
+       ═══════════════════════════════════════════════════════════ */
+    .bg-excel-blue   { background-color: var(--excel-blue); }
+    .bg-excel-green  { background-color: var(--excel-green); }
+    .bg-excel-yellow { background-color: var(--excel-yellow); }
+    .bg-excel-red    { background-color: var(--excel-red); }
+    .bg-excel-gray   { background-color: var(--excel-gray); }
+    .bg-excel-light  { background-color: var(--excel-light); }
+    .bg-excel-pos    { background-color: var(--excel-pos); }
 
+    /* ═══════════════════════════════════════════════════════════
+       CABEÇALHO VERTICAL (FATURAMENTO / GROSS / PRODUTO)
+       ═══════════════════════════════════════════════════════════ */
     .vertical-text {
       writing-mode: vertical-rl;
       transform: rotate(180deg);
       text-align: center;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       font-size: 9px;
       font-weight: 900;
       text-transform: uppercase;
-      padding: 6px 0;
+      padding: 8px 2px;
+      user-select: none;
     }
 
-    /* ========== TABELAS ========== */
+    /* ═══════════════════════════════════════════════════════════
+       TABELAS — ESTRUTURA EXCEL (6 COLUNAS EXATAS)
+       ═══════════════════════════════════════════════════════════ */
     .table-excel {
       border-collapse: collapse;
       width: 100%;
       table-layout: fixed;
       font-size: 11px;
-      table-layout: fixed;
+      font-variant-numeric: tabular-nums;
     }
-    .table-excel td.text-right { font-variant-numeric: tabular-nums; }
-    .table-excel td.vertical-text { padding: 0 !important; width: 30px; }
-    .table-excel th, .table-excel td {
-      border: 1px solid #b8c2cc;
-      padding: 5px 6px;
+    .table-excel th,
+    .table-excel td {
+      border: 1px solid var(--border-color);
+      padding: 0;
       vertical-align: middle;
+      height: 32px;
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .table-excel thead th {
       background-color: #E7E6E6;
@@ -59,56 +99,100 @@
       text-transform: uppercase;
       text-align: center;
       font-size: 9px;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.02em;
       padding: 6px 4px;
+      height: 34px;
+      line-height: 1.15;
+    }
+    .table-excel thead th.bg-excel-blue {
+      color: #ffffff;
     }
 
-    /* Tabelas Diário */
+    /* Células com padding para valores */
+    .table-excel td.value-cell {
+      padding: 5px 8px;
+      font-size: 11px;
+    }
+    .table-excel td.label-cell {
+      padding: 5px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #334155;
+      background: #ffffff;
+    }
+    .table-excel tbody tr:hover td.label-cell { background: #f8fafc; }
+    .table-excel tbody tr:hover td.value-cell { background: #f8fafc; }
+
+    .table-excel .right  { text-align: right; }
+    .table-excel .center { text-align: center; }
+    .table-excel .num    { font-variant-numeric: tabular-nums; }
+
+    /* ═══════════════════════════════════════════════════════════
+       TABELA DIÁRIO (30 DIAS)
+       ═══════════════════════════════════════════════════════════ */
     .table-diario {
       border-collapse: collapse;
-      width: 100%;
+      width: max-content;
+      min-width: 100%;
       font-size: 10px;
+      font-variant-numeric: tabular-nums;
     }
-    .table-diario th, .table-diario td {
+    .table-diario th,
+    .table-diario td {
       border: 1px solid #cbd5e1;
-      padding: 0;
       text-align: center;
+      padding: 0;
+      height: 28px;
     }
     .table-diario thead th {
-      background-color: #D9D9D9;
+      background-color: var(--excel-gray);
       font-weight: 800;
       color: #1e293b;
       font-size: 9px;
       padding: 4px 2px;
+      height: 30px;
+      position: sticky;
+      top: 0;
+      z-index: 1;
     }
     .table-diario .label-col {
       background-color: #E7E6E6;
       text-align: left;
       font-weight: 700;
-      padding: 4px 8px;
-      font-size: 9px;
+      padding: 4px 10px;
+      font-size: 10px;
       color: #334155;
-      width: 130px;
+      width: 140px;
+      min-width: 140px;
+      position: sticky;
+      left: 0;
+      z-index: 2;
+    }
+    .table-diario thead .label-col {
+      z-index: 3;
+      background-color: #D9D9D9;
     }
     .table-diario .label-col.total-row {
-      background-color: #1F4E78;
+      background-color: var(--excel-blue);
       color: #fff;
       font-weight: 900;
     }
 
-    /* Célula editável */
+    /* Células editáveis */
     .cell-input {
       width: 100%;
       height: 100%;
       border: none;
       background: transparent;
       text-align: center;
-      font-size: 9px;
+      font-size: 10px;
       font-family: inherit;
-      padding: 5px 2px;
+      font-variant-numeric: tabular-nums;
+      padding: 5px 3px;
       outline: none;
-      transition: background 0.15s;
-      min-width: 48px;
+      transition: background 0.15s ease;
+      min-width: 54px;
+      cursor: text;
     }
     .cell-input:hover { background: #fef9c3; }
     .cell-input:focus {
@@ -116,7 +200,11 @@
       box-shadow: inset 0 0 0 2px #0e8890;
       font-weight: 700;
     }
-    .cell-input.filled { background: #f0fdf4; color: #166534; font-weight: 700; }
+    .cell-input.filled {
+      background: #f0fdf4;
+      color: #166534;
+      font-weight: 700;
+    }
     .cell-input.filled:hover { background: #dcfce7; }
     .cell-input.total-cell {
       background: #dbeafe;
@@ -125,17 +213,22 @@
       cursor: not-allowed;
     }
 
+    /* ═══════════════════════════════════════════════════════════
+       INPUTS DE CONFIGURAÇÃO
+       ═══════════════════════════════════════════════════════════ */
     .config-input {
       width: 100%;
       border: 1.5px solid #cbd5e1;
       border-radius: 6px;
-      padding: 5px 8px;
+      padding: 6px 10px;
       font-size: 12px;
       font-weight: 700;
-      color: #1F4E78;
+      color: var(--excel-blue);
       text-align: right;
-      transition: all 0.15s;
+      font-variant-numeric: tabular-nums;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
       background: #fff;
+      font-family: inherit;
     }
     .config-input:focus {
       outline: none;
@@ -143,13 +236,35 @@
       box-shadow: 0 0 0 3px rgba(14,136,144,0.15);
       background: #f0fdfa;
     }
-    .config-input:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+    .config-input:disabled {
+      background: #f1f5f9;
+      color: #94a3b8;
+      cursor: not-allowed;
+    }
 
+    /* ═══════════════════════════════════════════════════════════
+       TABS
+       ═══════════════════════════════════════════════════════════ */
     .tab-btn { transition: all 0.2s ease; }
-    .tab-btn.active { background-color: #1F4E78; color: #fff; border-color: #1F4E78; }
-    .tab-btn:not(.active) { background-color: #fff; color: #475569; border-color: #e2e8f0; }
-    .tab-btn:not(.active):hover { background-color: #f1f5f9; border-color: #cbd5e1; }
+    .tab-btn.active {
+      background-color: var(--excel-blue);
+      color: #fff;
+      border-color: var(--excel-blue);
+      box-shadow: 0 4px 12px -3px rgba(31,78,120,0.4);
+    }
+    .tab-btn:not(.active) {
+      background-color: #fff;
+      color: #475569;
+      border-color: #e2e8f0;
+    }
+    .tab-btn:not(.active):hover {
+      background-color: #f1f5f9;
+      border-color: #cbd5e1;
+    }
 
+    /* ═══════════════════════════════════════════════════════════
+       TOAST
+       ═══════════════════════════════════════════════════════════ */
     .toast {
       position: fixed; bottom: 24px; right: 24px; z-index: 9999;
       background: #0f172a; color: #fff; padding: 12px 18px;
@@ -157,22 +272,45 @@
       display: flex; align-items: center; gap: 10px;
       font-size: 13px; font-weight: 600;
       opacity: 0; transform: translateY(20px);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       pointer-events: none;
     }
     .toast.show { opacity: 1; transform: translateY(0); }
 
+    /* ═══════════════════════════════════════════════════════════
+       ANIMAÇÃO DE SAVE
+       ═══════════════════════════════════════════════════════════ */
     @keyframes pulse-save {
-      0% { background: #fef9c3; }
-      50% { background: #86efac; }
+      0%   { background: #fef9c3; }
+      50%  { background: #86efac; }
       100% { background: #f0fdf4; }
     }
     .saved-anim { animation: pulse-save 0.8s ease; }
+
+    /* Badges de status */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 9px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 4px 8px;
+      border-radius: 4px;
+      color: #fff;
+    }
+
+    /* Performance hint */
+    .tab-content { content-visibility: auto; }
+    .tab-content.hidden { content-visibility: visible; }
   </style>
 </head>
 <body class="text-slate-800 h-screen flex overflow-hidden">
 
-  <!-- SIDEBAR -->
+  <!-- ══════════════════════════════════════════════════════
+       SIDEBAR
+       ══════════════════════════════════════════════════════ -->
   <aside id="sidebar" class="w-64 bg-[#000033] text-white flex flex-col justify-between hidden md:flex transition-all duration-300 z-30 shadow-xl shrink-0">
     <div>
       <div class="h-20 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
@@ -204,7 +342,9 @@
     </div>
   </aside>
 
-  <!-- MAIN -->
+  <!-- ══════════════════════════════════════════════════════
+       MAIN
+       ══════════════════════════════════════════════════════ -->
   <main class="flex-1 flex flex-col h-screen min-w-0 relative overflow-hidden">
 
     <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10 shrink-0">
@@ -227,7 +367,8 @@
 
     <div class="flex-1 overflow-y-auto p-4 md:p-6">
 
-      <div class="bg-excel-blue rounded-t-2xl p-4 md:p-5 shadow-md mb-0 flex flex-col md:flex-row justify-between items-center text-white">
+      <!-- CABEÇALHO PRINCIPAL -->
+      <div id="exportArea" class="bg-excel-blue rounded-t-2xl p-4 md:p-5 shadow-md mb-0 flex flex-col md:flex-row justify-between items-center text-white">
         <div class="flex items-center gap-4">
           <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center p-1 shrink-0">
             <img src="/LOGOINFORTECATIM2026.png" alt="Inforteca" class="h-8 w-auto object-contain" onerror="this.style.display='none'">
@@ -248,6 +389,7 @@
         </div>
       </div>
 
+      <!-- TABS -->
       <div class="bg-white border border-slate-200 border-t-0 px-4 py-3 flex flex-wrap gap-2 items-center justify-between">
         <div class="flex flex-wrap gap-2">
           <button data-tab="resumo" class="tab-btn active px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
@@ -261,10 +403,10 @@
           </button>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="exportarImagem()" id="btnExport" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5">
+          <button onclick="exportarImagem()" id="btnExport" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors">
             <i data-lucide="image-down" class="w-3.5 h-3.5"></i> Baixar Imagem
           </button>
-          <button onclick="resetarDados()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5">
+          <button onclick="resetarDados()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors">
             <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Resetar
           </button>
         </div>
@@ -272,9 +414,13 @@
 
       <div class="bg-white border border-slate-200 border-t-0 rounded-b-2xl shadow-sm p-4 md:p-6">
 
-        <!-- ABA 1: RESUMO -->
+        <!-- ═══════════════════════════════════════════════════
+             ABA 1 — RESUMO
+             ═══════════════════════════════════════════════════ -->
         <div id="tab-resumo" class="tab-content">
-          <div id="export-loja" class="rounded-2xl shadow-sm overflow-hidden mb-8 border border-slate-300">
+
+          <!-- Painel Loja -->
+          <div class="rounded-2xl shadow-sm overflow-hidden mb-8 border border-slate-300">
             <div class="bg-excel-blue px-4 py-2.5 border-b border-slate-400 flex justify-between items-center">
               <h3 class="text-white font-black tracking-widest text-xs uppercase">INFORTECA — LOJA GERAL</h3>
               <span class="bg-white/10 text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/20">
@@ -283,30 +429,30 @@
             </div>
             <div class="overflow-x-auto">
               <table class="table-excel" id="tabela-loja">
-  <colgroup>
-    <col style="width:34px;">
-    <col style="width:130px;">
-    <col style="width:110px;">
-    <col style="width:110px;">
-    <col style="width:75px;">
-    <col style="width:110px;">
-    <col style="width:130px;">
-  </colgroup>
-  <thead>
-    <tr>
-      <th class="bg-excel-blue text-white"></th>
-      <th>META LOJA</th>
-      <th>REALIZADO</th>
-      <th>PERCENT. REAL %</th>
-      <th>FALTA</th>
-      <th>FAZER POR DIA</th>
-    </tr>
-  </thead>
-  <tbody id="tbody-loja"></tbody>
-</table>
+                <colgroup>
+                  <col style="width:34px;">    <!-- vertical categoria -->
+                  <col style="width:130px;">   <!-- META LOJA -->
+                  <col style="width:115px;">   <!-- REALIZADO -->
+                  <col style="width:95px;">    <!-- PERCENT. REAL % -->
+                  <col style="width:110px;">   <!-- FALTA -->
+                  <col style="width:120px;">   <!-- FAZER POR DIA -->
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th class="bg-excel-blue text-white"></th>
+                    <th>META LOJA</th>
+                    <th>REALIZADO</th>
+                    <th>PERCENT. REAL %</th>
+                    <th>FALTA</th>
+                    <th>FAZER POR DIA</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-loja"></tbody>
+              </table>
             </div>
           </div>
 
+          <!-- Consultores -->
           <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-2">
               <i data-lucide="users" class="w-4 h-4 text-[#0e8890]"></i>
@@ -316,7 +462,9 @@
           <div class="grid grid-cols-1 xl:grid-cols-2 gap-6" id="gridConsultores"></div>
         </div>
 
-        <!-- ABA 2: DIÁRIO -->
+        <!-- ═══════════════════════════════════════════════════
+             ABA 2 — DIÁRIO
+             ═══════════════════════════════════════════════════ -->
         <div id="tab-diario" class="tab-content hidden">
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
             <div class="flex items-center gap-3">
@@ -334,7 +482,9 @@
           <div id="gridDiario" class="space-y-8"></div>
         </div>
 
-        <!-- ABA 3: CONFIG -->
+        <!-- ═══════════════════════════════════════════════════
+             ABA 3 — CONFIG
+             ═══════════════════════════════════════════════════ -->
         <div id="tab-config" class="tab-content hidden">
           <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-6 flex items-start gap-2">
             <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
@@ -376,7 +526,7 @@
             <div class="lg:col-span-2 bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
               <div class="bg-[#0e8890] px-4 py-2 border-b border-slate-400 flex justify-between items-center">
                 <h4 class="text-[11px] font-black text-white uppercase tracking-widest">Consultores Ativos</h4>
-                <button onclick="adicionarConsultor()" class="bg-white/20 hover:bg-white/30 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
+                <button onclick="adicionarConsultor()" class="bg-white/20 hover:bg-white/30 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors">
                   <i data-lucide="plus" class="w-3 h-3"></i> Adicionar
                 </button>
               </div>
@@ -393,7 +543,7 @@
                 <colgroup>
                   <col style="width:28px;">
                   <col style="width:110px;">
-                  <col style="width:110px;">
+                  <col style="width:120px;">
                 </colgroup>
                 <tbody id="tbody-meta-loja"></tbody>
               </table>
@@ -407,7 +557,7 @@
                 <colgroup>
                   <col style="width:28px;">
                   <col style="width:110px;">
-                  <col style="width:110px;">
+                  <col style="width:120px;">
                 </colgroup>
                 <tbody id="tbody-meta-consultor"></tbody>
               </table>
@@ -421,7 +571,7 @@
                 <colgroup>
                   <col style="width:28px;">
                   <col style="width:110px;">
-                  <col style="width:110px;">
+                  <col style="width:120px;">
                 </colgroup>
                 <tbody id="tbody-meta-pos"></tbody>
               </table>
@@ -434,15 +584,15 @@
       <div class="mt-6 flex flex-wrap items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Legenda:</span>
         <div class="flex items-center gap-2">
-          <span class="w-4 h-4 bg-excel-red rounded-sm"></span>
+          <span class="w-4 h-4 rounded-sm" style="background: var(--excel-red);"></span>
           <span class="text-[10px] font-bold text-slate-600 uppercase">Fora da Tendência &lt; 70%</span>
         </div>
         <div class="flex items-center gap-2">
-          <span class="w-4 h-4 bg-excel-yellow rounded-sm"></span>
+          <span class="w-4 h-4 rounded-sm" style="background: var(--excel-yellow);"></span>
           <span class="text-[10px] font-bold text-slate-600 uppercase">Tendência de Entregar &gt; 70%</span>
         </div>
         <div class="flex items-center gap-2">
-          <span class="w-4 h-4 bg-excel-green rounded-sm"></span>
+          <span class="w-4 h-4 rounded-sm" style="background: var(--excel-green);"></span>
           <span class="text-[10px] font-bold text-slate-600 uppercase">Meta Entregue / Superada &gt; 100%</span>
         </div>
       </div>
@@ -455,11 +605,14 @@
   </div>
 
   <script>
+    /* ═══════════════════════════════════════════════════════════
+       CONFIG
+       ═══════════════════════════════════════════════════════════ */
     const SUPABASE_URL = 'https://zldugoqlcrzarpqvtaoh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const STORAGE_KEY = 'inforteca_metas_v2';
+    const STORAGE_KEY = 'inforteca_metas_v3';
     const DIAS_NO_MES = 30;
 
     const TIPO_VALOR = {
@@ -468,7 +621,15 @@
       'APARELHO': 'moeda', 'ACESSÓRIOS': 'moeda',
     };
     const LINHAS_DIARIO = ['CONTROLE FAT.', 'PÓS FAT.', 'CONTROLE', 'PÓS', 'PORTABILIDADE', 'APARELHO', 'ACESSÓRIOS'];
+    const CATEGORIAS = [
+      { cat: 'FATURAMENTO', keys: ['FAT TOTAL TIM', 'CONTROLE FAT.', 'PÓS FAT.'] },
+      { cat: 'GROSS',       keys: ['CONTROLE', 'PÓS', 'PORTABILIDADE'] },
+      { cat: 'PRODUTO',     keys: ['APARELHO', 'ACESSÓRIOS'] },
+    ];
 
+    /* ═══════════════════════════════════════════════════════════
+       ESTADO PADRÃO
+       ═══════════════════════════════════════════════════════════ */
     function criarDiarioZerado() {
       const d = {};
       LINHAS_DIARIO.forEach(k => d[k] = new Array(DIAS_NO_MES).fill(0));
@@ -526,13 +687,16 @@
       toast('Dados resetados!');
     }
 
-    const fmtMoeda = (v) => 'R$ ' + (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    /* ═══════════════════════════════════════════════════════════
+       HELPERS
+       ═══════════════════════════════════════════════════════════ */
+    const fmtMoeda  = (v) => 'R$ ' + (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const fmtNumero = (v) => String(Number(v) || 0);
-    const fmtValor = (v, tipo) => tipo === 'moeda' ? fmtMoeda(v) : fmtNumero(v);
-    const calcPct = (real, meta) => meta ? (real / meta) * 100 : 0;
-    const cap = (s) => String(s||'').toLowerCase().split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
-    const corPct = (pct) => {
-      if (pct >= 100) return { bg: 'bg-excel-green', text: 'text-white' };
+    const fmtValor  = (v, tipo) => tipo === 'moeda' ? fmtMoeda(v) : fmtNumero(v);
+    const calcPct   = (real, meta) => meta ? (real / meta) * 100 : 0;
+    const cap       = (s) => String(s||'').toLowerCase().split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+    const corPct    = (pct) => {
+      if (pct >= 100) return { bg: 'bg-excel-green',  text: 'text-white' };
       if (pct >= 70)  return { bg: 'bg-excel-yellow', text: 'text-white' };
       return { bg: 'bg-excel-red', text: 'text-white' };
     };
@@ -548,26 +712,20 @@
       return state.consultores.reduce((s, c) => s + calcRealizadoConsultor(c, key), 0);
     }
 
-    /* ============================================================
+    /* ═══════════════════════════════════════════════════════════
        RENDER: RESUMO LOJA
-       ============================================================ */
+       ═══════════════════════════════════════════════════════════ */
     function renderResumoLoja() {
       const tbody = document.getElementById('tbody-loja');
       const meta = state.metaLoja;
       let html = '';
 
-      const todasLinhas = [
-        { cat: 'FATURAMENTO', keys: ['FAT TOTAL TIM', 'CONTROLE FAT.', 'PÓS FAT.'] },
-        { cat: 'GROSS',       keys: ['CONTROLE', 'PÓS', 'PORTABILIDADE'] },
-        { cat: 'PRODUTO',     keys: ['APARELHO', 'ACESSÓRIOS'] },
-      ];
-
-      todasLinhas.forEach(cat => {
+      CATEGORIAS.forEach(cat => {
         cat.keys.forEach((key, idx) => {
           const metaV = meta[key] || 0;
           const realV = calcRealizadoLoja(key);
-          const tipo = TIPO_VALOR[key];
-          const pct = calcPct(realV, metaV);
+          const tipo  = TIPO_VALOR[key];
+          const pct   = calcPct(realV, metaV);
           const falta = Math.max(0, metaV - realV);
           const fazerDia = state.parametros.diasRestantes > 0 ? falta / state.parametros.diasRestantes : falta;
           const c = corPct(pct);
@@ -575,17 +733,17 @@
 
           html += '<tr>';
           if (idx === 0) {
-            html += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-blue text-white" style="border:1px solid #b8c2cc;">${cat.cat}</td>`;
+            html += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-blue text-white" style="border:1px solid var(--border-color);">${cat.cat}</td>`;
           }
-          html += `<td class="font-bold text-slate-700">${key}</td>`;
-          html += `<td class="text-right font-medium">${fmtValor(metaV, tipo)}</td>`;
-          html += `<td class="text-right font-medium">${fmtValor(realV, tipo)}</td>`;
-          html += `<td class="text-center ${c.bg} ${c.text} font-black">${pct.toFixed(0)}%</td>`;
+          html += `<td class="label-cell">${key}</td>`;
+          html += `<td class="value-cell right num">${fmtValor(metaV, tipo)}</td>`;
+          html += `<td class="value-cell right num">${fmtValor(realV, tipo)}</td>`;
+          html += `<td class="value-cell center ${c.bg} ${c.text}" style="font-weight:900;">${pct.toFixed(0)}%</td>`;
           if (entregue) {
-            html += `<td colspan="2" class="text-center bg-excel-green text-white font-black uppercase text-[10px] tracking-wider">META ENTREGUE</td>`;
+            html += `<td colspan="2" class="value-cell center bg-excel-green text-white" style="font-weight:900;letter-spacing:0.06em;font-size:10px;text-transform:uppercase;">META ENTREGUE</td>`;
           } else {
-            html += `<td class="text-right text-slate-600">${fmtValor(falta, tipo)}</td>`;
-            html += `<td class="text-right font-bold text-[#0e8890]">${fmtValor(fazerDia, tipo)}</td>`;
+            html += `<td class="value-cell right num" style="color:#475569;">${fmtValor(falta, tipo)}</td>`;
+            html += `<td class="value-cell right num" style="font-weight:700;color:#0e8890;">${fmtValor(fazerDia, tipo)}</td>`;
           }
           html += '</tr>';
         });
@@ -593,9 +751,9 @@
       tbody.innerHTML = html;
     }
 
-    /* ============================================================
-       RENDER: CONSULTORES (cards)
-       ============================================================ */
+    /* ═══════════════════════════════════════════════════════════
+       RENDER: CONSULTORES
+       ═══════════════════════════════════════════════════════════ */
     function renderConsultores() {
       const grid = document.getElementById('gridConsultores');
       const meta = state.metaConsultor;
@@ -604,53 +762,47 @@
       state.consultores.forEach(consult => {
         const metaFat = meta['FAT TOTAL TIM'] || 0;
         const realFat = calcRealizadoConsultor(consult, 'FAT TOTAL TIM');
-        const pctFat = calcPct(realFat, metaFat);
+        const pctFat  = calcPct(realFat, metaFat);
 
         let statusBadge, statusCor;
-        if (pctFat >= 100) { statusBadge = 'META ENTREGUE'; statusCor = 'bg-excel-green'; }
-        else if (pctFat >= 70) { statusBadge = 'TENDÊNCIA'; statusCor = 'bg-excel-yellow'; }
+        if (pctFat >= 100) { statusBadge = 'META ENTREGUE';      statusCor = 'bg-excel-green'; }
+        else if (pctFat >= 70) { statusBadge = 'TENDÊNCIA';      statusCor = 'bg-excel-yellow'; }
         else { statusBadge = 'FORA DA TENDÊNCIA'; statusCor = 'bg-excel-red'; }
 
-       html += `
-  <div class="bg-white rounded-xl shadow-sm overflow-hidden border-2 border-slate-300">
-    <div class="bg-excel-blue px-4 py-2.5 border-b border-slate-400 flex justify-between items-center">
-      <h3 class="text-white font-black tracking-widest text-[11px] uppercase truncate">${cap(consult.nome)}</h3>
-      <span class="${statusCor} text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider shrink-0 ml-2">${statusBadge}</span>
-    </div>
-    <div class="overflow-x-auto">
-      <table class="table-excel">
-        <colgroup>
-          <col style="width:30px;">
-          <col style="width:105px;">
-          <col style="width:95px;">
-          <col style="width:95px;">
-          <col style="width:60px;">
-          <col style="width:95px;">
-          <col style="width:105px;">
-        </colgroup>
-        <thead>
-          <tr>
-            <th class="bg-excel-blue text-white"></th>
-            <th>META CONSULTOR</th>
-            <th>REALIZADO</th>
-            <th>%</th>
-            <th>FALTA</th>
-            <th>FAZER/DIA</th>
-          </tr>
-        </thead>
-        <tbody>`;
-        const todasLinhas = [
-          { cat: 'FATURAMENTO', keys: ['FAT TOTAL TIM', 'CONTROLE FAT.', 'PÓS FAT.'] },
-          { cat: 'GROSS',       keys: ['CONTROLE', 'PÓS', 'PORTABILIDADE'] },
-          { cat: 'PRODUTO',     keys: ['APARELHO', 'ACESSÓRIOS'] },
-        ];
+        html += `
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden border-2 border-slate-300">
+            <div class="bg-excel-blue px-4 py-2.5 border-b border-slate-400 flex justify-between items-center">
+              <h3 class="text-white font-black tracking-widest text-[11px] uppercase truncate">${cap(consult.nome)}</h3>
+              <span class="${statusCor} text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider shrink-0 ml-2">${statusBadge}</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="table-excel">
+                <colgroup>
+                  <col style="width:30px;">    <!-- vertical categoria -->
+                  <col style="width:110px;">   <!-- META CONSULTOR -->
+                  <col style="width:100px;">   <!-- REALIZADO -->
+                  <col style="width:60px;">    <!-- % -->
+                  <col style="width:100px;">   <!-- FALTA -->
+                  <col style="width:110px;">   <!-- FAZER/DIA -->
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th class="bg-excel-blue text-white"></th>
+                    <th>META CONSULTOR</th>
+                    <th>REALIZADO</th>
+                    <th>%</th>
+                    <th>FALTA</th>
+                    <th>FAZER/DIA</th>
+                  </tr>
+                </thead>
+                <tbody>`;
 
-        todasLinhas.forEach(cat => {
+        CATEGORIAS.forEach(cat => {
           cat.keys.forEach((key, idx) => {
             const metaV = meta[key] || 0;
             const realV = calcRealizadoConsultor(consult, key);
-            const tipo = TIPO_VALOR[key];
-            const pct = calcPct(realV, metaV);
+            const tipo  = TIPO_VALOR[key];
+            const pct   = calcPct(realV, metaV);
             const falta = Math.max(0, metaV - realV);
             const fazerDia = state.parametros.diasRestantes > 0 ? falta / state.parametros.diasRestantes : falta;
             const c = corPct(pct);
@@ -658,30 +810,30 @@
 
             html += '<tr>';
             if (idx === 0) {
-              html += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-blue text-white" style="border:1px solid #b8c2cc;">${cat.cat}</td>`;
+              html += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-blue text-white" style="border:1px solid var(--border-color);">${cat.cat}</td>`;
             }
-            html += `<td class="font-bold text-slate-700 text-[10px]">${key}</td>`;
-            html += `<td class="text-right text-[11px]">${fmtValor(metaV, tipo)}</td>`;
-            html += `<td class="text-right text-[11px]">${fmtValor(realV, tipo)}</td>`;
-            html += `<td class="text-center ${c.bg} ${c.text} font-black text-[10px]">${pct.toFixed(0)}%</td>`;
+            html += `<td class="label-cell" style="font-size:10px;">${key}</td>`;
+            html += `<td class="value-cell right num">${fmtValor(metaV, tipo)}</td>`;
+            html += `<td class="value-cell right num">${fmtValor(realV, tipo)}</td>`;
+            html += `<td class="value-cell center ${c.bg} ${c.text}" style="font-weight:900;font-size:10px;">${pct.toFixed(0)}%</td>`;
             if (entregue) {
-              html += `<td colspan="2" class="text-center bg-excel-green text-white font-black uppercase text-[9px] tracking-wider">META ENTREGUE</td>`;
+              html += `<td colspan="2" class="value-cell center bg-excel-green text-white" style="font-weight:900;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">META ENTREGUE</td>`;
             } else {
-              html += `<td class="text-right text-slate-600 text-[10px]">${fmtValor(falta, tipo)}</td>`;
-              html += `<td class="text-right font-bold text-[#0e8890] text-[10px]">${fmtValor(fazerDia, tipo)}</td>`;
+              html += `<td class="value-cell right num" style="color:#475569;font-size:10px;">${fmtValor(falta, tipo)}</td>`;
+              html += `<td class="value-cell right num" style="font-weight:700;color:#0e8890;font-size:10px;">${fmtValor(fazerDia, tipo)}</td>`;
             }
             html += '</tr>';
           });
         });
 
-        html += `</tbody></table></div>`;
+        html += `</tbody></table></div></div>`;
       });
       grid.innerHTML = html;
     }
 
-    /* ============================================================
+    /* ═══════════════════════════════════════════════════════════
        RENDER: DIÁRIO
-       ============================================================ */
+       ═══════════════════════════════════════════════════════════ */
     function renderDiario() {
       const grid = document.getElementById('gridDiario');
       let html = '';
@@ -699,12 +851,12 @@
                   <tr>
                     <th class="label-col">DIAS</th>`;
         for (let d = 1; d <= DIAS_NO_MES; d++) {
-          html += `<th style="min-width:50px;">${String(d).padStart(2, '0')}</th>`;
+          html += `<th>${String(d).padStart(2, '0')}</th>`;
         }
         html += `</tr></thead><tbody>`;
 
         html += `<tr>
-          <td class="label-col total-row">FAT TOTAL TIM <span class="text-[8px] opacity-75">(auto)</span></td>`;
+          <td class="label-col total-row">FAT TOTAL TIM <span style="font-size:8px;opacity:0.75;">(auto)</span></td>`;
         for (let d = 0; d < DIAS_NO_MES; d++) {
           html += `<td><input type="text" class="cell-input total-cell" data-c="${cIdx}" data-row="FAT TOTAL TIM" data-day="${d}" readonly tabindex="-1"></td>`;
         }
@@ -725,8 +877,8 @@
 
       document.querySelectorAll('.cell-input').forEach(input => {
         const cIdx = parseInt(input.dataset.c);
-        const row = input.dataset.row;
-        const day = parseInt(input.dataset.day);
+        const row  = input.dataset.row;
+        const day  = parseInt(input.dataset.day);
         const consult = state.consultores[cIdx];
 
         let valor;
@@ -749,7 +901,9 @@
     function formatarInput(v, tipo) {
       const n = Number(v) || 0;
       if (n === 0) return '';
-      return tipo === 'moeda' ? n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : String(n);
+      return tipo === 'moeda'
+        ? n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : String(n);
     }
     function parseValorInput(str) {
       if (!str) return 0;
@@ -760,10 +914,10 @@
 
     function onEditCell(e) {
       const input = e.target;
-      const cIdx = parseInt(input.dataset.c);
-      const row = input.dataset.row;
-      const day = parseInt(input.dataset.day);
-      const tipo = TIPO_VALOR[row];
+      const cIdx  = parseInt(input.dataset.c);
+      const row   = input.dataset.row;
+      const day   = parseInt(input.dataset.day);
+      const tipo  = TIPO_VALOR[row];
       const novoValor = parseValorInput(input.value);
 
       state.consultores[cIdx].diario[row][day] = novoValor;
@@ -783,12 +937,14 @@
       const consult = state.consultores[cIdx];
       const total = (Number(consult.diario['CONTROLE FAT.'][day]) || 0) + (Number(consult.diario['PÓS FAT.'][day]) || 0);
       const input = document.querySelector(`.cell-input[data-c="${cIdx}"][data-row="FAT TOTAL TIM"][data-day="${day}"]`);
-      if (input) input.value = total > 0 ? total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+      if (input) {
+        input.value = total > 0 ? total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+      }
     }
 
-    /* ============================================================
+    /* ═══════════════════════════════════════════════════════════
        RENDER: CONFIG
-       ============================================================ */
+       ═══════════════════════════════════════════════════════════ */
     function renderConfig() {
       const p = state.parametros;
       document.getElementById('cfgMes').value = p.mes;
@@ -832,7 +988,7 @@
             <input type="text" class="flex-1 bg-white border border-slate-200 rounded-md px-3 py-1.5 text-sm font-bold text-slate-700 focus:outline-none focus:border-[#0e8890]"
                    value="${c.nome.replace(/"/g, '&quot;')}"
                    onchange="renomearConsultor('${c.id}', this.value)">
-            <button onclick="removerConsultor('${c.id}')" class="p-1.5 text-red-500 hover:bg-red-50 rounded-md">
+            <button onclick="removerConsultor('${c.id}')" class="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </div>`;
@@ -869,54 +1025,51 @@
       toast('Consultor removido!');
     }
 
-function renderBlocoMeta(tbodyId, metaObj, chaveState) {
-  const tbody = document.getElementById(tbodyId);
-  let html = '';
+    function renderBlocoMeta(tbodyId, metaObj, chaveState) {
+      const tbody = document.getElementById(tbodyId);
+      let html = '';
 
-  const todasLinhas = [
-    { cat: 'FATURAMENTO', keys: ['FAT TOTAL TIM', 'CONTROLE FAT.', 'PÓS FAT.'] },
-    { cat: 'GROSS',       keys: ['CONTROLE', 'PÓS', 'PORTABILIDADE'] },
-    { cat: 'PRODUTO',     keys: ['APARELHO', 'ACESSÓRIOS'] },
-  ];
+      CATEGORIAS.forEach(cat => {
+        cat.keys.forEach((key, idx) => {
+          const tipo = TIPO_VALOR[key];
+          const valor = metaObj[key] || 0;
+          const disabled = key === 'FAT TOTAL TIM' ? 'disabled' : '';
 
-  todasLinhas.forEach(cat => {
-    cat.keys.forEach((key, idx) => {
-      const tipo = TIPO_VALOR[key];
-      const valor = metaObj[key] || 0;
-      const disabled = key === 'FAT TOTAL TIM' ? 'disabled' : '';
+          html += '<tr>';
+          if (idx === 0) {
+            html += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-green text-white" style="border:1px solid var(--border-color);font-size:9px;">${cat.cat}</td>`;
+          }
+          html += `<td class="label-cell" style="font-size:10px;">${key}${key === 'FAT TOTAL TIM' ? ' <span style="font-size:8px;color:#94a3b8;">(auto)</span>' : ''}</td>`;
+          html += `<td style="padding:3px 5px;">
+            <input type="text" inputmode="decimal" class="config-input"
+                   value="${tipo === 'moeda' ? valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : valor}"
+                   data-state="${chaveState}" data-key="${key}" ${disabled}>
+          </td>`;
+          html += '</tr>';
+        });
+      });
+      tbody.innerHTML = html;
 
-      html += '<tr>';
-      if (idx === 0) {
-        html += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-green text-white" style="border:1px solid #b8c2cc;font-size:9px;width:28px;">${cat.cat}</td>`;
-      }
-      html += `<td class="font-bold text-slate-700 text-[10px]" style="width:105px;">${key}${key === 'FAT TOTAL TIM' ? ' <span class="text-[8px] text-slate-400">(auto)</span>' : ''}</td>`;
-      html += `<td class="p-1" style="width:115px;">
-        <input type="text" inputmode="decimal" class="config-input"
-               value="${tipo === 'moeda' ? valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : valor}"
-               data-state="${chaveState}" data-key="${key}" ${disabled}>
-      </td>`;
-      html += '</tr>';
-    });
-  });
-  tbody.innerHTML = html;
-
-  tbody.querySelectorAll('input[data-state]').forEach(inp => {
-    inp.addEventListener('change', () => {
-      const st = inp.dataset.state;
-      const key = inp.dataset.key;
-      state[st][key] = parseValorInput(inp.value);
-      if (key === 'CONTROLE FAT.' || key === 'PÓS FAT.') {
-        state[st]['FAT TOTAL TIM'] = (state[st]['CONTROLE FAT.'] || 0) + (state[st]['PÓS FAT.'] || 0);
-        const fatInput = tbody.querySelector(`input[data-state="${st}"][data-key="FAT TOTAL TIM"]`);
-        if (fatInput) fatInput.value = state[st]['FAT TOTAL TIM'].toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      }
-      salvarEstado();
-      renderResumoLoja();
-      renderConsultores();
-    });
-    inp.addEventListener('focus', e => e.target.select());
-  });
-}
+      tbody.querySelectorAll('input[data-state]').forEach(inp => {
+        inp.addEventListener('change', () => {
+          const st  = inp.dataset.state;
+          const key = inp.dataset.key;
+          state[st][key] = parseValorInput(inp.value);
+          // Auto-cálculo FAT TOTAL TIM
+          if (key === 'CONTROLE FAT.' || key === 'PÓS FAT.') {
+            state[st]['FAT TOTAL TIM'] = (state[st]['CONTROLE FAT.'] || 0) + (state[st]['PÓS FAT.'] || 0);
+            const fatInput = tbody.querySelector(`input[data-state="${st}"][data-key="FAT TOTAL TIM"]`);
+            if (fatInput) {
+              fatInput.value = state[st]['FAT TOTAL TIM'].toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+          }
+          salvarEstado();
+          renderResumoLoja();
+          renderConsultores();
+        });
+        inp.addEventListener('focus', e => e.target.select());
+      });
+    }
 
     function atualizarHeader() {
       document.getElementById('headerMes').textContent = `MÊS: ${state.parametros.mes}`;
@@ -926,9 +1079,9 @@ function renderBlocoMeta(tbodyId, metaObj, chaveState) {
       document.getElementById('headerQualPos').textContent = '| ' + state.parametros.qualPos;
     }
 
-    /* ============================================================
-       EXPORTAR IMAGEM (corrigido — captura largura natural)
-       ============================================================ */
+    /* ═══════════════════════════════════════════════════════════
+       EXPORTAR IMAGEM — captura com largura natural
+       ═══════════════════════════════════════════════════════════ */
     async function exportarImagem() {
       const btn = document.getElementById('btnExport');
       const original = btn.innerHTML;
@@ -937,16 +1090,13 @@ function renderBlocoMeta(tbodyId, metaObj, chaveState) {
       lucide.createIcons();
 
       try {
-        // Pega a aba ativa
         const tabAtiva = document.querySelector('.tab-content:not(.hidden)');
-
-        // Clona o conteúdo em um container temporário fora da tela com largura natural
         const clone = tabAtiva.cloneNode(true);
-        // Remove overflow-x para expandir
         clone.querySelectorAll('.overflow-x-auto').forEach(el => {
           el.style.overflow = 'visible';
           el.style.width = 'auto';
         });
+        clone.querySelectorAll('.hidden').forEach(el => el.classList.remove('hidden'));
 
         const wrapper = document.createElement('div');
         wrapper.style.cssText = `
@@ -957,12 +1107,12 @@ function renderBlocoMeta(tbodyId, metaObj, chaveState) {
           z-index: -1;
           width: max-content;
           max-width: none;
+          font-family: 'Inter', sans-serif;
         `;
         wrapper.appendChild(clone);
         document.body.appendChild(wrapper);
 
-        // Aguarda 1 frame para layout
-        await new Promise(r => setTimeout(r, 80));
+        await new Promise(r => setTimeout(r, 100));
 
         const canvas = await html2canvas(wrapper, {
           scale: 2,
@@ -995,9 +1145,9 @@ function renderBlocoMeta(tbodyId, metaObj, chaveState) {
       }
     }
 
-    /* ============================================================
+    /* ═══════════════════════════════════════════════════════════
        TABS
-       ============================================================ */
+       ═══════════════════════════════════════════════════════════ */
     function initTabs() {
       const botoes = document.querySelectorAll('[data-tab]');
       const conteudos = document.querySelectorAll('.tab-content');
@@ -1029,9 +1179,9 @@ function renderBlocoMeta(tbodyId, metaObj, chaveState) {
       atualizarHeader();
     }
 
-    /* ============================================================
+    /* ═══════════════════════════════════════════════════════════
        AUTH
-       ============================================================ */
+       ═══════════════════════════════════════════════════════════ */
     async function verificarAuth() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) { window.location.href = 'index.html'; return; }
