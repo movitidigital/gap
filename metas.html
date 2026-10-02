@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acompanhamento de Metas — PORTAL INFORTECA</title>
+  <link rel="icon" type="image/png" href="favicon-portalinforteca.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    
+    .badge-meta { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+    .meta-entregue { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .meta-tendencia { background-color: #fef08a; color: #854d0e; border: 1px solid #fde047; }
+    .meta-fora { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+  </style>
+</head>
+<body class="text-slate-800 h-screen flex overflow-hidden">
+
+  <!-- SIDEBAR (Reaproveitada do dashboard) -->
+  <aside id="sidebar" class="w-64 bg-[#000033] text-white flex flex-col justify-between hidden md:flex transition-all duration-300 z-30 shadow-xl shrink-0">
+    <div>
+      <div class="h-20 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
+        <div class="flex items-center gap-2 overflow-hidden transition-all duration-300 min-w-0">
+          <img src="/LOGOINFORTECATIM2026.png" alt="Inforteca" class="h-9 w-auto object-contain shrink-0" onerror="this.style.display='none'">
+          <div class="min-w-0">
+            <h1 class="text-sm font-black tracking-tight leading-none truncate">PORTAL INFORTECA</h1>
+            <p class="text-[9px] text-slate-400 font-medium uppercase tracking-widest mt-1 truncate">Loja TIM Dom José</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="p-4 space-y-1.5 mt-2">
+        <p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Menu Principal</p>
+        <a href="dashboard.html" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer">
+          <i data-lucide="layout-dashboard" class="w-5 h-5 shrink-0"></i>
+          <span class="text-sm font-medium">Dashboard</span>
+        </a>
+        <!-- Adicione os outros links aqui, se necessário, ou apenas mantenha o Dashboard -->
+        <a href="metas.html" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium transition-colors shadow-md shadow-[#0e8890]/20 cursor-pointer">
+          <i data-lucide="target" class="w-5 h-5 shrink-0"></i>
+          <span class="text-sm font-medium">Acompanhamento de Metas</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="p-4 border-t border-white/10">
+      <button onclick="terminarSessao()" class="flex items-center gap-3 px-3 py-2.5 w-full text-slate-300 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors text-sm font-medium cursor-pointer">
+        <i data-lucide="log-out" class="w-5 h-5 shrink-0"></i>
+        <span>Encerrar Sessão</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 flex flex-col h-screen min-w-0 relative overflow-y-auto">
+    
+    <!-- Header -->
+    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10 shrink-0">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+        <h2 class="text-lg font-bold text-[#000033]">Acompanhamento de Vendas Diário</h2>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="text-right hidden sm:block">
+          <p id="userName" class="text-sm font-semibold text-slate-700 leading-none">Carregando...</p>
+          <p id="userPerm" class="text-xs text-slate-500 mt-1">...</p>
+        </div>
+        <div class="w-10 h-10 rounded-full bg-[#0e8890]/10 border border-[#0e8890]/20 flex items-center justify-center text-[#0e8890] font-bold">
+          <i data-lucide="user" class="w-5 h-5"></i>
+        </div>
+      </div>
+    </header>
+
+    <!-- Conteúdo da Página -->
+    <div class="p-6 md:p-8 space-y-6">
+      
+      <!-- Filtros e Resumo Geral -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-4">
+          <div class="bg-slate-100 p-3 rounded-xl">
+            <i data-lucide="calendar" class="w-6 h-6 text-[#0e8890]"></i>
+          </div>
+          <div>
+            <p class="text-xs font-bold text-slate-500 uppercase">Mês de Referência</p>
+            <select id="selectMes" class="mt-1 bg-slate-50 border border-slate-200 text-slate-800 font-bold rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#0e8890]">
+              <option value="SETEMBRO/2026">SETEMBRO / 2026</option>
+              <option value="AGOSTO/2026">AGOSTO / 2026</option>
+              <option value="JULHO/2026">JULHO / 2026</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="flex gap-6 text-center">
+          <div>
+            <p class="text-[10px] font-black text-slate-400 uppercase">Qualidade Controle</p>
+            <p class="text-xl font-black text-[#0e8890]">58,18%</p>
+          </div>
+          <div class="w-px bg-slate-200"></div>
+          <div>
+            <p class="text-[10px] font-black text-slate-400 uppercase">Qualidade Pós</p>
+            <p class="text-xl font-black text-[#0e8890]">85%</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Painel Resumo da Loja (INFORTECA) -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-[#000033] px-6 py-3 border-b border-slate-700">
+          <h3 class="text-white font-black tracking-widest text-sm text-center">INFORTECA (LOJA GERAL)</h3>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm whitespace-nowrap">
+            <thead class="bg-slate-50 text-[10px] uppercase text-slate-500 tracking-wider">
+              <tr>
+                <th class="px-4 py-3 font-bold text-center border-r border-slate-200">Categoria</th>
+                <th class="px-4 py-3 font-bold text-right">Meta Loja</th>
+                <th class="px-4 py-3 font-bold text-right">Realizado</th>
+                <th class="px-4 py-3 font-bold text-center">Percent. Real %</th>
+                <th class="px-4 py-3 font-bold text-right">Falta</th>
+                <th class="px-4 py-3 font-bold text-right">Fazer por Dia</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <!-- FATURAMENTO -->
+              <tr class="bg-blue-50/30">
+                <td class="px-4 py-2 font-black text-blue-800 text-xs uppercase text-center border-r border-slate-200">Faturamento</td>
+                <td class="px-4 py-2"></td><td class="px-4 py-2"></td><td class="px-4 py-2"></td><td class="px-4 py-2"></td><td class="px-4 py-2"></td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-center border-r border-slate-200 font-semibold text-slate-600">FAT TOTAL TIM</td>
+                <td class="px-4 py-3 text-right font-medium">R$ 5.700,00</td>
+                <td class="px-4 py-3 text-right font-medium">R$ 4.672,45</td>
+                <td class="px-4 py-3 text-center"><span class="badge-meta meta-tendencia">82%</span></td>
+                <td class="px-4 py-3 text-right text-slate-500">R$ 1.027,55</td>
+                <td class="px-4 py-3 text-right font-bold text-[#0e8890]">R$ 1.027,55</td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-center border-r border-slate-200 font-semibold text-slate-600">CONTROLE FAT.</td>
+                <td class="px-4 py-3 text-right font-medium">R$ 3.600,00</td>
+                <td class="px-4 py-3 text-right font-medium">R$ 2.697,55</td>
+                <td class="px-4 py-3 text-center"><span class="badge-meta meta-tendencia">75%</span></td>
+                <td class="px-4 py-3 text-right text-slate-500">R$ 902,45</td>
+                <td class="px-4 py-3 text-right font-bold text-[#0e8890]">R$ 902,45</td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-center border-r border-slate-200 font-semibold text-slate-600">PÓS FAT.</td>
+                <td class="px-4 py-3 text-right font-medium">R$ 2.100,00</td>
+                <td class="px-4 py-3 text-right font-medium">R$ 1.974,90</td>
+                <td class="px-4 py-3 text-center"><span class="badge-meta meta-tendencia">94%</span></td>
+                <td class="px-4 py-3 text-right text-slate-500">R$ 125,10</td>
+                <td class="px-4 py-3 text-right font-bold text-[#0e8890]">R$ 125,10</td>
+              </tr>
+
+              <!-- GROSS -->
+              <tr class="bg-blue-50/30">
+                <td class="px-4 py-2 font-black text-blue-800 text-xs uppercase text-center border-r border-slate-200">Gross</td>
+                <td class="px-4 py-2"></td><td class="px-4 py-2"></td><td class="px-4 py-2"></td><td class="px-4 py-2"></td><td class="px-4 py-2"></td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-center border-r border-slate-200 font-semibold text-slate-600">CONTROLE</td>
+                <td class="px-4 py-3 text-right font-medium">60</td>
+                <td class="px-4 py-3 text-right font-medium">49</td>
+                <td class="px-4 py-3 text-center"><span class="badge-meta meta-tendencia">82%</span></td>
+                <td class="px-4 py-3 text-right text-slate-500">11</td>
+                <td class="px-4 py-3 text-right font-bold text-[#0e8890]">11</td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-center border-r border-slate-200 font-semibold text-slate-600">PÓS</td>
+                <td class="px-4 py-3 text-right font-medium">18</td>
+                <td class="px-4 py-3 text-right font-medium">15</td>
+                <td class="px-4 py-3 text-center"><span class="badge-meta meta-tendencia">83%</span></td>
+                <td class="px-4 py-3 text-right text-slate-500">3</td>
+                <td class="px-4 py-3 text-right font-bold text-[#0e8890]">3</td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-center border-r border-slate-200 font-semibold text-slate-600">PORTABILIDADE</td>
+                <td class="px-4 py-3 text-right font-medium">24</td>
+                <td class="px-4 py-3 text-right font-medium">21</td>
+                <td class="px-4 py-3 text-center"><span class="badge-meta meta-tendencia">88%</span></td>
+                <td class="px-4 py-3 text-right text-slate-500">3</td>
+                <td class="px-4 py-3 text-right font-bold text-[#0e8890]">3</td>
+              </tr>
+
+              <!-- PRODUTO -->
+              <tr class="bg-blue-50/30">
+                <td class="px-4 py-2 font-black text-blue-800 text-xs uppercase text-center border-r border-slate-200">Produto</td>
+                <td class="px-4 py-2"></td><td class="px-4 py-2"></td><td class="px-4 py-2"></td><td class="px-4 py-2"></td><td class="px-4 py-2"></td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-center border-r border-slate-200 font-semibold text-slate-600">APARELHO</td>
+                <td class="px-4 py-3 text-right font-medium">R$ 22.500,00</td>
+                <td class="px-4 py-3 text-right font-medium">R$ 14.363,00</td>
+                <td class="px-4 py-3 text-center"><span class="badge-meta meta-fora">64%</span></td>
+                <td class="px-4 py-3 text-right text-slate-500">R$ 8.137,00</td>
+                <td class="px-4 py-3 text-right font-bold text-[#0e8890]">R$ 8.137,00</td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-center border-r border-slate-200 font-semibold text-slate-600">ACESSÓRIOS</td>
+                <td class="px-4 py-3 text-right font-medium">R$ 18.000,00</td>
+                <td class="px-4 py-3 text-right font-medium">R$ 11.711,10</td>
+                <td class="px-4 py-3 text-center"><span class="badge-meta meta-fora">65%</span></td>
+                <td class="px-4 py-3 text-right text-slate-500">R$ 6.288,90</td>
+                <td class="px-4 py-3 text-right font-bold text-[#0e8890]">R$ 6.288,90</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Grid de Consultores -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="gridConsultores">
+        
+        <!-- Card Consultor 1 -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="bg-[#000033] px-6 py-3 border-b border-slate-700 flex justify-between items-center">
+            <h3 class="text-white font-black tracking-widest text-sm">DANIEL ALVES FERREIRA</h3>
+            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded border border-emerald-400/20">META ENTREGUE</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs whitespace-nowrap">
+              <thead class="bg-slate-50 text-[9px] uppercase text-slate-500 tracking-wider">
+                <tr>
+                  <th class="px-3 py-2 font-bold text-center border-r border-slate-200">Categoria</th>
+                  <th class="px-3 py-2 font-bold text-right">Meta</th>
+                  <th class="px-3 py-2 font-bold text-right">Realizado</th>
+                  <th class="px-3 py-2 font-bold text-center">%</th>
+                  <th class="px-3 py-2 font-bold text-right">Falta</th>
+                  <th class="px-3 py-2 font-bold text-right">Fazer/Dia</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <!-- FATURAMENTO -->
+                <tr class="bg-blue-50/30">
+                  <td class="px-3 py-1.5 font-black text-blue-800 text-[10px] uppercase text-center border-r border-slate-200">Faturamento</td>
+                  <td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="px-3 py-2 text-center border-r border-slate-200 font-semibold text-slate-600">FAT TOTAL TIM</td>
+                  <td class="px-3 py-2 text-right">R$ 1.900,00</td>
+                  <td class="px-3 py-2 text-right">R$ 2.267,76</td>
+                  <td class="px-3 py-2 text-center"><span class="badge-meta meta-entregue">119%</span></td>
+                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">META ENTREGUE</td>
+                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">-</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="px-3 py-2 text-center border-r border-slate-200 font-semibold text-slate-600">CONTROLE FAT.</td>
+                  <td class="px-3 py-2 text-right">R$ 1.200,00</td>
+                  <td class="px-3 py-2 text-right">R$ 1.107,81</td>
+                  <td class="px-3 py-2 text-center"><span class="badge-meta meta-tendencia">92%</span></td>
+                  <td class="px-3 py-2 text-right text-slate-500">R$ 92,19</td>
+                  <td class="px-3 py-2 text-right font-bold text-[#0e8890]">R$ 92,19</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="px-3 py-2 text-center border-r border-slate-200 font-semibold text-slate-600">PÓS FAT.</td>
+                  <td class="px-3 py-2 text-right">R$ 700,00</td>
+                  <td class="px-3 py-2 text-right">R$ 1.159,95</td>
+                  <td class="px-3 py-2 text-center"><span class="badge-meta meta-entregue">166%</span></td>
+                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">META ENTREGUE</td>
+                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">-</td>
+                </tr>
+
+                <!-- GROSS -->
+                <tr class="bg-blue-50/30">
+                  <td class="px-3 py-1.5 font-black text-blue-800 text-[10px] uppercase text-center border-r border-slate-200">Gross</td>
+                  <td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="px-3 py-2 text-center border-r border-slate-200 font-semibold text-slate-600">CONTROLE</td>
+                  <td class="px-3 py-2 text-right">20</td>
+                  <td class="px-3 py-2 text-right">20</td>
+                  <td class="px-3 py-2 text-center"><span class="badge-meta meta-entregue">100%</span></td>
+                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">META ENTREGUE</td>
+                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">-</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="px-3 py-2 text-center border-r border-slate-200 font-semibold text-slate-600">PÓS</td>
+                  <td class="px-3 py-2 text-right">6</td>
+                  <td class="px-3 py-2 text-right">8</td>
+                  <td class="px-3 py-2 text-center"><span class="badge-meta meta-entregue">133%</span></td>
+                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">META ENTREGUE</td>
+                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">-</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="px-3 py-2 text-center border-r border-slate-200 font-semibold text-slate-600">PORTABILIDADE</td>
+                  <td class="px-3 py-2 text-right">8</td>
+                  <td class="px-3 py-2 text-right">9</td>
+                  <td class="px-3 py-2 text-center"><span class="badge-meta meta-entregue">113%</span></td>
+                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">META ENTREGUE</td>
+                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">-</td>
+                </tr>
+
+                <!-- PRODUTO -->
+                <tr class="bg-blue-50/30">
+                  <td class="px-3 py-1.5 font-black text-blue-800 text-[10px] uppercase text-center border-r border-slate-200">Produto</td>
+                  <td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td><td class="px-3 py-1.5"></td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="px-3 py-2 text-center border-r border-slate-200 font-semibold text-slate-600">APARELHO</td>
+                  <td class="px-3 py-2 text-right">R$ 7.500,00</td>
+                  <td class="px-3 py-2 text-right">R$ 8.896,00</td>
+                  <td class="px-3 py-2 text-center"><span class="badge-meta meta-entregue">119%</span></td>
+                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">META ENTREGUE</td>
+                  <td class="px-3 py-2 text-right text-emerald-600 font-bold">-</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="px-3 py-2 text-center border-r border-slate-200 font-semibold text-slate-600">ACESSÓRIOS</td>
+                  <td class="px-3 py-2 text-right">R$ 6.000,00</td>
+                  <td class="px-3 py-2 text-right">R$ 5.320,00</td>
+                  <td class="px-3 py-2 text-center"><span class="badge-meta meta-tendencia">89%</span></td>
+                  <td class="px-3 py-2 text-right text-slate-500">R$ 680,00</td>
+                  <td class="px-3 py-2 text-right font-bold text-[#0e8890]">R$ 680,00</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Você pode adicionar os outros consultores aqui, seguindo o mesmo padrão -->
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script>
+    const SUPABASE_URL = 'https://zldugoqlcrzarpqvtaoh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    lucide.createIcons();
+
+    async function verificarAuth() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) { window.location.href = 'index.html'; return; }
+      
+      const { data: perfil } = await supabaseClient.from('perfis').select('*').eq('id', session.user.id).single();
+      document.getElementById('userName').textContent = perfil?.nome_completo || session.user.email;
+      document.getElementById('userPerm').textContent = perfil?.permissao || 'Operador';
+    }
+
+    async function terminarSessao() {
+      await supabaseClient.auth.signOut();
+      window.location.href = 'index.html';
+    }
+
+    function toggleSidebar() {
+      const s = document.getElementById('sidebar');
+      s.classList.toggle('hidden');
+      s.classList.toggle('absolute');
+      s.classList.toggle('inset-y-0');
+      s.classList.toggle('z-40');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      verificarAuth();
+    });
+  </script>
+</body>
+</html>
