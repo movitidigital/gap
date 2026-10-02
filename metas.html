@@ -28,18 +28,26 @@
       writing-mode: vertical-rl;
       transform: rotate(180deg);
       text-align: center;
-      letter-spacing: 0.12em;
-      font-size: 10px;
+      letter-spacing: 0.1em;
+      font-size: 9px;
       font-weight: 900;
       text-transform: uppercase;
-      padding: 8px 0;
+      padding: 6px 0;
     }
 
-    .table-excel { border-collapse: collapse; width: 100%; font-size: 11px; }
+    /* ========== TABELAS ========== */
+    .table-excel {
+      border-collapse: collapse;
+      width: 100%;
+      table-layout: fixed;
+      font-size: 11px;
+    }
     .table-excel th, .table-excel td {
       border: 1px solid #b8c2cc;
-      padding: 5px 8px;
+      padding: 5px 6px;
       vertical-align: middle;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .table-excel thead th {
       background-color: #E7E6E6;
@@ -47,17 +55,21 @@
       font-weight: 800;
       text-transform: uppercase;
       text-align: center;
-      font-size: 10px;
+      font-size: 9px;
       letter-spacing: 0.03em;
+      padding: 6px 4px;
     }
-    .table-excel tbody tr:hover { background-color: #f8fafc; }
 
-    .table-diario { border-collapse: collapse; width: 100%; font-size: 10px; }
+    /* Tabelas Diário */
+    .table-diario {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 10px;
+    }
     .table-diario th, .table-diario td {
       border: 1px solid #cbd5e1;
       padding: 0;
       text-align: center;
-      white-space: nowrap;
     }
     .table-diario thead th {
       background-color: #D9D9D9;
@@ -73,7 +85,7 @@
       padding: 4px 8px;
       font-size: 9px;
       color: #334155;
-      min-width: 120px;
+      width: 130px;
     }
     .table-diario .label-col.total-row {
       background-color: #1F4E78;
@@ -93,7 +105,7 @@
       padding: 5px 2px;
       outline: none;
       transition: background 0.15s;
-      min-width: 46px;
+      min-width: 48px;
     }
     .cell-input:hover { background: #fef9c3; }
     .cell-input:focus {
@@ -101,11 +113,7 @@
       box-shadow: inset 0 0 0 2px #0e8890;
       font-weight: 700;
     }
-    .cell-input.filled {
-      background: #f0fdf4;
-      color: #166534;
-      font-weight: 700;
-    }
+    .cell-input.filled { background: #f0fdf4; color: #166534; font-weight: 700; }
     .cell-input.filled:hover { background: #dcfce7; }
     .cell-input.total-cell {
       background: #dbeafe;
@@ -118,7 +126,7 @@
       width: 100%;
       border: 1.5px solid #cbd5e1;
       border-radius: 6px;
-      padding: 6px 10px;
+      padding: 5px 8px;
       font-size: 12px;
       font-weight: 700;
       color: #1F4E78;
@@ -132,26 +140,13 @@
       box-shadow: 0 0 0 3px rgba(14,136,144,0.15);
       background: #f0fdfa;
     }
-    .config-input:disabled {
-      background: #f1f5f9;
-      color: #94a3b8;
-      cursor: not-allowed;
-    }
+    .config-input:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
 
     .tab-btn { transition: all 0.2s ease; }
-    .tab-btn.active {
-      background-color: #1F4E78;
-      color: #fff;
-      border-color: #1F4E78;
-    }
-    .tab-btn:not(.active) {
-      background-color: #fff;
-      color: #475569;
-      border-color: #e2e8f0;
-    }
+    .tab-btn.active { background-color: #1F4E78; color: #fff; border-color: #1F4E78; }
+    .tab-btn:not(.active) { background-color: #fff; color: #475569; border-color: #e2e8f0; }
     .tab-btn:not(.active):hover { background-color: #f1f5f9; border-color: #cbd5e1; }
 
-    /* Toast */
     .toast {
       position: fixed; bottom: 24px; right: 24px; z-index: 9999;
       background: #0f172a; color: #fff; padding: 12px 18px;
@@ -170,10 +165,6 @@
       100% { background: #f0fdf4; }
     }
     .saved-anim { animation: pulse-save 0.8s ease; }
-
-    @media print {
-      .no-print { display: none !important; }
-    }
   </style>
 </head>
 <body class="text-slate-800 h-screen flex overflow-hidden">
@@ -213,7 +204,7 @@
   <!-- MAIN -->
   <main class="flex-1 flex flex-col h-screen min-w-0 relative overflow-hidden">
 
-    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10 shrink-0 no-print">
+    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10 shrink-0">
       <div class="flex items-center gap-3">
         <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
           <i data-lucide="menu" class="w-6 h-6"></i>
@@ -233,250 +224,248 @@
 
     <div class="flex-1 overflow-y-auto p-4 md:p-6">
 
-      <!-- CABEÇALHO PRINCIPAL -->
-      <div id="exportArea">
-        <div class="bg-excel-blue rounded-t-2xl p-4 md:p-5 shadow-md mb-0 flex flex-col md:flex-row justify-between items-center text-white">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center p-1 shrink-0">
-              <img src="/LOGOINFORTECATIM2026.png" alt="Inforteca" class="h-8 w-auto object-contain" onerror="this.style.display='none'">
+      <div class="bg-excel-blue rounded-t-2xl p-4 md:p-5 shadow-md mb-0 flex flex-col md:flex-row justify-between items-center text-white">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center p-1 shrink-0">
+            <img src="/LOGOINFORTECATIM2026.png" alt="Inforteca" class="h-8 w-auto object-contain" onerror="this.style.display='none'">
+          </div>
+          <div>
+            <h1 class="text-lg md:text-2xl font-black tracking-tight uppercase">Acompanhamento de Vendas Diário</h1>
+            <div class="flex flex-wrap gap-x-6 gap-y-1 mt-1 text-[11px] font-bold text-blue-200">
+              <span id="headerResultado">RESULTADO LOJA DE 01 A —</span>
             </div>
+          </div>
+        </div>
+        <div class="text-right mt-3 md:mt-0">
+          <div class="text-sm font-bold" id="headerMes">MÊS: —</div>
+          <div class="flex gap-4 mt-1 justify-end">
+            <div class="text-[10px] font-bold uppercase text-blue-200">QUALIDADE CONTROLE <span class="text-white" id="headerQualControle">| —</span></div>
+            <div class="text-[10px] font-bold uppercase text-blue-200">QUALIDADE PÓS <span class="text-white" id="headerQualPos">| —</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 border-t-0 px-4 py-3 flex flex-wrap gap-2 items-center justify-between">
+        <div class="flex flex-wrap gap-2">
+          <button data-tab="resumo" class="tab-btn active px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
+            <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Resumo
+          </button>
+          <button data-tab="diario" class="tab-btn px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
+            <i data-lucide="calendar-days" class="w-4 h-4"></i> Diário
+          </button>
+          <button data-tab="config" class="tab-btn px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i> Parâmetros & Metas
+          </button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="exportarImagem()" id="btnExport" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5">
+            <i data-lucide="image-down" class="w-3.5 h-3.5"></i> Baixar Imagem
+          </button>
+          <button onclick="resetarDados()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Resetar
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 border-t-0 rounded-b-2xl shadow-sm p-4 md:p-6">
+
+        <!-- ABA 1: RESUMO -->
+        <div id="tab-resumo" class="tab-content">
+          <div id="export-loja" class="rounded-2xl shadow-sm overflow-hidden mb-8 border border-slate-300">
+            <div class="bg-excel-blue px-4 py-2.5 border-b border-slate-400 flex justify-between items-center">
+              <h3 class="text-white font-black tracking-widest text-xs uppercase">INFORTECA — LOJA GERAL</h3>
+              <span class="bg-white/10 text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/20">
+                <span id="infoDiasTrab">0</span> dias trab. · <span id="infoDiasRest">0</span> rest.
+              </span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="table-excel" id="tabela-loja">
+                <colgroup>
+                  <col style="width:32px;">
+                  <col style="width:120px;">
+                  <col style="width:110px;">
+                  <col style="width:110px;">
+                  <col style="width:70px;">
+                  <col style="width:110px;">
+                  <col style="width:120px;">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th class="bg-excel-blue text-white"></th>
+                    <th>META LOJA</th>
+                    <th>REALIZADO</th>
+                    <th>PERCENT. REAL %</th>
+                    <th>FALTA</th>
+                    <th>FAZER POR DIA</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-loja"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="users" class="w-4 h-4 text-[#0e8890]"></i>
+              Desempenho por Consultor
+            </h3>
+          </div>
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-6" id="gridConsultores"></div>
+        </div>
+
+        <!-- ABA 2: DIÁRIO -->
+        <div id="tab-diario" class="tab-content hidden">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <div class="flex items-center gap-3">
+              <div class="bg-excel-blue p-2 rounded-lg text-white">
+                <i data-lucide="calendar-days" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Acompanhamento por Dia</p>
+                <p class="text-xs text-slate-600 font-semibold">
+                  Clique em qualquer célula para preencher · <span class="text-emerald-600 font-bold">FAT TOTAL TIM</span> é auto-calculado
+                </p>
+              </div>
+            </div>
+          </div>
+          <div id="gridDiario" class="space-y-8"></div>
+        </div>
+
+        <!-- ABA 3: CONFIG -->
+        <div id="tab-config" class="tab-content hidden">
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-6 flex items-start gap-2">
+            <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
             <div>
-              <h1 class="text-lg md:text-2xl font-black tracking-tight uppercase">Acompanhamento de Vendas Diário</h1>
-              <div class="flex flex-wrap gap-x-6 gap-y-1 mt-1 text-[11px] font-bold text-blue-200">
-                <span id="headerResultado">RESULTADO LOJA DE 01 A —</span>
+              <p class="text-xs text-amber-800 font-bold">Todos os valores abaixo são editáveis.</p>
+              <p class="text-[11px] text-amber-700">Salvos automaticamente e refletidos em todas as abas.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
+              <div class="bg-excel-gray px-4 py-2 border-b border-slate-400">
+                <h4 class="text-[11px] font-black text-slate-700 uppercase tracking-widest text-center">Parâmetros do Mês</h4>
               </div>
-            </div>
-          </div>
-          <div class="text-right mt-3 md:mt-0">
-            <div class="text-sm font-bold" id="headerMes">MÊS: —</div>
-            <div class="flex gap-4 mt-1 justify-end">
-              <div class="text-[10px] font-bold uppercase text-blue-200">QUALIDADE CONTROLE <span class="text-white">| —</span></div>
-              <div class="text-[10px] font-bold uppercase text-blue-200">QUALIDADE PÓS <span class="text-white">| —</span></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- TABS -->
-        <div class="no-print bg-white border border-slate-200 border-t-0 px-4 py-3 flex flex-wrap gap-2 items-center justify-between">
-          <div class="flex flex-wrap gap-2">
-            <button data-tab="resumo" class="tab-btn active px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
-              <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Resumo
-            </button>
-            <button data-tab="diario" class="tab-btn px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
-              <i data-lucide="calendar-days" class="w-4 h-4"></i> Diário
-            </button>
-            <button data-tab="config" class="tab-btn px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
-              <i data-lucide="sliders-horizontal" class="w-4 h-4"></i> Parâmetros & Metas
-            </button>
-          </div>
-          <div class="flex items-center gap-2">
-            <button onclick="exportarImagem()" id="btnExport" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5">
-              <i data-lucide="image-down" class="w-3.5 h-3.5"></i> Baixar Imagem
-            </button>
-            <button onclick="resetarDados()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5">
-              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Resetar
-            </button>
-          </div>
-        </div>
-
-        <div class="bg-white border border-slate-200 border-t-0 rounded-b-2xl shadow-sm p-4 md:p-6">
-
-          <!-- ABA 1: RESUMO -->
-          <div id="tab-resumo" class="tab-content">
-            <div class="rounded-2xl shadow-sm overflow-hidden mb-8 border border-slate-300">
-              <div class="bg-excel-blue px-4 py-2.5 border-b border-slate-400 flex justify-between items-center">
-                <h3 class="text-white font-black tracking-widest text-xs uppercase">INFORTECA — LOJA GERAL</h3>
-                <span class="bg-white/10 text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/20">
-                  <span id="infoDiasTrab">0</span> dias trab. · <span id="infoDiasRest">0</span> rest.
-                </span>
-              </div>
-              <div class="overflow-x-auto">
-                <table class="table-excel">
-                  <thead>
-                    <tr>
-                      <th class="w-10 bg-excel-blue text-white border-excel-blue"></th>
-                      <th class="w-28">META LOJA</th>
-                      <th class="w-28">REALIZADO</th>
-                      <th class="w-24">PERCENT. REAL %</th>
-                      <th class="w-28">FALTA</th>
-                      <th class="w-28">FAZER POR DIA</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tbody-loja"></tbody>
-                </table>
-              </div>
-            </div>
-
-            <div class="flex items-center justify-between mb-3">
-              <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                <i data-lucide="users" class="w-4 h-4 text-[#0e8890]"></i>
-                Desempenho por Consultor
-              </h3>
-            </div>
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6" id="gridConsultores"></div>
-          </div>
-
-          <!-- ABA 2: DIÁRIO -->
-          <div id="tab-diario" class="tab-content hidden">
-            <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200 no-print">
-              <div class="flex items-center gap-3">
-                <div class="bg-excel-blue p-2 rounded-lg text-white">
-                  <i data-lucide="calendar-days" class="w-4 h-4"></i>
+              <div class="p-4 space-y-3">
+                <div>
+                  <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Mês de Referência</label>
+                  <input type="text" id="cfgMes" class="config-input mt-1" style="text-align:left;">
                 </div>
                 <div>
-                  <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Acompanhamento por Dia</p>
-                  <p class="text-xs text-slate-600 font-semibold">
-                    Clique em qualquer célula para preencher · <span class="text-emerald-600 font-bold">FAT TOTAL TIM</span> é auto-calculado
-                  </p>
+                  <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Dias Trabalhados Mês</label>
+                  <input type="number" id="cfgDiasTrab" class="config-input mt-1" min="0" max="31">
+                </div>
+                <div>
+                  <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Dias Restantes Mês</label>
+                  <input type="number" id="cfgDiasRest" class="config-input mt-1" min="0" max="31">
+                </div>
+                <div>
+                  <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Qualidade Controle (%)</label>
+                  <input type="text" id="cfgQualControle" class="config-input mt-1" placeholder="Ex: 58,18%">
+                </div>
+                <div>
+                  <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Qualidade Pós (%)</label>
+                  <input type="text" id="cfgQualPos" class="config-input mt-1" placeholder="Ex: 85%">
                 </div>
               </div>
             </div>
-            <div id="gridDiario" class="space-y-8"></div>
+
+            <div class="lg:col-span-2 bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
+              <div class="bg-[#0e8890] px-4 py-2 border-b border-slate-400 flex justify-between items-center">
+                <h4 class="text-[11px] font-black text-white uppercase tracking-widest">Consultores Ativos</h4>
+                <button onclick="adicionarConsultor()" class="bg-white/20 hover:bg-white/30 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
+                  <i data-lucide="plus" class="w-3 h-3"></i> Adicionar
+                </button>
+              </div>
+              <div id="listaConsultores" class="p-4 space-y-2"></div>
+            </div>
           </div>
 
-          <!-- ABA 3: CONFIG -->
-          <div id="tab-config" class="tab-content hidden">
-            <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-6 flex items-start gap-2 no-print">
-              <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
-              <div>
-                <p class="text-xs text-amber-800 font-bold">Todos os valores abaixo são editáveis.</p>
-                <p class="text-[11px] text-amber-700">As alterações salvas automaticamente e refletem em todas as abas.</p>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
+              <div class="bg-excel-green px-4 py-2 border-b border-slate-400">
+                <h4 class="text-[11px] font-black text-white uppercase tracking-widest text-center">Meta Loja</h4>
               </div>
+              <table class="table-excel">
+                <colgroup>
+                  <col style="width:28px;">
+                  <col style="width:110px;">
+                  <col style="width:110px;">
+                </colgroup>
+                <tbody id="tbody-meta-loja"></tbody>
+              </table>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-              <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
-                <div class="bg-excel-gray px-4 py-2 border-b border-slate-400">
-                  <h4 class="text-[11px] font-black text-slate-700 uppercase tracking-widest text-center">Parâmetros do Mês</h4>
-                </div>
-                <div class="p-4 space-y-3">
-                  <div>
-                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Mês de Referência</label>
-                    <input type="text" id="cfgMes" class="config-input mt-1 text-left" style="text-align:left;">
-                  </div>
-                  <div>
-                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Dias Trabalhados Mês</label>
-                    <input type="number" id="cfgDiasTrab" class="config-input mt-1" min="0" max="31">
-                  </div>
-                  <div>
-                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Dias Restantes Mês</label>
-                    <input type="number" id="cfgDiasRest" class="config-input mt-1" min="0" max="31">
-                  </div>
-                  <div>
-                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Qualidade Controle (%)</label>
-                    <input type="text" id="cfgQualControle" class="config-input mt-1" placeholder="Ex: 58,18%">
-                  </div>
-                  <div>
-                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Qualidade Pós (%)</label>
-                    <input type="text" id="cfgQualPos" class="config-input mt-1" placeholder="Ex: 85%">
-                  </div>
-                </div>
+            <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
+              <div class="bg-excel-yellow px-4 py-2 border-b border-slate-400">
+                <h4 class="text-[11px] font-black text-white uppercase tracking-widest text-center">Meta por Consultor</h4>
               </div>
-
-              <div class="lg:col-span-2 bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
-                <div class="bg-[#0e8890] px-4 py-2 border-b border-slate-400 flex justify-between items-center">
-                  <h4 class="text-[11px] font-black text-white uppercase tracking-widest">Consultores Ativos</h4>
-                  <button onclick="adicionarConsultor()" class="bg-white/20 hover:bg-white/30 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 no-print">
-                    <i data-lucide="plus" class="w-3 h-3"></i> Adicionar
-                  </button>
-                </div>
-                <div id="listaConsultores" class="p-4 space-y-2"></div>
-              </div>
+              <table class="table-excel">
+                <colgroup>
+                  <col style="width:28px;">
+                  <col style="width:110px;">
+                  <col style="width:110px;">
+                </colgroup>
+                <tbody id="tbody-meta-consultor"></tbody>
+              </table>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
-                <div class="bg-excel-green px-4 py-2 border-b border-slate-400">
-                  <h4 class="text-[11px] font-black text-white uppercase tracking-widest text-center">Meta Loja</h4>
-                </div>
-                <table class="table-excel">
-                  <tbody id="tbody-meta-loja"></tbody>
-                </table>
+            <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
+              <div class="bg-excel-pos px-4 py-2 border-b border-slate-400">
+                <h4 class="text-[11px] font-black text-white uppercase tracking-widest text-center">Meta Pós-Venda</h4>
               </div>
-
-              <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
-                <div class="bg-excel-yellow px-4 py-2 border-b border-slate-400">
-                  <h4 class="text-[11px] font-black text-white uppercase tracking-widest text-center">Meta por Consultor</h4>
-                </div>
-                <table class="table-excel">
-                  <tbody id="tbody-meta-consultor"></tbody>
-                </table>
-              </div>
-
-              <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
-                <div class="bg-excel-pos px-4 py-2 border-b border-slate-400">
-                  <h4 class="text-[11px] font-black text-white uppercase tracking-widest text-center">Meta Pós-Venda</h4>
-                </div>
-                <table class="table-excel">
-                  <tbody id="tbody-meta-pos"></tbody>
-                </table>
-              </div>
+              <table class="table-excel">
+                <colgroup>
+                  <col style="width:28px;">
+                  <col style="width:110px;">
+                  <col style="width:110px;">
+                </colgroup>
+                <tbody id="tbody-meta-pos"></tbody>
+              </table>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- LEGENDA -->
-        <div class="mt-6 flex flex-wrap items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Legenda:</span>
-          <div class="flex items-center gap-2">
-            <span class="w-4 h-4 bg-excel-red rounded-sm"></span>
-            <span class="text-[10px] font-bold text-slate-600 uppercase">Fora da Tendência &lt; 70%</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="w-4 h-4 bg-excel-yellow rounded-sm"></span>
-            <span class="text-[10px] font-bold text-slate-600 uppercase">Tendência de Entregar &gt; 70%</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="w-4 h-4 bg-excel-green rounded-sm"></span>
-            <span class="text-[10px] font-bold text-slate-600 uppercase">Meta Entregue / Superada &gt; 100%</span>
-          </div>
+      <!-- LEGENDA -->
+      <div class="mt-6 flex flex-wrap items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Legenda:</span>
+        <div class="flex items-center gap-2">
+          <span class="w-4 h-4 bg-excel-red rounded-sm"></span>
+          <span class="text-[10px] font-bold text-slate-600 uppercase">Fora da Tendência &lt; 70%</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="w-4 h-4 bg-excel-yellow rounded-sm"></span>
+          <span class="text-[10px] font-bold text-slate-600 uppercase">Tendência de Entregar &gt; 70%</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="w-4 h-4 bg-excel-green rounded-sm"></span>
+          <span class="text-[10px] font-bold text-slate-600 uppercase">Meta Entregue / Superada &gt; 100%</span>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- TOAST -->
   <div id="toast" class="toast">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
     <span id="toastText">Salvo!</span>
   </div>
 
   <script>
-    /* ============================================================
-       CONFIG
-       ============================================================ */
     const SUPABASE_URL = 'https://zldugoqlcrzarpqvtaoh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const STORAGE_KEY = 'inforteca_metas_v1';
+    const STORAGE_KEY = 'inforteca_metas_v2';
     const DIAS_NO_MES = 30;
 
-    /* ============================================================
-       CATEGORIAS
-       FAT TOTAL TIM é calculado automaticamente
-       ============================================================ */
-    const CATEGORIAS = [
-      { nome: 'FATURAMENTO', keys: ['CONTROLE FAT.', 'PÓS FAT.'] },
-      { nome: 'GROSS',       keys: ['CONTROLE', 'PÓS', 'PORTABILIDADE'] },
-      { nome: 'PRODUTO',     keys: ['APARELHO', 'ACESSÓRIOS'] },
-    ];
+    const TIPO_VALOR = {
+      'FAT TOTAL TIM': 'moeda', 'CONTROLE FAT.': 'moeda', 'PÓS FAT.': 'moeda',
+      'CONTROLE': 'numero', 'PÓS': 'numero', 'PORTABILIDADE': 'numero',
+      'APARELHO': 'moeda', 'ACESSÓRIOS': 'moeda',
+    };
     const LINHAS_DIARIO = ['CONTROLE FAT.', 'PÓS FAT.', 'CONTROLE', 'PÓS', 'PORTABILIDADE', 'APARELHO', 'ACESSÓRIOS'];
 
-    const TIPO_VALOR = {
-      'FAT TOTAL TIM': 'moeda',
-      'CONTROLE FAT.': 'moeda',
-      'PÓS FAT.':      'moeda',
-      'CONTROLE':      'numero',
-      'PÓS':           'numero',
-      'PORTABILIDADE': 'numero',
-      'APARELHO':      'moeda',
-      'ACESSÓRIOS':    'moeda',
-    };
-
-    /* ============================================================
-       ESTADO PADRÃO
-       ============================================================ */
     function criarDiarioZerado() {
       const d = {};
       LINHAS_DIARIO.forEach(k => d[k] = new Array(DIAS_NO_MES).fill(0));
@@ -484,50 +473,28 @@
     }
 
     function gerarEstadoPadrao() {
-      const diarioDaniel = criarDiarioZerado();
-      // Preenchido com dados dos seus prints
-      diarioDaniel['CONTROLE FAT.'] = [75.99, 0, 279.95, 59.99, 99.98, 0, 0, 99.98, 0, 149.97, 0, 0, 0, 67.99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-      diarioDaniel['PÓS FAT.']      = [119.99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-      diarioDaniel['CONTROLE']      = [2, 0, 5, 1, 2, 0, 0, 2, 0, 3, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-      diarioDaniel['PÓS']           = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-      diarioDaniel['PORTABILIDADE'] = [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-      diarioDaniel['APARELHO']      = [1999, 3899, 0, 0, 0, 0, 999, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-      diarioDaniel['ACESSÓRIOS']    = [354, 35, 813, 0, 70, 0, 0, 294, 773, 55, 0, 230, 0, 155, 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      const dDaniel = criarDiarioZerado();
+      dDaniel['CONTROLE FAT.'] = [75.99, 0, 279.95, 59.99, 99.98, 0, 0, 99.98, 0, 149.97, 0, 0, 0, 67.99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      dDaniel['PÓS FAT.']      = [119.99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      dDaniel['CONTROLE']      = [2, 0, 5, 1, 2, 0, 0, 2, 0, 3, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      dDaniel['PÓS']           = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      dDaniel['PORTABILIDADE'] = [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      dDaniel['APARELHO']      = [1999, 3899, 0, 0, 0, 0, 999, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      dDaniel['ACESSÓRIOS']    = [354, 35, 813, 0, 70, 0, 0, 294, 773, 55, 0, 230, 0, 155, 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
       return {
-        parametros: {
-          mes: 'SETEMBRO / 2026',
-          diasTrabalhados: 21,
-          diasRestantes: 1,
-          qualControle: '58,18%',
-          qualPos: '85%',
-        },
-        metaLoja: {
-          'FAT TOTAL TIM': 5700, 'CONTROLE FAT.': 3600, 'PÓS FAT.': 2100,
-          'CONTROLE': 60, 'PÓS': 18, 'PORTABILIDADE': 24,
-          'APARELHO': 22500, 'ACESSÓRIOS': 18000,
-        },
-        metaConsultor: {
-          'FAT TOTAL TIM': 1900, 'CONTROLE FAT.': 1200, 'PÓS FAT.': 700,
-          'CONTROLE': 20, 'PÓS': 6, 'PORTABILIDADE': 8,
-          'APARELHO': 7500, 'ACESSÓRIOS': 6000,
-        },
-        metaPos: {
-          'FAT TOTAL TIM': 1900, 'CONTROLE FAT.': 1200, 'PÓS FAT.': 700,
-          'CONTROLE': 20, 'PÓS': 6, 'PORTABILIDADE': 8,
-          'APARELHO': 7500, 'ACESSÓRIOS': 6000,
-        },
+        parametros: { mes: 'SETEMBRO / 2026', diasTrabalhados: 21, diasRestantes: 1, qualControle: '58,18%', qualPos: '85%' },
+        metaLoja:      { 'FAT TOTAL TIM': 5700, 'CONTROLE FAT.': 3600, 'PÓS FAT.': 2100, 'CONTROLE': 60, 'PÓS': 18, 'PORTABILIDADE': 24, 'APARELHO': 22500, 'ACESSÓRIOS': 18000 },
+        metaConsultor: { 'FAT TOTAL TIM': 1900, 'CONTROLE FAT.': 1200, 'PÓS FAT.': 700, 'CONTROLE': 20, 'PÓS': 6, 'PORTABILIDADE': 8, 'APARELHO': 7500, 'ACESSÓRIOS': 6000 },
+        metaPos:       { 'FAT TOTAL TIM': 1900, 'CONTROLE FAT.': 1200, 'PÓS FAT.': 700, 'CONTROLE': 20, 'PÓS': 6, 'PORTABILIDADE': 8, 'APARELHO': 7500, 'ACESSÓRIOS': 6000 },
         consultores: [
-          { id: 'c1', nome: 'DANIEL ALVES FERREIRA',    diario: diarioDaniel },
-          { id: 'c2', nome: 'GABRIEL VALENÇA DE LIMA',  diario: criarDiarioZerado() },
+          { id: 'c1', nome: 'DANIEL ALVES FERREIRA', diario: dDaniel },
+          { id: 'c2', nome: 'GABRIEL VALENÇA DE LIMA', diario: criarDiarioZerado() },
           { id: 'c3', nome: 'JEAN BRENO CARNEIRO DA SILVA', diario: criarDiarioZerado() },
         ]
       };
     }
 
-    /* ============================================================
-       STATE
-       ============================================================ */
     let state = null;
 
     function carregarEstado() {
@@ -535,7 +502,6 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          // Migração: garante que todas as categorias existam
           parsed.consultores.forEach(c => {
             LINHAS_DIARIO.forEach(k => {
               if (!Array.isArray(c.diario[k])) c.diario[k] = new Array(DIAS_NO_MES).fill(0);
@@ -547,15 +513,9 @@
       } catch (e) { console.warn(e); }
       return gerarEstadoPadrao();
     }
-
-    function salvarEstado() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      } catch (e) { console.warn('Falha ao salvar', e); }
-    }
-
+    function salvarEstado() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {} }
     function resetarDados() {
-      if (!confirm('Tem certeza que deseja apagar TODOS os dados e voltar ao padrão?')) return;
+      if (!confirm('Apagar TODOS os dados e voltar ao padrão?')) return;
       localStorage.removeItem(STORAGE_KEY);
       state = gerarEstadoPadrao();
       salvarEstado();
@@ -563,9 +523,6 @@
       toast('Dados resetados!');
     }
 
-    /* ============================================================
-       HELPERS DE CÁLCULO
-       ============================================================ */
     const fmtMoeda = (v) => 'R$ ' + (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const fmtNumero = (v) => String(Number(v) || 0);
     const fmtValor = (v, tipo) => tipo === 'moeda' ? fmtMoeda(v) : fmtNumero(v);
@@ -577,20 +534,13 @@
       return { bg: 'bg-excel-red', text: 'text-white' };
     };
 
-    // Realizado de uma categoria para um consultor (soma do diário)
-    function calcRealizadoConsultor(consultor, key) {
-      if (key === 'FAT TOTAL TIM') {
-        return somaDiario(consultor, 'CONTROLE FAT.') + somaDiario(consultor, 'PÓS FAT.');
-      }
-      return somaDiario(consultor, key);
+    function somaDiario(c, key) {
+      return (c.diario[key] || []).reduce((s, v) => s + (Number(v) || 0), 0);
     }
-
-    function somaDiario(consultor, key) {
-      const arr = consultor.diario[key] || [];
-      return arr.reduce((s, v) => s + (Number(v) || 0), 0);
+    function calcRealizadoConsultor(c, key) {
+      if (key === 'FAT TOTAL TIM') return somaDiario(c, 'CONTROLE FAT.') + somaDiario(c, 'PÓS FAT.');
+      return somaDiario(c, key);
     }
-
-    // Realizado loja = soma de todos os consultores
     function calcRealizadoLoja(key) {
       return state.consultores.reduce((s, c) => s + calcRealizadoConsultor(c, key), 0);
     }
@@ -622,12 +572,11 @@
 
           html += '<tr>';
           if (idx === 0) {
-            html += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-blue text-white border-excel-blue">${cat.cat}</td>`;
+            html += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-blue text-white" style="border:1px solid #b8c2cc;">${cat.cat}</td>`;
           }
-          const destaqueFat = key === 'FAT TOTAL TIM' ? 'bg-blue-50' : '';
-          html += `<td class="font-bold text-slate-700 ${destaqueFat}">${key}</td>`;
-          html += `<td class="text-right font-medium ${destaqueFat}">${fmtValor(metaV, tipo)}</td>`;
-          html += `<td class="text-right font-medium ${destaqueFat}">${fmtValor(realV, tipo)}</td>`;
+          html += `<td class="font-bold text-slate-700">${key}</td>`;
+          html += `<td class="text-right font-medium">${fmtValor(metaV, tipo)}</td>`;
+          html += `<td class="text-right font-medium">${fmtValor(realV, tipo)}</td>`;
           html += `<td class="text-center ${c.bg} ${c.text} font-black">${pct.toFixed(0)}%</td>`;
           if (entregue) {
             html += `<td colspan="2" class="text-center bg-excel-green text-white font-black uppercase text-[10px] tracking-wider">META ENTREGUE</td>`;
@@ -642,7 +591,7 @@
     }
 
     /* ============================================================
-       RENDER: RESUMO POR CONSULTOR
+       RENDER: CONSULTORES (cards)
        ============================================================ */
     function renderConsultores() {
       const grid = document.getElementById('gridConsultores');
@@ -665,19 +614,27 @@
               <h3 class="text-white font-black tracking-widest text-[11px] uppercase truncate">${cap(consult.nome)}</h3>
               <span class="${statusCor} text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider shrink-0 ml-2">${statusBadge}</span>
             </div>
-            <div class="overflow-x-auto">
-              <table class="table-excel">
-                <thead>
-                  <tr>
-                    <th class="w-10 bg-excel-blue text-white border-excel-blue"></th>
-                    <th class="w-28">META LOJA</th>
-                    <th class="w-28">REALIZADO</th>
-                    <th class="w-20">%</th>
-                    <th class="w-28">FALTA</th>
-                    <th class="w-28">FAZER/DIA</th>
-                  </tr>
-                </thead>
-                <tbody>`;
+            <table class="table-excel">
+              <colgroup>
+                <col style="width:28px;">
+                <col style="width:100px;">
+                <col style="width:90px;">
+                <col style="width:90px;">
+                <col style="width:55px;">
+                <col style="width:90px;">
+                <col style="width:100px;">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th class="bg-excel-blue text-white"></th>
+                  <th>META LOJA</th>
+                  <th>REALIZADO</th>
+                  <th>%</th>
+                  <th>FALTA</th>
+                  <th>FAZER/DIA</th>
+                </tr>
+              </thead>
+              <tbody>`;
 
         const todasLinhas = [
           { cat: 'FATURAMENTO', keys: ['FAT TOTAL TIM', 'CONTROLE FAT.', 'PÓS FAT.'] },
@@ -698,12 +655,11 @@
 
             html += '<tr>';
             if (idx === 0) {
-              html += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-blue text-white border-excel-blue">${cat.cat}</td>`;
+              html += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-blue text-white" style="border:1px solid #b8c2cc;">${cat.cat}</td>`;
             }
-            const destaqueFat = key === 'FAT TOTAL TIM' ? 'bg-blue-50' : '';
-            html += `<td class="font-bold text-slate-700 text-[10px] ${destaqueFat}">${key}</td>`;
-            html += `<td class="text-right text-[11px] ${destaqueFat}">${fmtValor(metaV, tipo)}</td>`;
-            html += `<td class="text-right text-[11px] ${destaqueFat}">${fmtValor(realV, tipo)}</td>`;
+            html += `<td class="font-bold text-slate-700 text-[10px]">${key}</td>`;
+            html += `<td class="text-right text-[11px]">${fmtValor(metaV, tipo)}</td>`;
+            html += `<td class="text-right text-[11px]">${fmtValor(realV, tipo)}</td>`;
             html += `<td class="text-center ${c.bg} ${c.text} font-black text-[10px]">${pct.toFixed(0)}%</td>`;
             if (entregue) {
               html += `<td colspan="2" class="text-center bg-excel-green text-white font-black uppercase text-[9px] tracking-wider">META ENTREGUE</td>`;
@@ -715,13 +671,13 @@
           });
         });
 
-        html += `</tbody></table></div></div>`;
+        html += `</tbody></table></div>`;
       });
       grid.innerHTML = html;
     }
 
     /* ============================================================
-       RENDER: DIÁRIO EDITÁVEL
+       RENDER: DIÁRIO
        ============================================================ */
     function renderDiario() {
       const grid = document.getElementById('gridDiario');
@@ -739,13 +695,11 @@
                 <thead>
                   <tr>
                     <th class="label-col">DIAS</th>`;
-
         for (let d = 1; d <= DIAS_NO_MES; d++) {
-          html += `<th style="min-width:52px;">${String(d).padStart(2, '0')}</th>`;
+          html += `<th style="min-width:50px;">${String(d).padStart(2, '0')}</th>`;
         }
         html += `</tr></thead><tbody>`;
 
-        // Linha FAT TOTAL TIM (auto-calculada)
         html += `<tr>
           <td class="label-col total-row">FAT TOTAL TIM <span class="text-[8px] opacity-75">(auto)</span></td>`;
         for (let d = 0; d < DIAS_NO_MES; d++) {
@@ -753,10 +707,8 @@
         }
         html += `</tr>`;
 
-        // Demais linhas editáveis
         LINHAS_DIARIO.forEach(key => {
-          html += `<tr>
-            <td class="label-col">${key}</td>`;
+          html += `<tr><td class="label-col">${key}</td>`;
           for (let d = 0; d < DIAS_NO_MES; d++) {
             html += `<td><input type="text" class="cell-input" inputmode="decimal" data-c="${cIdx}" data-row="${key}" data-day="${d}"></td>`;
           }
@@ -768,7 +720,6 @@
 
       grid.innerHTML = html;
 
-      // Preenche os inputs com os valores do state
       document.querySelectorAll('.cell-input').forEach(input => {
         const cIdx = parseInt(input.dataset.c);
         const row = input.dataset.row;
@@ -777,22 +728,17 @@
 
         let valor;
         if (row === 'FAT TOTAL TIM') {
-          const cf = Number(consult.diario['CONTROLE FAT.'][day]) || 0;
-          const pf = Number(consult.diario['PÓS FAT.'][day]) || 0;
-          valor = cf + pf;
+          valor = (Number(consult.diario['CONTROLE FAT.'][day]) || 0) + (Number(consult.diario['PÓS FAT.'][day]) || 0);
         } else {
           valor = consult.diario[row][day] || 0;
         }
         input.value = formatarInput(valor, TIPO_VALOR[row]);
 
-        // Evento de edição (só para inputs editáveis)
         if (row !== 'FAT TOTAL TIM') {
           input.addEventListener('change', onEditCell);
           input.addEventListener('blur', onEditCell);
-          input.addEventListener('focus', (e) => e.target.select());
+          input.addEventListener('focus', e => e.target.select());
         }
-
-        // Marca visual se preenchido
         if (Number(valor) > 0) input.classList.add('filled');
       });
     }
@@ -800,14 +746,11 @@
     function formatarInput(v, tipo) {
       const n = Number(v) || 0;
       if (n === 0) return '';
-      return tipo === 'moeda'
-        ? n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-        : String(n);
+      return tipo === 'moeda' ? n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : String(n);
     }
-
-    function parseValorInput(str, tipo) {
+    function parseValorInput(str) {
       if (!str) return 0;
-      let s = String(str).replace(/[R$\s.]/g, '').replace(',', '.');
+      const s = String(str).replace(/[R$\s.]/g, '').replace(',', '.');
       const n = parseFloat(s);
       return isNaN(n) ? 0 : n;
     }
@@ -818,11 +761,9 @@
       const row = input.dataset.row;
       const day = parseInt(input.dataset.day);
       const tipo = TIPO_VALOR[row];
-      const novoValor = parseValorInput(input.value, tipo);
+      const novoValor = parseValorInput(input.value);
 
       state.consultores[cIdx].diario[row][day] = novoValor;
-
-      // Atualiza visual do input
       input.value = formatarInput(novoValor, tipo);
       input.classList.toggle('filled', novoValor > 0);
       input.classList.remove('saved-anim');
@@ -830,28 +771,20 @@
       input.classList.add('saved-anim');
 
       salvarEstado();
-
-      // Recalcula FAT TOTAL TIM do dia
       atualizarFatTotalDia(cIdx, day);
-      // Recalcula as outras abas
       renderResumoLoja();
       renderConsultores();
     }
 
     function atualizarFatTotalDia(cIdx, day) {
       const consult = state.consultores[cIdx];
-      const cf = Number(consult.diario['CONTROLE FAT.'][day]) || 0;
-      const pf = Number(consult.diario['PÓS FAT.'][day]) || 0;
-      const total = cf + pf;
-
+      const total = (Number(consult.diario['CONTROLE FAT.'][day]) || 0) + (Number(consult.diario['PÓS FAT.'][day]) || 0);
       const input = document.querySelector(`.cell-input[data-c="${cIdx}"][data-row="FAT TOTAL TIM"][data-day="${day}"]`);
-      if (input) {
-        input.value = total > 0 ? total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
-      }
+      if (input) input.value = total > 0 ? total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
     }
 
     /* ============================================================
-       RENDER: CONFIG (Parâmetros & Metas editáveis)
+       RENDER: CONFIG
        ============================================================ */
     function renderConfig() {
       const p = state.parametros;
@@ -861,17 +794,13 @@
       document.getElementById('cfgQualControle').value = p.qualControle;
       document.getElementById('cfgQualPos').value = p.qualPos;
 
-      // Eventos
-      bindConfig('cfgMes',        v => state.parametros.mes = v);
-      bindConfig('cfgDiasTrab',   v => state.parametros.diasTrabalhados = Number(v) || 0);
-      bindConfig('cfgDiasRest',   v => state.parametros.diasRestantes = Number(v) || 0);
+      bindConfig('cfgMes',          v => state.parametros.mes = v);
+      bindConfig('cfgDiasTrab',     v => state.parametros.diasTrabalhados = Number(v) || 0);
+      bindConfig('cfgDiasRest',     v => state.parametros.diasRestantes = Number(v) || 0);
       bindConfig('cfgQualControle', v => state.parametros.qualControle = v);
-      bindConfig('cfgQualPos',    v => state.parametros.qualPos = v);
+      bindConfig('cfgQualPos',      v => state.parametros.qualPos = v);
 
-      // Lista de consultores
       renderListaConsultores();
-
-      // Blocos de metas
       renderBlocoMeta('tbody-meta-loja',      state.metaLoja,      'metaLoja');
       renderBlocoMeta('tbody-meta-consultor', state.metaConsultor, 'metaConsultor');
       renderBlocoMeta('tbody-meta-pos',       state.metaPos,       'metaPos');
@@ -900,7 +829,7 @@
             <input type="text" class="flex-1 bg-white border border-slate-200 rounded-md px-3 py-1.5 text-sm font-bold text-slate-700 focus:outline-none focus:border-[#0e8890]"
                    value="${c.nome.replace(/"/g, '&quot;')}"
                    onchange="renomearConsultor('${c.id}', this.value)">
-            <button onclick="removerConsultor('${c.id}')" class="no-print p-1.5 text-red-500 hover:bg-red-50 rounded-md" title="Remover">
+            <button onclick="removerConsultor('${c.id}')" class="p-1.5 text-red-500 hover:bg-red-50 rounded-md">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </div>`;
@@ -909,26 +838,23 @@
       lucide.createIcons();
     }
 
-    function renomearConsultor(id, novoNome) {
+    function renomearConsultor(id, novo) {
       const c = state.consultores.find(x => x.id === id);
       if (!c) return;
-      c.nome = novoNome.trim() || c.nome;
+      c.nome = novo.trim() || c.nome;
       salvarEstado();
       renderConsultores();
       renderDiario();
       toast('Nome atualizado!');
     }
-
     function adicionarConsultor() {
-      const id = 'c' + Date.now();
-      state.consultores.push({ id, nome: 'NOVO CONSULTOR', diario: criarDiarioZerado() });
+      state.consultores.push({ id: 'c' + Date.now(), nome: 'NOVO CONSULTOR', diario: criarDiarioZerado() });
       salvarEstado();
       renderConfig();
       renderConsultores();
       renderDiario();
       toast('Consultor adicionado!');
     }
-
     function removerConsultor(id) {
       if (!confirm('Remover este consultor e TODOS os seus dados?')) return;
       state.consultores = state.consultores.filter(x => x.id !== id);
@@ -945,9 +871,9 @@
       let html = '';
 
       const todasLinhas = [
-        { cat: 'FATURAMENTO', keys: ['FAT TOTAL TIM', 'CONTROLE FAT.', 'PÓS FAT.'], corVertical: 'bg-excel-green' },
-        { cat: 'GROSS',       keys: ['CONTROLE', 'PÓS', 'PORTABILIDADE'],          corVertical: 'bg-excel-green' },
-        { cat: 'PRODUTO',     keys: ['APARELHO', 'ACESSÓRIOS'],                    corVertical: 'bg-excel-green' },
+        { cat: 'FATURAMENTO', keys: ['FAT TOTAL TIM', 'CONTROLE FAT.', 'PÓS FAT.'] },
+        { cat: 'GROSS',       keys: ['CONTROLE', 'PÓS', 'PORTABILIDADE'] },
+        { cat: 'PRODUTO',     keys: ['APARELHO', 'ACESSÓRIOS'] },
       ];
 
       todasLinhas.forEach(cat => {
@@ -958,7 +884,7 @@
 
           html += '<tr>';
           if (idx === 0) {
-            html += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-green text-white border-excel-blue" style="font-size:9px;">${cat.cat}</td>`;
+            html += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-green text-white" style="border:1px solid #b8c2cc;font-size:9px;">${cat.cat}</td>`;
           }
           html += `<td class="font-bold text-slate-700 text-[10px]">${key}${key === 'FAT TOTAL TIM' ? ' <span class="text-[8px] text-slate-400">(auto)</span>' : ''}</td>`;
           html += `<td class="p-1">
@@ -971,38 +897,36 @@
       });
       tbody.innerHTML = html;
 
-      // Eventos
       tbody.querySelectorAll('input[data-state]').forEach(inp => {
         inp.addEventListener('change', () => {
           const st = inp.dataset.state;
           const key = inp.dataset.key;
           const tipo = TIPO_VALOR[key];
-          state[st][key] = parseValorInput(inp.value, tipo);
+          state[st][key] = parseValorInput(inp.value);
+          // Auto-cálculo de FAT TOTAL TIM
+          if (key === 'CONTROLE FAT.' || key === 'PÓS FAT.') {
+            state[st]['FAT TOTAL TIM'] = (state[st]['CONTROLE FAT.'] || 0) + (state[st]['PÓS FAT.'] || 0);
+            const fatInput = tbody.querySelector(`input[data-state="${st}"][data-key="FAT TOTAL TIM"]`);
+            if (fatInput) fatInput.value = state[st]['FAT TOTAL TIM'].toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          }
           salvarEstado();
           renderResumoLoja();
           renderConsultores();
-
-          // Se alterou FAT TOTAL TIM em qualquer bloco, recalcula os outros
-          if (key === 'FAT TOTAL TIM' && st === 'metaConsultor') {
-            // Recalcula meta loja como: metaConsultor * qtd consultores
-            // (opcional — mantemos manual por enquanto)
-          }
         });
         inp.addEventListener('focus', e => e.target.select());
       });
     }
 
-    /* ============================================================
-       HEADER DINÂMICO
-       ============================================================ */
     function atualizarHeader() {
       document.getElementById('headerMes').textContent = `MÊS: ${state.parametros.mes}`;
       document.getElementById('infoDiasTrab').textContent = state.parametros.diasTrabalhados;
       document.getElementById('infoDiasRest').textContent = state.parametros.diasRestantes;
+      document.getElementById('headerQualControle').textContent = '| ' + state.parametros.qualControle;
+      document.getElementById('headerQualPos').textContent = '| ' + state.parametros.qualPos;
     }
 
     /* ============================================================
-       EXPORTAR IMAGEM
+       EXPORTAR IMAGEM (corrigido — captura largura natural)
        ============================================================ */
     async function exportarImagem() {
       const btn = document.getElementById('btnExport');
@@ -1012,20 +936,49 @@
       lucide.createIcons();
 
       try {
-        // Pega aba ativa
+        // Pega a aba ativa
         const tabAtiva = document.querySelector('.tab-content:not(.hidden)');
-        const alvo = tabAtiva || document.getElementById('exportArea');
 
-        const canvas = await html2canvas(alvo, {
+        // Clona o conteúdo em um container temporário fora da tela com largura natural
+        const clone = tabAtiva.cloneNode(true);
+        // Remove overflow-x para expandir
+        clone.querySelectorAll('.overflow-x-auto').forEach(el => {
+          el.style.overflow = 'visible';
+          el.style.width = 'auto';
+        });
+
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = `
+          position: fixed;
+          top: 0; left: -10000px;
+          background: #ffffff;
+          padding: 24px;
+          z-index: -1;
+          width: max-content;
+          max-width: none;
+        `;
+        wrapper.appendChild(clone);
+        document.body.appendChild(wrapper);
+
+        // Aguarda 1 frame para layout
+        await new Promise(r => setTimeout(r, 80));
+
+        const canvas = await html2canvas(wrapper, {
           scale: 2,
           backgroundColor: '#ffffff',
           useCORS: true,
           logging: false,
+          width: wrapper.scrollWidth,
+          height: wrapper.scrollHeight,
+          windowWidth: wrapper.scrollWidth,
+          windowHeight: wrapper.scrollHeight,
         });
+
+        document.body.removeChild(wrapper);
 
         const link = document.createElement('a');
         const mes = state.parametros.mes.replace(/[^\w]/g, '_');
-        const aba = tabAtiva?.id?.replace('tab-', '') || 'resumo';
+        const aba = tabAtiva.id.replace('tab-', '');
         link.download = `acompanhamento_${aba}_${mes}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
@@ -1058,9 +1011,6 @@
       });
     }
 
-    /* ============================================================
-       TOAST
-       ============================================================ */
     let toastTimer;
     function toast(msg) {
       const t = document.getElementById('toast');
@@ -1070,9 +1020,6 @@
       toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
     }
 
-    /* ============================================================
-       RECALC ALL
-       ============================================================ */
     function recalcAll() {
       renderResumoLoja();
       renderConsultores();
@@ -1091,12 +1038,10 @@
       document.getElementById('userName').textContent = perfil?.nome_completo || session.user.email;
       document.getElementById('userPerm').textContent = perfil?.permissao || 'Operador';
     }
-
     async function terminarSessao() {
       await supabaseClient.auth.signOut();
       window.location.href = 'index.html';
     }
-
     function toggleSidebar() {
       const s = document.getElementById('sidebar');
       s.classList.toggle('hidden');
@@ -1105,9 +1050,6 @@
       s.classList.toggle('z-40');
     }
 
-    /* ============================================================
-       BOOT
-       ============================================================ */
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
       state = carregarEstado();
