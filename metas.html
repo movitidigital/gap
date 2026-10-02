@@ -35,7 +35,6 @@
     ::-webkit-scrollbar-track { background: #f1f5f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-    /* ═══ TABELA EXCEL ═══ */
     .xl-table {
       border-collapse: collapse;
       width: 100%;
@@ -117,7 +116,6 @@
 
     .xl-dia-val { color: #0e8890; font-weight: 800; }
 
-    /* FAT TOTAL TIM — fundo azul médio com destaque */
     .row-fat td { background: var(--xl-fat-bg) !important; }
     .row-fat td.xl-label {
       color: var(--tim-blue-2);
@@ -125,7 +123,6 @@
       border-left: 4px solid var(--tim-blue-2);
     }
 
-    /* Tabela diário */
     .table-diario {
       border-collapse: collapse;
       width: max-content;
@@ -271,7 +268,6 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
 
-    /* Overlay de loading para exportação */
     #exportOverlay {
       position: fixed; inset: 0;
       background: rgba(15, 23, 42, 0.85);
@@ -293,7 +289,6 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Header TIM para exportação */
     .export-header {
       background: linear-gradient(135deg, #00417F 0%, #1F4E78 100%);
       padding: 20px 24px;
@@ -320,7 +315,6 @@
 </head>
 <body class="text-slate-800 h-screen flex overflow-hidden">
 
-  <!-- ═══ SIDEBAR ═══ -->
   <aside id="sidebar" class="w-64 bg-[#000033] text-white flex flex-col justify-between hidden md:flex transition-all duration-300 z-30 shadow-xl shrink-0">
     <div>
       <div class="h-20 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
@@ -352,7 +346,6 @@
     </div>
   </aside>
 
-  <!-- ═══ MAIN ═══ -->
   <main class="flex-1 flex flex-col h-screen min-w-0 relative overflow-hidden">
 
     <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10 shrink-0">
@@ -375,17 +368,14 @@
 
     <div class="flex-1 overflow-y-auto p-4 md:p-6">
 
-      <!-- Cabeçalho TIM -->
       <div class="rounded-t-2xl p-4 md:p-5 shadow-md flex flex-col md:flex-row justify-between items-center text-white"
            style="background: linear-gradient(135deg, #00417F 0%, #1F4E78 100%); position:relative; overflow:hidden;">
-
         <div style="position:absolute;top:14px;right:16px;display:grid;grid-template-columns:repeat(2,14px);gap:4px;opacity:0.9;">
           <span style="width:14px;height:14px;background:#E60000;display:block;"></span>
           <span style="width:14px;height:14px;background:#E60000;display:block;"></span>
           <span style="width:14px;height:14px;background:#E60000;display:block;"></span>
           <span style="width:14px;height:14px;background:#E60000;display:block;"></span>
         </div>
-
         <div class="flex items-center gap-4 relative z-10">
           <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center p-1 shrink-0">
             <img src="/LOGOINFORTECATIM2026.png" alt="Inforteca" class="h-8 w-auto object-contain" onerror="this.style.display='none'">
@@ -404,7 +394,6 @@
         </div>
       </div>
 
-      <!-- Barra de ações -->
       <div class="bg-white border border-slate-200 border-t-0 px-4 py-3 flex flex-wrap gap-3 items-center justify-between">
         <div class="flex flex-wrap gap-2">
           <button data-tab="resumo" class="tab-btn active px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
@@ -437,10 +426,9 @@
 
       <div class="bg-white border border-slate-200 border-t-0 rounded-b-2xl shadow-sm p-4 md:p-6">
 
-        <!-- ABA RESUMO -->
         <div id="tab-resumo" class="tab-content">
-          <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
-            <div class="consultor-card">
+          <div class="mb-8">
+            <div class="consultor-card" style="width:100%;">
               <div class="card-header">
                 <h3>INFORTECA — LOJA GERAL</h3>
                 <span class="text-blue-100 text-[10px] font-bold uppercase tracking-widest">
@@ -482,7 +470,6 @@
           <div class="grid grid-cols-1 xl:grid-cols-2 gap-6" id="gridConsultores"></div>
         </div>
 
-        <!-- ABA DIÁRIO -->
         <div id="tab-diario" class="tab-content hidden">
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
             <div class="flex items-center gap-3">
@@ -500,7 +487,6 @@
           <div id="gridDiario" class="space-y-8"></div>
         </div>
 
-        <!-- ABA CONFIG -->
         <div id="tab-config" class="tab-content hidden">
           <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-6 flex items-start gap-2">
             <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
@@ -603,7 +589,7 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const STORAGE_KEY = 'inforteca_metas_v8';
+    const STORAGE_KEY = 'inforteca_metas_v9';
     const DIAS_NO_MES = 30;
 
     const TIPO_VALOR = {
@@ -653,7 +639,7 @@
       dDaniel['PORTABILIDADE'] = [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       dDaniel['APARELHO']      = [1999, 3899, 0, 0, 0, 0, 999, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       dDaniel['ACESSÓRIOS']    = [354, 35, 813, 0, 70, 0, 0, 294, 773, 55, 0, 230, 0, 155, 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-      return { versao: 8, mesAtual: 'SETEMBRO / 2026', meses: { 'SETEMBRO / 2026': setembro } };
+      return { versao: 9, mesAtual: 'SETEMBRO / 2026', meses: { 'SETEMBRO / 2026': setembro } };
     }
 
     let state = null;
@@ -712,7 +698,6 @@
       return ultimo;
     }
 
-    /* ═══ RENDER LOJA ═══ */
     function renderResumoLoja() {
       const tbody = document.getElementById('tbody-loja');
       const m = mesAtivo();
@@ -751,7 +736,6 @@
       tbody.innerHTML = html;
     }
 
-    /* ═══ RENDER CONSULTORES ═══ */
     function renderConsultores() {
       const grid = document.getElementById('gridConsultores');
       const m = mesAtivo();
@@ -832,7 +816,6 @@
       grid.innerHTML = html;
     }
 
-    /* ═══ RENDER DIÁRIO ═══ */
     function renderDiario() {
       const grid = document.getElementById('gridDiario');
       const m = mesAtivo();
@@ -933,7 +916,6 @@
       if (input) input.value = total > 0 ? total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
     }
 
-    /* ═══ RENDER CONFIG ═══ */
     function renderConfig() {
       const m = mesAtivo();
       const p = m.parametros;
@@ -1122,7 +1104,8 @@
     }
 
     /* ═══════════════════════════════════════════════════════
-       EXPORTAR IMAGEM — v5 (no-export só no clone)
+       EXPORTAR IMAGEM — v6
+       Cada card ocupa 100% da largura, empilhando verticalmente
        ═══════════════════════════════════════════════════════ */
     async function exportarImagem() {
       const btn = document.getElementById('btnExport');
@@ -1144,13 +1127,13 @@
         const diaTexto = ultimoDia > 0 ? String(ultimoDia).padStart(2, '0') : '—';
         const mesLabel = mesAtivo().parametros.mes;
 
-        // Wrapper fora da tela com largura controlada
+        // Wrapper LARGO (1500px) — cada card vai ocupar 100%
         wrapper = document.createElement('div');
         wrapper.style.cssText = `
           position: fixed;
           top: 0;
           left: -99999px;
-          width: 1400px;
+          width: 1500px;
           background: #ffffff;
           padding: 24px;
           font-family: 'Inter', sans-serif;
@@ -1194,12 +1177,19 @@
           if (img.parentNode) img.parentNode.replaceChild(ph, img);
         });
 
-        // ═══ ESCONDE .no-export APENAS NO CLONE ═══
-        clone.querySelectorAll('.no-export').forEach(el => {
-          el.style.display = 'none';
+        // ═══ FORÇA CADA CARD A 100% E EMPILHA VERTICALMENTE ═══
+        // Grid dos consultores → block (1 por linha)
+        clone.querySelectorAll('.grid').forEach(el => {
+          el.style.display = 'block';
+        });
+        // Cada card ocupar 100% e ter margem inferior
+        clone.querySelectorAll('.consultor-card').forEach(card => {
+          card.style.width = '100%';
+          card.style.marginBottom = '16px';
+          card.style.display = 'block';
         });
 
-        // Overflow
+        // Overflow visível
         clone.querySelectorAll('.overflow-x-auto').forEach(el => {
           el.style.overflow = 'visible';
           el.style.width = 'auto';
@@ -1208,7 +1198,7 @@
         wrapper.appendChild(clone);
         document.body.appendChild(wrapper);
 
-        await new Promise(r => setTimeout(r, 400));
+        await new Promise(r => setTimeout(r, 500));
 
         const largura = wrapper.scrollWidth;
         const altura = wrapper.scrollHeight;
@@ -1273,7 +1263,6 @@
       }
     }
 
-    /* ═══ TABS ═══ */
     function initTabs() {
       const botoes = document.querySelectorAll('[data-tab]');
       const conteudos = document.querySelectorAll('.tab-content');
