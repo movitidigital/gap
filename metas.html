@@ -10,55 +10,102 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
+    body { font-family: 'Inter', sans-serif; background-color: #eef2f7; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    
-    /* Cores exatas da planilha */
-    .bg-excel-blue { background-color: #1F4E78; }
-    .bg-excel-green { background-color: #00B050; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    /* Cores exatas da planilha Excel */
+    .bg-excel-blue   { background-color: #1F4E78; }
+    .bg-excel-green  { background-color: #00B050; }
     .bg-excel-yellow { background-color: #FFC000; }
-    .bg-excel-red { background-color: #FF0000; }
-    
-    .text-excel-blue { color: #1F4E78; }
-    .text-excel-green { color: #00B050; }
-    .text-excel-yellow { color: #BF8F00; }
-    .text-excel-red { color: #FF0000; }
+    .bg-excel-red    { background-color: #FF0000; }
+    .bg-excel-gray   { background-color: #D9D9D9; }
+    .bg-excel-light  { background-color: #F2F2F2; }
+    .bg-excel-pos    { background-color: #305496; }
 
     /* Cabeçalho vertical */
     .vertical-text {
       writing-mode: vertical-rl;
       transform: rotate(180deg);
       text-align: center;
-      letter-spacing: 0.15em;
+      letter-spacing: 0.12em;
       font-size: 10px;
       font-weight: 900;
       text-transform: uppercase;
+      padding: 8px 0;
     }
 
-    /* Tabelas */
-    .table-excel {
-      border-collapse: collapse;
-      width: 100%;
-    }
+    /* Tabelas no estilo planilha */
+    .table-excel { border-collapse: collapse; width: 100%; font-size: 11px; }
     .table-excel th, .table-excel td {
-      border: 1px solid #cbd5e1;
-      padding: 6px 8px;
-      font-size: 11px;
+      border: 1px solid #b8c2cc;
+      padding: 5px 8px;
+      vertical-align: middle;
     }
-    .table-excel th {
-      background-color: #f8fafc;
-      color: #475569;
-      font-weight: 700;
+    .table-excel thead th {
+      background-color: #E7E6E6;
+      color: #1e293b;
+      font-weight: 800;
       text-transform: uppercase;
       text-align: center;
+      font-size: 10px;
+      letter-spacing: 0.03em;
+    }
+    .table-excel tbody tr:hover { background-color: #f8fafc; }
+
+    /* Tabela diária compacta */
+    .table-diario { border-collapse: collapse; width: 100%; font-size: 10px; }
+    .table-diario th, .table-diario td {
+      border: 1px solid #cbd5e1;
+      padding: 3px 4px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .table-diario thead th {
+      background-color: #D9D9D9;
+      font-weight: 800;
+      color: #1e293b;
+      font-size: 9px;
+    }
+    .table-diario .label-col {
+      background-color: #E7E6E6;
+      text-align: left;
+      font-weight: 700;
+      padding-left: 8px;
+      font-size: 9px;
+      color: #334155;
+    }
+
+    /* Tabs */
+    .tab-btn { transition: all 0.2s ease; }
+    .tab-btn.active {
+      background-color: #1F4E78;
+      color: #fff;
+      border-color: #1F4E78;
+    }
+    .tab-btn:not(.active) {
+      background-color: #fff;
+      color: #475569;
+      border-color: #e2e8f0;
+    }
+    .tab-btn:not(.active):hover {
+      background-color: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    /* Print friendly */
+    @media print {
+      .no-print { display: none !important; }
+      body { background: #fff; }
+      .tab-content { display: block !important; }
     }
   </style>
 </head>
 <body class="text-slate-800 h-screen flex overflow-hidden">
 
-  <!-- SIDEBAR (Reaproveitada) -->
+  <!-- ============ SIDEBAR ============ -->
   <aside id="sidebar" class="w-64 bg-[#000033] text-white flex flex-col justify-between hidden md:flex transition-all duration-300 z-30 shadow-xl shrink-0">
     <div>
       <div class="h-20 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
@@ -92,443 +139,635 @@
     </div>
   </aside>
 
-  <!-- MAIN CONTENT -->
-  <main class="flex-1 flex flex-col h-screen min-w-0 relative overflow-y-auto p-4 md:p-6">
-    
-    <!-- CABEÇALHO PRINCIPAL (Estilo Planilha) -->
-    <div class="bg-excel-blue rounded-t-2xl p-4 md:p-6 shadow-md mb-2 flex flex-col md:flex-row justify-between items-center text-white">
+  <!-- ============ MAIN ============ -->
+  <main class="flex-1 flex flex-col h-screen min-w-0 relative overflow-hidden">
+
+    <!-- Header fixo -->
+    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10 shrink-0">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+        <h2 class="text-lg font-bold text-[#000033]">Acompanhamento de Vendas Diário</h2>
+      </div>
       <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center p-1">
-          <img src="/LOGOINFORTECATIM2026.png" alt="Inforteca" class="h-8 w-auto object-contain" onerror="this.style.display='none'">
+        <div class="text-right hidden sm:block">
+          <p id="userName" class="text-sm font-semibold text-slate-700 leading-none">Carregando...</p>
+          <p id="userPerm" class="text-xs text-slate-500 mt-1">...</p>
         </div>
-        <div>
-          <h1 class="text-xl md:text-2xl font-black tracking-tight uppercase">Acompanhamento de Vendas Diário</h1>
-          <div class="flex gap-4 mt-1 text-xs font-bold text-blue-200">
-            <span>RESULTADO LOJA DE 01 A 29</span>
+        <div class="w-10 h-10 rounded-full bg-[#0e8890]/10 border border-[#0e8890]/20 flex items-center justify-center text-[#0e8890] font-bold">
+          <i data-lucide="user" class="w-5 h-5"></i>
+        </div>
+      </div>
+    </header>
+
+    <!-- Conteúdo scrollável -->
+    <div class="flex-1 overflow-y-auto p-4 md:p-6">
+
+      <!-- ============ CABEÇALHO PRINCIPAL (Estilo Planilha) ============ -->
+      <div class="bg-excel-blue rounded-t-2xl p-4 md:p-5 shadow-md mb-0 flex flex-col md:flex-row justify-between items-center text-white">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center p-1 shrink-0">
+            <img src="/LOGOINFORTECATIM2026.png" alt="Inforteca" class="h-8 w-auto object-contain" onerror="this.style.display='none'">
+          </div>
+          <div>
+            <h1 class="text-lg md:text-2xl font-black tracking-tight uppercase">Acompanhamento de Vendas Diário</h1>
+            <div class="flex flex-wrap gap-x-6 gap-y-1 mt-1 text-[11px] font-bold text-blue-200">
+              <span>RESULTADO LOJA DE 01 A 29</span>
+              <span id="headerPeriodo">PERÍODO: —</span>
+            </div>
+          </div>
+        </div>
+        <div class="text-right mt-3 md:mt-0">
+          <div class="text-sm font-bold" id="headerMes">MÊS: SETEMBRO / 2026</div>
+          <div class="flex gap-4 mt-1 justify-end">
+            <div class="text-[10px] font-bold uppercase text-blue-200">QUALIDADE CONTROLE <span class="text-white">| 58,18%</span></div>
+            <div class="text-[10px] font-bold uppercase text-blue-200">QUALIDADE PÓS <span class="text-white">| 85%</span></div>
           </div>
         </div>
       </div>
-      
-      <div class="text-right mt-4 md:mt-0">
-        <div class="text-sm font-bold">MÊS: SETEMBRO / 2026</div>
-        <div class="flex gap-4 mt-1 justify-end">
-          <div class="text-[10px] font-bold uppercase text-blue-200">QUALIDADE CONTROLE <span class="text-white">| 58,18%</span></div>
-          <div class="text-[10px] font-bold uppercase text-blue-200">QUALIDADE PÓS <span class="text-white">| 85%</span></div>
+
+      <!-- ============ TABS ============ -->
+      <div class="no-print bg-white border border-slate-200 border-t-0 rounded-b-none px-4 py-3 flex flex-wrap gap-2 items-center justify-between">
+        <div class="flex flex-wrap gap-2">
+          <button data-tab="resumo" class="tab-btn active px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
+            <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Resumo Consolidado
+          </button>
+          <button data-tab="diario" class="tab-btn px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
+            <i data-lucide="calendar-days" class="w-4 h-4"></i> Acompanhamento Diário
+          </button>
+          <button data-tab="config" class="tab-btn px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i> Parâmetros e Metas
+          </button>
         </div>
-      </div>
-    </div>
-
-    <!-- PAINEL INFORTECA (Loja Geral) -->
-    <div class="bg-white rounded-b-2xl shadow-sm overflow-hidden mb-6 border border-slate-200">
-      <div class="bg-excel-blue px-4 py-2 border-b border-slate-300">
-        <h3 class="text-white font-black tracking-widest text-xs text-center uppercase">INFORTECA</h3>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="table-excel">
-          <thead>
-            <tr>
-              <th class="w-8 bg-excel-blue text-white border-excel-blue"></th>
-              <th class="w-24">META LOJA</th>
-              <th class="w-24">REALIZADO</th>
-              <th class="w-20">PERCENT. REAL %</th>
-              <th class="w-24">FALTA</th>
-              <th class="w-24">FAZER POR DIA</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- FATURAMENTO -->
-            <tr class="bg-blue-50/50">
-              <td rowspan="3" class="vertical-text bg-excel-blue text-white border-excel-blue">Faturamento</td>
-              <td class="font-bold text-slate-600">FAT TOTAL TIM</td>
-              <td class="text-right">R$ 5.700,00</td>
-              <td class="text-right">R$ 4.672,45</td>
-              <td class="text-center bg-excel-yellow text-white font-bold">82%</td>
-              <td class="text-right">R$ 1.027,55</td>
-              <td class="text-right font-bold text-[#0e8890]">R$ 1.027,55</td>
-            </tr>
-            <tr class="bg-blue-50/50">
-              <td class="font-bold text-slate-600">CONTROLE FAT.</td>
-              <td class="text-right">R$ 3.600,00</td>
-              <td class="text-right">R$ 2.697,55</td>
-              <td class="text-center bg-excel-yellow text-white font-bold">75%</td>
-              <td class="text-right">R$ 902,45</td>
-              <td class="text-right font-bold text-[#0e8890]">R$ 902,45</td>
-            </tr>
-            <tr class="bg-blue-50/50">
-              <td class="font-bold text-slate-600">PÓS FAT.</td>
-              <td class="text-right">R$ 2.100,00</td>
-              <td class="text-right">R$ 1.974,90</td>
-              <td class="text-center bg-excel-yellow text-white font-bold">94%</td>
-              <td class="text-right">R$ 125,10</td>
-              <td class="text-right font-bold text-[#0e8890]">R$ 125,10</td>
-            </tr>
-
-            <!-- GROSS -->
-            <tr class="bg-slate-50">
-              <td rowspan="3" class="vertical-text bg-excel-blue text-white border-excel-blue">Gross</td>
-              <td class="font-bold text-slate-600">CONTROLE</td>
-              <td class="text-right">60</td>
-              <td class="text-right">49</td>
-              <td class="text-center bg-excel-yellow text-white font-bold">82%</td>
-              <td class="text-right">11</td>
-              <td class="text-right font-bold text-[#0e8890]">11</td>
-            </tr>
-            <tr class="bg-slate-50">
-              <td class="font-bold text-slate-600">PÓS</td>
-              <td class="text-right">18</td>
-              <td class="text-right">15</td>
-              <td class="text-center bg-excel-yellow text-white font-bold">83%</td>
-              <td class="text-right">3</td>
-              <td class="text-right font-bold text-[#0e8890]">3</td>
-            </tr>
-            <tr class="bg-slate-50">
-              <td class="font-bold text-slate-600">PORTABILIDADE</td>
-              <td class="text-right">24</td>
-              <td class="text-right">21</td>
-              <td class="text-center bg-excel-yellow text-white font-bold">88%</td>
-              <td class="text-right">3</td>
-              <td class="text-right font-bold text-[#0e8890]">3</td>
-            </tr>
-
-            <!-- PRODUTO -->
-            <tr class="bg-blue-50/50">
-              <td rowspan="2" class="vertical-text bg-excel-blue text-white border-excel-blue">Produto</td>
-              <td class="font-bold text-slate-600">APARELHO</td>
-              <td class="text-right">R$ 22.500,00</td>
-              <td class="text-right">R$ 14.363,00</td>
-              <td class="text-center bg-excel-red text-white font-bold">64%</td>
-              <td class="text-right">R$ 8.137,00</td>
-              <td class="text-right font-bold text-[#0e8890]">R$ 8.137,00</td>
-            </tr>
-            <tr class="bg-blue-50/50">
-              <td class="font-bold text-slate-600">ACESSÓRIOS</td>
-              <td class="text-right">R$ 18.000,00</td>
-              <td class="text-right">R$ 11.711,10</td>
-              <td class="text-center bg-excel-red text-white font-bold">65%</td>
-              <td class="text-right">R$ 6.288,90</td>
-              <td class="text-right font-bold text-[#0e8890]">R$ 6.288,90</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- GRID DE CONSULTORES -->
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6" id="gridConsultores">
-      
-      <!-- Card Daniel Alves Ferreira -->
-      <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
-        <div class="bg-excel-blue px-4 py-2 border-b border-slate-300 flex justify-between items-center">
-          <h3 class="text-white font-black tracking-widest text-xs uppercase">DANIEL ALVES FERREIRA</h3>
-          <span class="bg-excel-green text-white text-[9px] font-black px-2 py-0.5 rounded uppercase">Meta Entregue</span>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="table-excel">
-            <thead>
-              <tr>
-                <th class="w-8 bg-excel-blue text-white border-excel-blue"></th>
-                <th class="w-20">META LOJA</th>
-                <th class="w-20">REALIZADO</th>
-                <th class="w-16">PERCENT. REAL %</th>
-                <th class="w-20">FALTA</th>
-                <th class="w-20">FAZER POR DIA</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- FATURAMENTO -->
-              <tr class="bg-blue-50/50">
-                <td rowspan="3" class="vertical-text bg-excel-blue text-white border-excel-blue">Faturamento</td>
-                <td class="font-bold text-slate-600 text-[10px]">FAT TOTAL TIM</td>
-                <td class="text-right text-[10px]">R$ 1.900,00</td>
-                <td class="text-right text-[10px]">R$ 2.267,76</td>
-                <td class="text-center bg-excel-green text-white font-bold text-[10px]">119%</td>
-                <td colspan="2" class="text-center bg-excel-green text-white font-bold text-[10px] uppercase">Meta Entregue</td>
-              </tr>
-              <tr class="bg-blue-50/50">
-                <td class="font-bold text-slate-600 text-[10px]">CONTROLE FAT.</td>
-                <td class="text-right text-[10px]">R$ 1.200,00</td>
-                <td class="text-right text-[10px]">R$ 1.107,81</td>
-                <td class="text-center bg-excel-yellow text-white font-bold text-[10px]">92%</td>
-                <td class="text-right text-[10px]">R$ 92,19</td>
-                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 92,19</td>
-              </tr>
-              <tr class="bg-blue-50/50">
-                <td class="font-bold text-slate-600 text-[10px]">PÓS FAT.</td>
-                <td class="text-right text-[10px]">R$ 700,00</td>
-                <td class="text-right text-[10px]">R$ 1.159,95</td>
-                <td class="text-center bg-excel-green text-white font-bold text-[10px]">166%</td>
-                <td colspan="2" class="text-center bg-excel-green text-white font-bold text-[10px] uppercase">Meta Entregue</td>
-              </tr>
-
-              <!-- GROSS -->
-              <tr class="bg-slate-50">
-                <td rowspan="3" class="vertical-text bg-excel-blue text-white border-excel-blue">Gross</td>
-                <td class="font-bold text-slate-600 text-[10px]">CONTROLE</td>
-                <td class="text-right text-[10px]">20</td>
-                <td class="text-right text-[10px]">20</td>
-                <td class="text-center bg-excel-green text-white font-bold text-[10px]">100%</td>
-                <td colspan="2" class="text-center bg-excel-green text-white font-bold text-[10px] uppercase">Meta Entregue</td>
-              </tr>
-              <tr class="bg-slate-50">
-                <td class="font-bold text-slate-600 text-[10px]">PÓS</td>
-                <td class="text-right text-[10px]">6</td>
-                <td class="text-right text-[10px]">8</td>
-                <td class="text-center bg-excel-green text-white font-bold text-[10px]">133%</td>
-                <td colspan="2" class="text-center bg-excel-green text-white font-bold text-[10px] uppercase">Meta Entregue</td>
-              </tr>
-              <tr class="bg-slate-50">
-                <td class="font-bold text-slate-600 text-[10px]">PORTABILIDADE</td>
-                <td class="text-right text-[10px]">8</td>
-                <td class="text-right text-[10px]">9</td>
-                <td class="text-center bg-excel-green text-white font-bold text-[10px]">113%</td>
-                <td colspan="2" class="text-center bg-excel-green text-white font-bold text-[10px] uppercase">Meta Entregue</td>
-              </tr>
-
-              <!-- PRODUTO -->
-              <tr class="bg-blue-50/50">
-                <td rowspan="2" class="vertical-text bg-excel-blue text-white border-excel-blue">Produto</td>
-                <td class="font-bold text-slate-600 text-[10px]">APARELHO</td>
-                <td class="text-right text-[10px]">R$ 7.500,00</td>
-                <td class="text-right text-[10px]">R$ 8.896,00</td>
-                <td class="text-center bg-excel-green text-white font-bold text-[10px]">119%</td>
-                <td colspan="2" class="text-center bg-excel-green text-white font-bold text-[10px] uppercase">Meta Entregue</td>
-              </tr>
-              <tr class="bg-blue-50/50">
-                <td class="font-bold text-slate-600 text-[10px]">ACESSÓRIOS</td>
-                <td class="text-right text-[10px]">R$ 6.000,00</td>
-                <td class="text-right text-[10px]">R$ 5.320,00</td>
-                <td class="text-center bg-excel-yellow text-white font-bold text-[10px]">89%</td>
-                <td class="text-right text-[10px]">R$ 680,00</td>
-                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 680,00</td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="flex items-center gap-2">
+          <select id="selectMes" class="bg-slate-50 border border-slate-200 text-slate-800 font-bold rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0e8890]">
+            <option value="SETEMBRO/2026">SETEMBRO / 2026</option>
+            <option value="AGOSTO/2026">AGOSTO / 2026</option>
+            <option value="JULHO/2026">JULHO / 2026</option>
+          </select>
+          <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5">
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i> Imprimir
+          </button>
         </div>
       </div>
 
-      <!-- Card Gabriel Valença de Lima -->
-      <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
-        <div class="bg-excel-blue px-4 py-2 border-b border-slate-300 flex justify-between items-center">
-          <h3 class="text-white font-black tracking-widest text-xs uppercase">GABRIEL VALENÇA DE LIMA</h3>
-          <span class="bg-excel-yellow text-white text-[9px] font-black px-2 py-0.5 rounded uppercase">Tendência</span>
+      <div class="bg-white border border-slate-200 border-t-0 rounded-b-2xl shadow-sm p-4 md:p-6">
+
+        <!-- ====================================================== -->
+        <!-- ABA 1: RESUMO CONSOLIDADO                              -->
+        <!-- ====================================================== -->
+        <div id="tab-resumo" class="tab-content animate-fade-in">
+
+          <!-- Painel INFORTECA (Loja Geral) -->
+          <div class="rounded-2xl shadow-sm overflow-hidden mb-8 border border-slate-300">
+            <div class="bg-excel-blue px-4 py-2.5 border-b border-slate-400 flex justify-between items-center">
+              <h3 class="text-white font-black tracking-widest text-xs uppercase">INFORTECA — LOJA GERAL</h3>
+              <span class="bg-white/10 text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/20">
+                <span id="infoDiasTrab">21</span> dias trabalhados · <span id="infoDiasRest">1</span> restante(s)
+              </span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="table-excel">
+                <thead>
+                  <tr>
+                    <th class="w-10 bg-excel-blue text-white border-excel-blue"></th>
+                    <th class="w-28">META LOJA</th>
+                    <th class="w-28">REALIZADO</th>
+                    <th class="w-24">PERCENT. REAL %</th>
+                    <th class="w-28">FALTA</th>
+                    <th class="w-28">FAZER POR DIA</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-loja">
+                  <!-- Preenchido via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Grid de Consultores -->
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="users" class="w-4 h-4 text-[#0e8890]"></i>
+              Desempenho por Consultor
+            </h3>
+            <span class="text-[11px] font-bold text-slate-500 uppercase">
+              <span id="infoQtdConsult">3</span> consultores ativos
+            </span>
+          </div>
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-6" id="gridConsultores">
+            <!-- Preenchido via JS -->
+          </div>
         </div>
-        <div class="overflow-x-auto">
-          <table class="table-excel">
-            <thead>
-              <tr>
-                <th class="w-8 bg-excel-blue text-white border-excel-blue"></th>
-                <th class="w-20">META LOJA</th>
-                <th class="w-20">REALIZADO</th>
-                <th class="w-16">PERCENT. REAL %</th>
-                <th class="w-20">FALTA</th>
-                <th class="w-20">FAZER POR DIA</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- FATURAMENTO -->
-              <tr class="bg-blue-50/50">
-                <td rowspan="3" class="vertical-text bg-excel-blue text-white border-excel-blue">Faturamento</td>
-                <td class="font-bold text-slate-600 text-[10px]">FAT TOTAL TIM</td>
-                <td class="text-right text-[10px]">R$ 1.900,00</td>
-                <td class="text-right text-[10px]">R$ 1.554,78</td>
-                <td class="text-center bg-excel-yellow text-white font-bold text-[10px]">82%</td>
-                <td class="text-right text-[10px]">R$ 345,22</td>
-                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 345,22</td>
-              </tr>
-              <tr class="bg-blue-50/50">
-                <td class="font-bold text-slate-600 text-[10px]">CONTROLE FAT.</td>
-                <td class="text-right text-[10px]">R$ 1.200,00</td>
-                <td class="text-right text-[10px]">R$ 1.124,82</td>
-                <td class="text-center bg-excel-yellow text-white font-bold text-[10px]">94%</td>
-                <td class="text-right text-[10px]">R$ 75,18</td>
-                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 75,18</td>
-              </tr>
-              <tr class="bg-blue-50/50">
-                <td class="font-bold text-slate-600 text-[10px]">PÓS FAT.</td>
-                <td class="text-right text-[10px]">R$ 700,00</td>
-                <td class="text-right text-[10px]">R$ 429,96</td>
-                <td class="text-center bg-excel-red text-white font-bold text-[10px]">61%</td>
-                <td class="text-right text-[10px]">R$ 270,04</td>
-                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 270,04</td>
-              </tr>
 
-              <!-- GROSS -->
-              <tr class="bg-slate-50">
-                <td rowspan="3" class="vertical-text bg-excel-blue text-white border-excel-blue">Gross</td>
-                <td class="font-bold text-slate-600 text-[10px]">CONTROLE</td>
-                <td class="text-right text-[10px]">20</td>
-                <td class="text-right text-[10px]">20</td>
-                <td class="text-center bg-excel-green text-white font-bold text-[10px]">100%</td>
-                <td colspan="2" class="text-center bg-excel-green text-white font-bold text-[10px] uppercase">Meta Entregue</td>
-              </tr>
-              <tr class="bg-slate-50">
-                <td class="font-bold text-slate-600 text-[10px]">PÓS</td>
-                <td class="text-right text-[10px]">6</td>
-                <td class="text-right text-[10px]">4</td>
-                <td class="text-center bg-excel-red text-white font-bold text-[10px]">67%</td>
-                <td class="text-right text-[10px]">2</td>
-                <td class="text-right font-bold text-[#0e8890] text-[10px]">2</td>
-              </tr>
-              <tr class="bg-slate-50">
-                <td class="font-bold text-slate-600 text-[10px]">PORTABILIDADE</td>
-                <td class="text-right text-[10px]">8</td>
-                <td class="text-right text-[10px]">9</td>
-                <td class="text-center bg-excel-green text-white font-bold text-[10px]">113%</td>
-                <td colspan="2" class="text-center bg-excel-green text-white font-bold text-[10px] uppercase">Meta Entregue</td>
-              </tr>
+        <!-- ====================================================== -->
+        <!-- ABA 2: ACOMPANHAMENTO DIÁRIO                           -->
+        <!-- ====================================================== -->
+        <div id="tab-diario" class="tab-content hidden animate-fade-in">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <div class="flex items-center gap-3">
+              <div class="bg-excel-blue p-2 rounded-lg text-white">
+                <i data-lucide="calendar-days" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Acompanhamento por Dia</p>
+                <p class="text-xs text-slate-600 font-semibold">Valores lançados diariamente por cada consultor</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase">
+              <span class="flex items-center gap-1"><span class="w-3 h-3 bg-excel-gray rounded-sm border border-slate-300"></span> Dias trabalhados</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 bg-white rounded-sm border border-slate-300"></span> Dias em branco</span>
+            </div>
+          </div>
+          <div id="gridDiario" class="space-y-8">
+            <!-- Preenchido via JS -->
+          </div>
+        </div>
 
-              <!-- PRODUTO -->
-              <tr class="bg-blue-50/50">
-                <td rowspan="2" class="vertical-text bg-excel-blue text-white border-excel-blue">Produto</td>
-                <td class="font-bold text-slate-600 text-[10px]">APARELHO</td>
-                <td class="text-right text-[10px]">R$ 7.500,00</td>
-                <td class="text-right text-[10px]">R$ 5.467,00</td>
-                <td class="text-center bg-excel-yellow text-white font-bold text-[10px]">73%</td>
-                <td class="text-right text-[10px]">R$ 2.033,00</td>
-                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 2.033,00</td>
-              </tr>
-              <tr class="bg-blue-50/50">
-                <td class="font-bold text-slate-600 text-[10px]">ACESSÓRIOS</td>
-                <td class="text-right text-[10px]">R$ 6.000,00</td>
-                <td class="text-right text-[10px]">R$ 3.031,10</td>
-                <td class="text-center bg-excel-red text-white font-bold text-[10px]">51%</td>
-                <td class="text-right text-[10px]">R$ 2.968,90</td>
-                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 2.968,90</td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- ====================================================== -->
+        <!-- ABA 3: PARÂMETROS E METAS                              -->
+        <!-- ====================================================== -->
+        <div id="tab-config" class="tab-content hidden animate-fade-in">
+
+          <!-- Dias trabalhados x Consultores -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
+              <div class="bg-excel-gray px-4 py-2 border-b border-slate-400">
+                <h4 class="text-[11px] font-black text-slate-700 uppercase tracking-widest text-center">Parâmetros do Mês</h4>
+              </div>
+              <table class="table-excel" style="font-size:12px;">
+                <tbody>
+                  <tr>
+                    <td class="label-col bg-excel-light font-bold" style="padding:10px;width:70%;">DIAS TRABALHADOS MÊS</td>
+                    <td class="text-center bg-excel-green text-white font-black text-base" id="cfgDiasTrab">21</td>
+                  </tr>
+                  <tr>
+                    <td class="label-col bg-excel-light font-bold" style="padding:10px;">DIAS RESTANTE MÊS</td>
+                    <td class="text-center bg-excel-red text-white font-black text-base" id="cfgDiasRest">1</td>
+                  </tr>
+                  <tr>
+                    <td class="label-col bg-excel-light font-bold" style="padding:10px;">QUANTIDADE DE CONSULTORES</td>
+                    <td class="text-center bg-excel-yellow text-white font-black text-base" id="cfgQtdConsult">3</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="lg:col-span-2 bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
+              <div class="bg-[#0e8890] px-4 py-2 border-b border-slate-400">
+                <h4 class="text-[11px] font-black text-white uppercase tracking-widest text-center">Resumo das Metas</h4>
+              </div>
+              <div class="p-3 grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  <p class="text-[10px] font-black text-slate-500 uppercase">Meta Loja — Faturamento</p>
+                  <p class="font-black text-[#1F4E78] text-base mt-1">R$ 11.400,00</p>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  <p class="text-[10px] font-black text-slate-500 uppercase">Meta Consultor — Faturamento</p>
+                  <p class="font-black text-[#1F4E78] text-base mt-1">R$ 3.800,00</p>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  <p class="text-[10px] font-black text-slate-500 uppercase">Meta Total (Consultores × Qtd)</p>
+                  <p class="font-black text-emerald-600 text-base mt-1" id="cfgMetaTotal">R$ 11.400,00</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metas Detalhadas em 3 blocos -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <!-- META LOJA -->
+            <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
+              <div class="bg-excel-green px-4 py-2 border-b border-slate-400">
+                <h4 class="text-[11px] font-black text-white uppercase tracking-widest text-center">Meta Loja</h4>
+              </div>
+              <table class="table-excel">
+                <tbody id="tbody-meta-loja">
+                  <!-- JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- META POR CONSULTOR -->
+            <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
+              <div class="bg-excel-yellow px-4 py-2 border-b border-slate-400">
+                <h4 class="text-[11px] font-black text-white uppercase tracking-widest text-center">Meta por Consultor</h4>
+              </div>
+              <table class="table-excel">
+                <tbody id="tbody-meta-consultor">
+                  <!-- JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- META PÓS-VENDA -->
+            <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
+              <div class="bg-excel-pos px-4 py-2 border-b border-slate-400">
+                <h4 class="text-[11px] font-black text-white uppercase tracking-widest text-center">Meta Pós-Venda</h4>
+              </div>
+              <table class="table-excel">
+                <tbody id="tbody-meta-pos">
+                  <!-- JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
       </div>
 
-      <!-- Card Jean Breno Carneiro da Silva -->
-      <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
-        <div class="bg-excel-blue px-4 py-2 border-b border-slate-300 flex justify-between items-center">
-          <h3 class="text-white font-black tracking-widest text-xs uppercase">JEAN BRENO CARNEIRO DA SILVA</h3>
-          <span class="bg-excel-red text-white text-[9px] font-black px-2 py-0.5 rounded uppercase">Fora da Tendência</span>
+      <!-- LEGENDA -->
+      <div class="mt-6 flex flex-wrap items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm no-print">
+        <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Legenda:</span>
+        <div class="flex items-center gap-2">
+          <span class="w-4 h-4 bg-excel-red rounded-sm"></span>
+          <span class="text-[10px] font-bold text-slate-600 uppercase">Fora da Tendência &lt; 70%</span>
         </div>
-        <div class="overflow-x-auto">
-          <table class="table-excel">
-            <thead>
-              <tr>
-                <th class="w-8 bg-excel-blue text-white border-excel-blue"></th>
-                <th class="w-20">META LOJA</th>
-                <th class="w-20">REALIZADO</th>
-                <th class="w-16">PERCENT. REAL %</th>
-                <th class="w-20">FALTA</th>
-                <th class="w-20">FAZER POR DIA</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- FATURAMENTO -->
-              <tr class="bg-blue-50/50">
-                <td rowspan="3" class="vertical-text bg-excel-blue text-white border-excel-blue">Faturamento</td>
-                <td class="font-bold text-slate-600 text-[10px]">FAT TOTAL TIM</td>
-                <td class="text-right text-[10px]">R$ 1.900,00</td>
-                <td class="text-right text-[10px]">R$ 849,91</td>
-                <td class="text-center bg-excel-red text-white font-bold text-[10px]">45%</td>
-                <td class="text-right text-[10px]">R$ 1.050,09</td>
-                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 1.050,09</td>
-              </tr>
-              <tr class="bg-blue-50/50">
-                <td class="font-bold text-slate-600 text-[10px]">CONTROLE FAT.</td>
-                <td class="text-right text-[10px]">R$ 1.200,00</td>
-                <td class="text-right text-[10px]">R$ 464,92</td>
-                <td class="text-center bg-excel-red text-white font-bold text-[10px]">39%</td>
-                <td class="text-right text-[10px]">R$ 735,08</td>
-                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 735,08</td>
-              </tr>
-              <tr class="bg-blue-50/50">
-                <td class="font-bold text-slate-600 text-[10px]">PÓS FAT.</td>
-                <td class="text-right text-[10px]">R$ 700,00</td>
-                <td class="text-right text-[10px]">R$ 384,99</td>
-                <td class="text-center bg-excel-red text-white font-bold text-[10px]">55%</td>
-                <td class="text-right text-[10px]">R$ 315,01</td>
-                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 315,01</td>
-              </tr>
-
-              <!-- GROSS -->
-              <tr class="bg-slate-50">
-                <td rowspan="3" class="vertical-text bg-excel-blue text-white border-excel-blue">Gross</td>
-                <td class="font-bold text-slate-600 text-[10px]">CONTROLE</td>
-                <td class="text-right text-[10px]">20</td>
-                <td class="text-right text-[10px]">9</td>
-                <td class="text-center bg-excel-red text-white font-bold text-[10px]">45%</td>
-                <td class="text-right text-[10px]">-</td>
-                <td class="text-right font-bold text-[#0e8890] text-[10px]">-</td>
-              </tr>
-              <tr class="bg-slate-50">
-                <td class="font-bold text-slate-600 text-[10px]">PÓS</td>
-                <td class="text-right text-[10px]">6</td>
-                <td class="text-right text-[10px]">3</td>
-                <td class="text-center bg-excel-red text-white font-bold text-[10px]">50%</td>
-                <td class="text-right text-[10px]">3</td>
-                <td class="text-right font-bold text-[#0e8890] text-[10px]">3</td>
-              </tr>
-              <tr class="bg-slate-50">
-                <td class="font-bold text-slate-600 text-[10px]">PORTABILIDADE</td>
-                <td class="text-right text-[10px]">8</td>
-                <td class="text-right text-[10px]">3</td>
-                <td class="text-center bg-excel-red text-white font-bold text-[10px]">38%</td>
-                <td class="text-right text-[10px]">5</td>
-                <td class="text-right font-bold text-[#0e8890] text-[10px]">5</td>
-              </tr>
-
-              <!-- PRODUTO -->
-              <tr class="bg-blue-50/50">
-                <td rowspan="2" class="vertical-text bg-excel-blue text-white border-excel-blue">Produto</td>
-                <td class="font-bold text-slate-600 text-[10px]">APARELHO</td>
-                <td class="text-right text-[10px]">R$ 7.500,00</td>
-                <td class="text-right text-[10px]">R$ -</td>
-                <td class="text-center bg-excel-red text-white font-bold text-[10px]">0%</td>
-                <td class="text-right text-[10px]">R$ 7.500,00</td>
-                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 7.500,00</td>
-              </tr>
-              <tr class="bg-blue-50/50">
-                <td class="font-bold text-slate-600 text-[10px]">ACESSÓRIOS</td>
-                <td class="text-right text-[10px]">R$ 6.000,00</td>
-                <td class="text-right text-[10px]">R$ 3.360,00</td>
-                <td class="text-center bg-excel-red text-white font-bold text-[10px]">56%</td>
-                <td class="text-right text-[10px]">R$ 2.640,00</td>
-                <td class="text-right font-bold text-[#0e8890] text-[10px]">R$ 2.640,00</td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="flex items-center gap-2">
+          <span class="w-4 h-4 bg-excel-yellow rounded-sm"></span>
+          <span class="text-[10px] font-bold text-slate-600 uppercase">Tendência de Entregar &gt; 70%</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="w-4 h-4 bg-excel-green rounded-sm"></span>
+          <span class="text-[10px] font-bold text-slate-600 uppercase">Meta Entregue / Superada &gt; 100%</span>
         </div>
       </div>
 
     </div>
-
-    <!-- LEGENDA -->
-    <div class="mt-6 flex flex-wrap items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-      <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Legenda:</span>
-      <div class="flex items-center gap-2">
-        <span class="w-4 h-4 bg-excel-red rounded-sm"></span>
-        <span class="text-[10px] font-bold text-slate-600 uppercase">Fora da Tendência < 70%</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="w-4 h-4 bg-excel-yellow rounded-sm"></span>
-        <span class="text-[10px] font-bold text-slate-600 uppercase">Tendência de Entregar > 70%</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="w-4 h-4 bg-excel-green rounded-sm"></span>
-        <span class="text-[10px] font-bold text-slate-600 uppercase">Meta Entregue/Superada > 100%</span>
-      </div>
-    </div>
-
   </main>
 
-  <!-- Scripts -->
   <script>
+    /* ============================================================
+       CONFIG
+       ============================================================ */
     const SUPABASE_URL = 'https://zldugoqlcrzarpqvtaoh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    lucide.createIcons();
+    /* ============================================================
+       DADOS DE EXEMPLO (populados com base nos seus prints)
+       Depois vamos buscar do Supabase
+       ============================================================ */
+    const DIAS_NO_MES = 30;
+    const DIAS_TRABALHADOS = 21;
+    const DIAS_RESTANTES = 1;
 
+    const METAS_LOJA = {
+      'FAT TOTAL TIM':    { valor: 5700,   tipo: 'moeda' },
+      'CONTROLE FAT.':    { valor: 3600,   tipo: 'moeda' },
+      'PÓS FAT.':         { valor: 2100,   tipo: 'moeda' },
+      'CONTROLE':         { valor: 60,     tipo: 'numero' },
+      'PÓS':              { valor: 18,     tipo: 'numero' },
+      'PORTABILIDADE':    { valor: 24,     tipo: 'numero' },
+      'APARELHO':         { valor: 22500,  tipo: 'moeda' },
+      'ACESSÓRIOS':       { valor: 18000,  tipo: 'moeda' },
+    };
+
+    const METAS_CONSULTOR = {
+      'FAT TOTAL TIM':    { valor: 1900,  tipo: 'moeda' },
+      'CONTROLE FAT.':    { valor: 1200,  tipo: 'moeda' },
+      'PÓS FAT.':         { valor: 700,   tipo: 'moeda' },
+      'CONTROLE':         { valor: 20,    tipo: 'numero' },
+      'PÓS':              { valor: 6,     tipo: 'numero' },
+      'PORTABILIDADE':    { valor: 8,     tipo: 'numero' },
+      'APARELHO':         { valor: 7500,  tipo: 'moeda' },
+      'ACESSÓRIOS':       { valor: 6000,  tipo: 'moeda' },
+    };
+
+    const CATEGORIAS = [
+      { nome: 'FATURAMENTO', keys: ['FAT TOTAL TIM', 'CONTROLE FAT.', 'PÓS FAT.'] },
+      { nome: 'GROSS',       keys: ['CONTROLE', 'PÓS', 'PORTABILIDADE'] },
+      { nome: 'PRODUTO',     keys: ['APARELHO', 'ACESSÓRIOS'] },
+    ];
+
+    // Realizado (Loja) — exemplo
+    const REALIZADO_LOJA = {
+      'FAT TOTAL TIM': 4672.45,
+      'CONTROLE FAT.': 2697.55,
+      'PÓS FAT.': 1974.90,
+      'CONTROLE': 49,
+      'PÓS': 15,
+      'PORTABILIDADE': 21,
+      'APARELHO': 14363.00,
+      'ACESSÓRIOS': 11711.10,
+    };
+
+    // Consultores com realizado + diário
+    const CONSULTORES = [
+      {
+        nome: 'DANIEL ALVES FERREIRA',
+        realizado: {
+          'FAT TOTAL TIM': 2267.76, 'CONTROLE FAT.': 1107.81, 'PÓS FAT.': 1159.95,
+          'CONTROLE': 20, 'PÓS': 8, 'PORTABILIDADE': 9,
+          'APARELHO': 8896.00, 'ACESSÓRIOS': 5320.00,
+        },
+        diario: {
+          'FAT TOTAL TIM': [195.98, 0, 279.95, 59.99, 99.98, 0, 0, 99.98, 0, 149.97, 0, 0, 0, 67.99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          'CONTROLE FAT.': [75.99, 0, 279.95, 59.99, 99.98, 0, 0, 99.98, 0, 149.97, 0, 0, 0, 67.99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          'PÓS FAT.':      [119.99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          'CONTROLE':      [2, 0, 5, 1, 2, 0, 0, 2, 0, 3, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          'PÓS':           [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          'PORTABILIDADE': [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          'APARELHO':      [1999, 3899, 0, 0, 0, 0, 999, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          'ACESSÓRIOS':    [354, 35, 813, 0, 70, 0, 0, 294, 773, 55, 0, 230, 0, 155, 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        }
+      },
+      {
+        nome: 'GABRIEL VALENÇA DE LIMA',
+        realizado: {
+          'FAT TOTAL TIM': 1554.78, 'CONTROLE FAT.': 1124.82, 'PÓS FAT.': 429.96,
+          'CONTROLE': 20, 'PÓS': 4, 'PORTABILIDADE': 9,
+          'APARELHO': 5467.00, 'ACESSÓRIOS': 3031.10,
+        },
+        diario: {
+          'FAT TOTAL TIM': new Array(DIAS_NO_MES).fill(0),
+          'CONTROLE FAT.': new Array(DIAS_NO_MES).fill(0),
+          'PÓS FAT.':      new Array(DIAS_NO_MES).fill(0),
+          'CONTROLE':      new Array(DIAS_NO_MES).fill(0),
+          'PÓS':           new Array(DIAS_NO_MES).fill(0),
+          'PORTABILIDADE': new Array(DIAS_NO_MES).fill(0),
+          'APARELHO':      new Array(DIAS_NO_MES).fill(0),
+          'ACESSÓRIOS':    new Array(DIAS_NO_MES).fill(0),
+        }
+      },
+      {
+        nome: 'JEAN BRENO CARNEIRO DA SILVA',
+        realizado: {
+          'FAT TOTAL TIM': 849.91, 'CONTROLE FAT.': 464.92, 'PÓS FAT.': 384.99,
+          'CONTROLE': 9, 'PÓS': 3, 'PORTABILIDADE': 3,
+          'APARELHO': 0, 'ACESSÓRIOS': 3360.00,
+        },
+        diario: {
+          'FAT TOTAL TIM': new Array(DIAS_NO_MES).fill(0),
+          'CONTROLE FAT.': new Array(DIAS_NO_MES).fill(0),
+          'PÓS FAT.':      new Array(DIAS_NO_MES).fill(0),
+          'CONTROLE':      new Array(DIAS_NO_MES).fill(0),
+          'PÓS':           new Array(DIAS_NO_MES).fill(0),
+          'PORTABILIDADE': new Array(DIAS_NO_MES).fill(0),
+          'APARELHO':      new Array(DIAS_NO_MES).fill(0),
+          'ACESSÓRIOS':    new Array(DIAS_NO_MES).fill(0),
+        }
+      }
+    ];
+
+    /* ============================================================
+       HELPERS
+       ============================================================ */
+    const fmtMoeda = (v) => 'R$ ' + (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmtNumero = (v) => String(Number(v) || 0);
+    const fmtValor = (v, tipo) => tipo === 'moeda' ? fmtMoeda(v) : fmtNumero(v);
+    const calcPct = (real, meta) => meta ? (real / meta) * 100 : 0;
+    const corPct = (pct) => {
+      if (pct >= 100) return { bg: 'bg-excel-green', text: 'text-white' };
+      if (pct >= 70)  return { bg: 'bg-excel-yellow', text: 'text-white' };
+      return { bg: 'bg-excel-red', text: 'text-white' };
+    };
+    const cap = (s) => String(s||'').toLowerCase().split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+
+    /* ============================================================
+       RENDER: Resumo Loja
+       ============================================================ */
+    function renderResumoLoja() {
+      const tbody = document.getElementById('tbody-loja');
+      let html = '';
+
+      CATEGORIAS.forEach(cat => {
+        cat.keys.forEach((key, idx) => {
+          const meta = METAS_LOJA[key];
+          const real = REALIZADO_LOJA[key] || 0;
+          const pct = calcPct(real, meta.valor);
+          const falta = Math.max(0, meta.valor - real);
+          const fazerDia = DIAS_RESTANTES > 0 ? falta / DIAS_RESTANTES : falta;
+          const c = corPct(pct);
+          const entregue = pct >= 100;
+
+          html += '<tr>';
+          // Cabeçalho vertical (rowspan na primeira linha da categoria)
+          if (idx === 0) {
+            html += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-blue text-white border-excel-blue">${cat.nome}</td>`;
+          }
+          html += `<td class="font-bold text-slate-700">${key}</td>`;
+          html += `<td class="text-right font-medium">${fmtValor(meta.valor, meta.tipo)}</td>`;
+          html += `<td class="text-right font-medium">${fmtValor(real, meta.tipo)}</td>`;
+          html += `<td class="text-center ${c.bg} ${c.text} font-black">${pct.toFixed(0)}%</td>`;
+          if (entregue) {
+            html += `<td colspan="2" class="text-center bg-excel-green text-white font-black uppercase text-[10px] tracking-wider">META ENTREGUE</td>`;
+          } else {
+            html += `<td class="text-right text-slate-600">${fmtValor(falta, meta.tipo)}</td>`;
+            html += `<td class="text-right font-bold text-[#0e8890]">${fmtValor(fazerDia, meta.tipo)}</td>`;
+          }
+          html += '</tr>';
+        });
+      });
+      tbody.innerHTML = html;
+    }
+
+    /* ============================================================
+       RENDER: Resumo por Consultor
+       ============================================================ */
+    function renderConsultores() {
+      const grid = document.getElementById('gridConsultores');
+      let html = '';
+
+      CONSULTORES.forEach(consult => {
+        // Calcula status geral (média dos % de faturamento principal)
+        const metaFat = METAS_CONSULTOR['FAT TOTAL TIM'].valor;
+        const realFat = consult.realizado['FAT TOTAL TIM'] || 0;
+        const pctFat = calcPct(realFat, metaFat);
+
+        let statusBadge, statusCor;
+        if (pctFat >= 100) { statusBadge = 'META ENTREGUE'; statusCor = 'bg-excel-green'; }
+        else if (pctFat >= 70) { statusBadge = 'TENDÊNCIA'; statusCor = 'bg-excel-yellow'; }
+        else { statusBadge = 'FORA DA TENDÊNCIA'; statusCor = 'bg-excel-red'; }
+
+        html += `
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden border-2 border-slate-300">
+            <div class="bg-excel-blue px-4 py-2.5 border-b border-slate-400 flex justify-between items-center">
+              <h3 class="text-white font-black tracking-widest text-[11px] uppercase truncate">${cap(consult.nome)}</h3>
+              <span class="${statusCor} text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider shrink-0 ml-2">${statusBadge}</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="table-excel">
+                <thead>
+                  <tr>
+                    <th class="w-10 bg-excel-blue text-white border-excel-blue"></th>
+                    <th class="w-28">META LOJA</th>
+                    <th class="w-28">REALIZADO</th>
+                    <th class="w-20">%</th>
+                    <th class="w-28">FALTA</th>
+                    <th class="w-28">FAZER/DIA</th>
+                  </tr>
+                </thead>
+                <tbody>`;
+
+        CATEGORIAS.forEach(cat => {
+          cat.keys.forEach((key, idx) => {
+            const meta = METAS_CONSULTOR[key];
+            const real = consult.realizado[key] || 0;
+            const pct = calcPct(real, meta.valor);
+            const falta = Math.max(0, meta.valor - real);
+            const fazerDia = DIAS_RESTANTES > 0 ? falta / DIAS_RESTANTES : falta;
+            const c = corPct(pct);
+            const entregue = pct >= 100;
+
+            html += '<tr>';
+            if (idx === 0) {
+              html += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-blue text-white border-excel-blue">${cat.nome}</td>`;
+            }
+            html += `<td class="font-bold text-slate-700 text-[10px]">${key}</td>`;
+            html += `<td class="text-right text-[11px]">${fmtValor(meta.valor, meta.tipo)}</td>`;
+            html += `<td class="text-right text-[11px]">${fmtValor(real, meta.tipo)}</td>`;
+            html += `<td class="text-center ${c.bg} ${c.text} font-black text-[10px]">${pct.toFixed(0)}%</td>`;
+            if (entregue) {
+              html += `<td colspan="2" class="text-center bg-excel-green text-white font-black uppercase text-[9px] tracking-wider">META ENTREGUE</td>`;
+            } else {
+              html += `<td class="text-right text-slate-600 text-[10px]">${fmtValor(falta, meta.tipo)}</td>`;
+              html += `<td class="text-right font-bold text-[#0e8890] text-[10px]">${fmtValor(fazerDia, meta.tipo)}</td>`;
+            }
+            html += '</tr>';
+          });
+        });
+
+        html += `</tbody></table></div></div>`;
+      });
+
+      grid.innerHTML = html;
+    }
+
+    /* ============================================================
+       RENDER: Acompanhamento Diário
+       ============================================================ */
+    function renderDiario() {
+      const grid = document.getElementById('gridDiario');
+      let html = '';
+
+      CONSULTORES.forEach(consult => {
+        html += `
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden border-2 border-slate-300">
+            <div class="bg-excel-blue px-4 py-2 border-b border-slate-400 flex justify-between items-center">
+              <h3 class="text-white font-black tracking-widest text-[11px] uppercase">${cap(consult.nome)}</h3>
+              <span class="text-blue-200 text-[10px] font-bold uppercase">${DIAS_NO_MES} dias no mês</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="table-diario">
+                <thead>
+                  <tr>
+                    <th class="label-col" style="min-width:120px;">DIAS</th>`;
+
+        for (let d = 1; d <= DIAS_NO_MES; d++) {
+          const dd = String(d).padStart(2, '0');
+          html += `<th style="min-width:36px;">${dd}</th>`;
+        }
+        html += `</tr></thead><tbody>`;
+
+        const linhas = [
+          'FAT TOTAL TIM', 'CONTROLE FAT.', 'PÓS FAT.',
+          'CONTROLE', 'PÓS', 'PORTABILIDADE',
+          'APARELHO', 'ACESSÓRIOS'
+        ];
+
+        linhas.forEach(key => {
+          const tipo = METAS_LOJA[key]?.tipo || 'numero';
+          const valores = consult.diario[key] || new Array(DIAS_NO_MES).fill(0);
+
+          html += `<tr>`;
+          html += `<td class="label-col">${key}</td>`;
+          for (let d = 0; d < DIAS_NO_MES; d++) {
+            const v = valores[d] || 0;
+            const temValor = v > 0;
+            const valorExib = tipo === 'moeda'
+              ? (temValor ? 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'R$ -')
+              : (temValor ? v : '0');
+            const cellBg = temValor ? 'bg-white' : 'bg-slate-50';
+            const txtCor = temValor ? 'text-slate-800 font-semibold' : 'text-slate-300';
+            html += `<td class="${cellBg} ${txtCor}" style="font-size:9px;">${valorExib}</td>`;
+          }
+          html += `</tr>`;
+        });
+
+        html += `</tbody></table></div></div>`;
+      });
+
+      grid.innerHTML = html;
+    }
+
+    /* ============================================================
+       RENDER: Blocos de Metas (aba Config)
+       ============================================================ */
+    function renderBlocosMetas() {
+      // Meta Loja
+      let htmlLoja = '';
+      CATEGORIAS.forEach(cat => {
+        cat.keys.forEach((key, idx) => {
+          const meta = METAS_LOJA[key];
+          htmlLoja += '<tr>';
+          if (idx === 0) {
+            htmlLoja += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-green text-white border-excel-blue" style="font-size:9px;">${cat.nome}</td>`;
+          }
+          htmlLoja += `<td class="font-bold text-slate-700 text-[10px]">${key}</td>`;
+          htmlLoja += `<td class="text-right font-black text-[#1F4E78] text-[11px]">${fmtValor(meta.valor, meta.tipo)}</td>`;
+          htmlLoja += '</tr>';
+        });
+      });
+      document.getElementById('tbody-meta-loja').innerHTML = htmlLoja;
+
+      // Meta Consultor
+      let htmlCons = '';
+      CATEGORIAS.forEach(cat => {
+        cat.keys.forEach((key, idx) => {
+          const meta = METAS_CONSULTOR[key];
+          htmlCons += '<tr>';
+          if (idx === 0) {
+            htmlCons += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-yellow text-white border-excel-blue" style="font-size:9px;">${cat.nome}</td>`;
+          }
+          htmlCons += `<td class="font-bold text-slate-700 text-[10px]">${key}</td>`;
+          htmlCons += `<td class="text-right font-black text-[#1F4E78] text-[11px]">${fmtValor(meta.valor, meta.tipo)}</td>`;
+          htmlCons += '</tr>';
+        });
+      });
+      document.getElementById('tbody-meta-consultor').innerHTML = htmlCons;
+
+      // Meta Pós-Venda (por enquanto igual a consultor — depois personalizar)
+      let htmlPos = '';
+      CATEGORIAS.forEach(cat => {
+        cat.keys.forEach((key, idx) => {
+          const meta = METAS_CONSULTOR[key];
+          htmlPos += '<tr>';
+          if (idx === 0) {
+            htmlPos += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-pos text-white border-excel-blue" style="font-size:9px;">${cat.nome}</td>`;
+          }
+          htmlPos += `<td class="font-bold text-slate-700 text-[10px]">${key}</td>`;
+          htmlPos += `<td class="text-right font-black text-[#1F4E78] text-[11px]">${fmtValor(meta.valor, meta.tipo)}</td>`;
+          htmlPos += '</tr>';
+        });
+      });
+      document.getElementById('tbody-meta-pos').innerHTML = htmlPos;
+    }
+
+    /* ============================================================
+       TABS
+       ============================================================ */
+    function initTabs() {
+      const botoes = document.querySelectorAll('[data-tab]');
+      const conteudos = document.querySelectorAll('.tab-content');
+      botoes.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const alvo = btn.dataset.tab;
+          botoes.forEach(b => b.classList.toggle('active', b === btn));
+          conteudos.forEach(c => c.classList.add('hidden'));
+          document.getElementById('tab-' + alvo).classList.remove('hidden');
+          lucide.createIcons();
+        });
+      });
+    }
+
+    /* ============================================================
+       AUTH
+       ============================================================ */
     async function verificarAuth() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) { window.location.href = 'index.html'; return; }
-      
       const { data: perfil } = await supabaseClient.from('perfis').select('*').eq('id', session.user.id).single();
       document.getElementById('userName').textContent = perfil?.nome_completo || session.user.email;
       document.getElementById('userPerm').textContent = perfil?.permissao || 'Operador';
@@ -547,7 +786,23 @@
       s.classList.toggle('z-40');
     }
 
+    /* ============================================================
+       BOOT
+       ============================================================ */
     window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      initTabs();
+      renderResumoLoja();
+      renderConsultores();
+      renderDiario();
+      renderBlocosMetas();
+      // Config painel
+      document.getElementById('cfgDiasTrab').textContent = DIAS_TRABALHADOS;
+      document.getElementById('cfgDiasRest').textContent = DIAS_RESTANTES;
+      document.getElementById('cfgQtdConsult').textContent = CONSULTORES.length;
+      document.getElementById('infoDiasTrab').textContent = DIAS_TRABALHADOS;
+      document.getElementById('infoDiasRest').textContent = DIAS_RESTANTES;
+      document.getElementById('infoQtdConsult').textContent = CONSULTORES.length;
       verificarAuth();
     });
   </script>
