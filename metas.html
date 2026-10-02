@@ -18,9 +18,8 @@
       --xl-yellow:  #FFC000;
       --xl-red:     #FF6B6B;
       --xl-gray:    #D9D9D9;
-      --xl-gray-lt: #F2F2F2;
       --xl-pos:     #305496;
-      --xl-fat-bg:  #EAF4FB;
+      --xl-fat-bg:  #CFE2F3;
       --border:     #b8c2cc;
     }
     * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
@@ -86,16 +85,16 @@
       font-weight: 700;
       color: #334155;
       background: #fff;
+      text-align: left;
     }
     .xl-value {
       padding: 5px 10px;
       font-size: 11px;
       font-weight: 600;
       color: #1e293b;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
     }
-    .xl-value.right  { text-align: right; }
-    .xl-value.center { text-align: center; }
-    .xl-value.num    { font-variant-numeric: tabular-nums; }
 
     .xl-value.falta-col { background: #F7FBFD; }
     .xl-value.dia-col   { background: #F0F9FB; }
@@ -117,13 +116,14 @@
 
     .xl-dia-val { color: #0e8890; font-weight: 800; }
 
-    /* FAT TOTAL TIM — fundo azul discreto */
+    /* FAT TOTAL TIM — fundo azul médio com destaque */
     .row-fat td {
       background: var(--xl-fat-bg) !important;
     }
     .row-fat td.xl-label {
       color: #1F4E78;
       font-weight: 900;
+      border-left: 4px solid #1F4E78;
     }
 
     /* Tabela diário */
@@ -271,6 +271,28 @@
       overflow: hidden;
       box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
+
+    /* Overlay de loading para exportação */
+    #exportOverlay {
+      position: fixed; inset: 0;
+      background: rgba(15, 23, 42, 0.85);
+      z-index: 99998;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    #exportOverlay .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid rgba(255,255,255,0.2);
+      border-top-color: #0e8890;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body class="text-slate-800 h-screen flex overflow-hidden">
@@ -326,8 +348,6 @@
     </header>
 
     <div class="flex-1 overflow-y-auto p-4 md:p-6">
-
-      <!-- CABEÇALHO DA PÁGINA -->
       <div class="bg-[#1F4E78] rounded-t-2xl p-4 md:p-5 shadow-md flex flex-col md:flex-row justify-between items-center text-white">
         <div class="flex items-center gap-4">
           <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center p-1 shrink-0">
@@ -347,7 +367,6 @@
         </div>
       </div>
 
-      <!-- BARRA DE AÇÕES -->
       <div class="bg-white border border-slate-200 border-t-0 px-4 py-3 flex flex-wrap gap-3 items-center justify-between">
         <div class="flex flex-wrap gap-2">
           <button data-tab="resumo" class="tab-btn active px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
@@ -382,14 +401,15 @@
 
         <!-- ABA RESUMO -->
         <div id="tab-resumo" class="tab-content">
-          <div class="rounded-md overflow-hidden mb-8 border border-slate-300">
-            <div class="bg-[#1F4E78] px-4 py-2.5 flex justify-between items-center">
-              <h3 class="text-white font-black tracking-widest text-xs uppercase">INFORTECA — LOJA GERAL</h3>
-              <span class="bg-white/10 text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/20">
-                <span id="infoDiasTrab">0</span> dias trab. · <span id="infoDiasRest">0</span> rest.
-              </span>
-            </div>
-            <div class="overflow-x-auto">
+          <!-- INFORTECA — mesmo grid dos consultores -->
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+            <div class="consultor-card">
+              <div class="card-header">
+                <h3>INFORTECA — LOJA GERAL</h3>
+                <span class="text-blue-100 text-[10px] font-bold uppercase tracking-widest">
+                  <span id="infoDiasTrab">0</span> trab · <span id="infoDiasRest">0</span> rest
+                </span>
+              </div>
               <table class="xl-table">
                 <colgroup>
                   <col style="width:34px;">
@@ -542,14 +562,11 @@
   </div>
 
   <script>
-    /* ═══════════════════════════════════════════════════════
-       CONFIG
-       ═══════════════════════════════════════════════════════ */
     const SUPABASE_URL = 'https://zldugoqlcrzarpqvtaoh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const STORAGE_KEY = 'inforteca_metas_v6';
+    const STORAGE_KEY = 'inforteca_metas_v7';
     const DIAS_NO_MES = 30;
 
     const TIPO_VALOR = {
@@ -564,18 +581,8 @@
       { cat: 'PRODUTO',  keys: ['APARELHO', 'ACESSÓRIOS'],                     cls: 'produto' },
     ];
 
-    /* ═══════════════════════════════════════════════════════
-       HELPERS DE DATA/MÊS
-       ═══════════════════════════════════════════════════════ */
     const MESES = ['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
-    function nomeMesAtual() {
-      const d = new Date();
-      return `${MESES[d.getMonth()]} / ${d.getFullYear()}`;
-    }
 
-    /* ═══════════════════════════════════════════════════════
-       ESTRUTURA DE MÊS
-       ═══════════════════════════════════════════════════════ */
     function criarDiarioZerado() {
       const d = {};
       LINHAS_DIARIO.forEach(k => d[k] = new Array(DIAS_NO_MES).fill(0));
@@ -587,39 +594,20 @@
         metaLoja:      { 'FAT TOTAL TIM': 5700, 'CONTROLE FAT.': 3600, 'PÓS FAT.': 2100, 'CONTROLE': 60, 'PÓS': 18, 'PORTABILIDADE': 24, 'APARELHO': 22500, 'ACESSÓRIOS': 18000 },
         metaConsultor: { 'FAT TOTAL TIM': 1900, 'CONTROLE FAT.': 1200, 'PÓS FAT.': 700, 'CONTROLE': 20, 'PÓS': 6, 'PORTABILIDADE': 8, 'APARELHO': 7500, 'ACESSÓRIOS': 6000 },
         metaPos:       { 'FAT TOTAL TIM': 1900, 'CONTROLE FAT.': 1200, 'PÓS FAT.': 700, 'CONTROLE': 20, 'PÓS': 6, 'PORTABILIDADE': 8, 'APARELHO': 7500, 'ACESSÓRIOS': 6000 },
-        diasTrabalhados: 21,
-        diasRestantes: 1,
-        qualControle: '58,18%',
-        qualPos: '85%',
+        diasTrabalhados: 21, diasRestantes: 1, qualControle: '58,18%', qualPos: '85%',
         consultoresNomes: ['DANIEL ALVES FERREIRA', 'GABRIEL VALENÇA DE LIMA', 'JEAN BRENO CARNEIRO DA SILVA'],
       };
-
       return {
-        parametros: {
-          mes: nomeMes,
-          diasTrabalhados: metas.diasTrabalhados,
-          diasRestantes: metas.diasRestantes,
-          qualControle: metas.qualControle,
-          qualPos: metas.qualPos,
-        },
-        metaLoja:      { ...metas.metaLoja },
+        parametros: { mes: nomeMes, diasTrabalhados: metas.diasTrabalhados, diasRestantes: metas.diasRestantes, qualControle: metas.qualControle, qualPos: metas.qualPos },
+        metaLoja: { ...metas.metaLoja },
         metaConsultor: { ...metas.metaConsultor },
-        metaPos:       { ...metas.metaPos },
-        consultores: metas.consultoresNomes.map((nome, i) => ({
-          id: 'c' + Date.now() + '_' + i,
-          nome,
-          diario: criarDiarioZerado()
-        }))
+        metaPos: { ...metas.metaPos },
+        consultores: metas.consultoresNomes.map((nome, i) => ({ id: 'c' + Date.now() + '_' + i, nome, diario: criarDiarioZerado() }))
       };
     }
 
-    /* ═══════════════════════════════════════════════════════
-       ESTADO PADRÃO (primeira vez)
-       ═══════════════════════════════════════════════════════ */
     function gerarEstadoPadrao() {
       const setembro = criarMes('SETEMBRO / 2026');
-
-      // Popula diário do Daniel com dados reais
       const dDaniel = setembro.consultores[0].diario;
       dDaniel['CONTROLE FAT.'] = [75.99, 0, 279.95, 59.99, 99.98, 0, 0, 99.98, 0, 149.97, 0, 0, 0, 67.99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       dDaniel['PÓS FAT.']      = [119.99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -628,17 +616,9 @@
       dDaniel['PORTABILIDADE'] = [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       dDaniel['APARELHO']      = [1999, 3899, 0, 0, 0, 0, 999, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       dDaniel['ACESSÓRIOS']    = [354, 35, 813, 0, 70, 0, 0, 294, 773, 55, 0, 230, 0, 155, 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-
-      return {
-        versao: 6,
-        mesAtual: 'SETEMBRO / 2026',
-        meses: { 'SETEMBRO / 2026': setembro }
-      };
+      return { versao: 7, mesAtual: 'SETEMBRO / 2026', meses: { 'SETEMBRO / 2026': setembro } };
     }
 
-    /* ═══════════════════════════════════════════════════════
-       STATE
-       ═══════════════════════════════════════════════════════ */
     let state = null;
 
     function carregarEstado() {
@@ -646,10 +626,8 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          // Sanity + migração de arrays de diário
-          Object.keys(parsed.meses).forEach(nomeMes => {
-            const m = parsed.meses[nomeMes];
-            m.consultores.forEach(c => {
+          Object.keys(parsed.meses).forEach(nm => {
+            parsed.meses[nm].consultores.forEach(c => {
               LINHAS_DIARIO.forEach(k => {
                 if (!Array.isArray(c.diario[k])) c.diario[k] = new Array(DIAS_NO_MES).fill(0);
                 while (c.diario[k].length < DIAS_NO_MES) c.diario[k].push(0);
@@ -658,20 +636,12 @@
           });
           return parsed;
         }
-      } catch (e) { console.warn('Erro ao carregar estado:', e); }
+      } catch (e) { console.warn(e); }
       return gerarEstadoPadrao();
     }
-
-    function salvarEstado() {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-      catch (e) { console.warn('Erro ao salvar:', e); }
-    }
-
+    function salvarEstado() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {} }
     function mesAtivo() { return state.meses[state.mesAtual]; }
 
-    /* ═══════════════════════════════════════════════════════
-       FORMATAÇÃO
-       ═══════════════════════════════════════════════════════ */
     const fmtMoeda  = (v) => 'R$ ' + (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const fmtNumero = (v) => String(Number(v) || 0);
     const fmtValor  = (v, tipo) => tipo === 'moeda' ? fmtMoeda(v) : fmtNumero(v);
@@ -692,7 +662,6 @@
       return mesAtivo().consultores.reduce((s, c) => s + calcRealizadoConsultor(c, key), 0);
     }
 
-    // Descobre o último dia com valor > 0
     function ultimoDiaComValor() {
       const m = mesAtivo();
       let ultimo = 0;
@@ -706,9 +675,7 @@
       return ultimo;
     }
 
-    /* ═══════════════════════════════════════════════════════
-       RENDER: TABELA LOJA
-       ═══════════════════════════════════════════════════════ */
+    /* ═══ RENDER: TABELA LOJA ═══ */
     function renderResumoLoja() {
       const tbody = document.getElementById('tbody-loja');
       const m = mesAtivo();
@@ -732,14 +699,14 @@
             html += `<td rowspan="${cat.keys.length}" class="xl-vertical ${cat.cls}">${cat.cat}</td>`;
           }
           html += `<td class="xl-label">${key}</td>`;
-          html += `<td class="xl-value right num">${fmtValor(metaV, tipo)}</td>`;
-          html += `<td class="xl-value right num">${fmtValor(realV, tipo)}</td>`;
+          html += `<td class="xl-value num">${fmtValor(metaV, tipo)}</td>`;
+          html += `<td class="xl-value num">${fmtValor(realV, tipo)}</td>`;
           html += `<td class="${cls}">${pct.toFixed(0)}%</td>`;
           if (entregue) {
             html += `<td colspan="2" class="xl-entrega">META ENTREGUE</td>`;
           } else {
-            html += `<td class="xl-value right num falta-col" style="color:#475569;">${fmtValor(falta, tipo)}</td>`;
-            html += `<td class="xl-value right num dia-col xl-dia-val">${fmtValor(fazerDia, tipo)}</td>`;
+            html += `<td class="xl-value num falta-col" style="color:#475569;">${fmtValor(falta, tipo)}</td>`;
+            html += `<td class="xl-value num dia-col xl-dia-val">${fmtValor(fazerDia, tipo)}</td>`;
           }
           html += '</tr>';
         });
@@ -747,9 +714,7 @@
       tbody.innerHTML = html;
     }
 
-    /* ═══════════════════════════════════════════════════════
-       RENDER: CONSULTORES
-       ═══════════════════════════════════════════════════════ */
+    /* ═══ RENDER: CONSULTORES ═══ */
     function renderConsultores() {
       const grid = document.getElementById('gridConsultores');
       const m = mesAtivo();
@@ -812,14 +777,14 @@
               html += `<td rowspan="${cat.keys.length}" class="xl-vertical ${cat.cls}">${cat.cat}</td>`;
             }
             html += `<td class="xl-label">${key}</td>`;
-            html += `<td class="xl-value right num">${fmtValor(metaV, tipo)}</td>`;
-            html += `<td class="xl-value right num">${fmtValor(realV, tipo)}</td>`;
+            html += `<td class="xl-value num">${fmtValor(metaV, tipo)}</td>`;
+            html += `<td class="xl-value num">${fmtValor(realV, tipo)}</td>`;
             html += `<td class="${cls}">${pct.toFixed(0)}%</td>`;
             if (entregue) {
               html += `<td colspan="2" class="xl-entrega">META ENTREGUE</td>`;
             } else {
-              html += `<td class="xl-value right num falta-col" style="color:#475569;">${fmtValor(falta, tipo)}</td>`;
-              html += `<td class="xl-value right num dia-col xl-dia-val">${fmtValor(fazerDia, tipo)}</td>`;
+              html += `<td class="xl-value num falta-col" style="color:#475569;">${fmtValor(falta, tipo)}</td>`;
+              html += `<td class="xl-value num dia-col xl-dia-val">${fmtValor(fazerDia, tipo)}</td>`;
             }
             html += '</tr>';
           });
@@ -830,9 +795,7 @@
       grid.innerHTML = html;
     }
 
-    /* ═══════════════════════════════════════════════════════
-       RENDER: DIÁRIO
-       ═══════════════════════════════════════════════════════ */
+    /* ═══ RENDER: DIÁRIO ═══ */
     function renderDiario() {
       const grid = document.getElementById('gridDiario');
       const m = mesAtivo();
@@ -933,9 +896,7 @@
       if (input) input.value = total > 0 ? total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
     }
 
-    /* ═══════════════════════════════════════════════════════
-       RENDER: CONFIG
-       ═══════════════════════════════════════════════════════ */
+    /* ═══ RENDER: CONFIG ═══ */
     function renderConfig() {
       const m = mesAtivo();
       const p = m.parametros;
@@ -1021,7 +982,7 @@
             html += `<td rowspan="${cat.keys.length}" class="xl-vertical ${cat.cls}" style="font-size:9px;">${cat.cat}</td>`;
           }
           html += `<td class="xl-label" style="font-size:10px;">${key}${isFat ? ' <span style="font-size:8px;color:#94a3b8;">(auto)</span>' : ''}</td>`;
-          html += `<td style="padding:3px 5px;background:${isFat ? '#EAF4FB' : '#fff'};">
+          html += `<td style="padding:3px 5px;background:${isFat ? 'var(--xl-fat-bg)' : '#fff'};">
             <input type="text" inputmode="decimal" class="config-input"
                    value="${tipo === 'moeda' ? valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : valor}"
                    data-state="${chaveState}" data-key="${key}" ${disabled}>
@@ -1045,9 +1006,6 @@
       });
     }
 
-    /* ═══════════════════════════════════════════════════════
-       HEADER
-       ═══════════════════════════════════════════════════════ */
     function atualizarHeader() {
       const m = mesAtivo();
       document.getElementById('headerMes').textContent = `MÊS: ${m.parametros.mes}`;
@@ -1057,15 +1015,10 @@
       document.getElementById('headerQualPos').textContent = '| ' + m.parametros.qualPos;
     }
 
-    /* ═══════════════════════════════════════════════════════
-       SELETOR DE MÊS
-       ═══════════════════════════════════════════════════════ */
     function renderSelectMes() {
       const sel = document.getElementById('selectMes');
       const meses = Object.keys(state.meses).sort();
-      sel.innerHTML = meses.map(m =>
-        `<option value="${m}" ${m === state.mesAtual ? 'selected' : ''}>${m}</option>`
-      ).join('');
+      sel.innerHTML = meses.map(m => `<option value="${m}" ${m === state.mesAtual ? 'selected' : ''}>${m}</option>`).join('');
     }
 
     function selecionarMes(nome) {
@@ -1079,12 +1032,10 @@
 
     function adicionarMes() {
       const sugestao = (() => {
-        const d = new Date();
-        // se o último mês cadastrado for futuro, sugere o próximo
         const nomes = Object.keys(state.meses).sort();
         if (nomes.length) {
           const ultimo = nomes[nomes.length - 1];
-          const match = ultimo.match(/([A-ZÇ]+)\s*\/\s*(\d{4})/);
+          const match = ultimo.match(/([A-ZÇÃ]+)\s*\/\s*(\d{4})/);
           if (match) {
             const idx = MESES.indexOf(match[1]);
             const ano = parseInt(match[2]);
@@ -1095,19 +1046,16 @@
             }
           }
         }
-        return nomeMesAtual();
+        const d = new Date();
+        return `${MESES[d.getMonth()]} / ${d.getFullYear()}`;
       })();
 
       const nomeMes = prompt('Digite o nome do novo mês (ex: OUTUBRO / 2026):', sugestao);
       if (!nomeMes) return;
       const nomeLimpo = nomeMes.trim();
       if (!nomeLimpo) return;
-      if (state.meses[nomeLimpo]) {
-        alert('Já existe um mês com esse nome.');
-        return;
-      }
+      if (state.meses[nomeLimpo]) { alert('Já existe um mês com esse nome.'); return; }
 
-      // Copia metas do mês atual (mas diário vem zerado)
       const atual = mesAtivo();
       const baseMetas = {
         metaLoja: { ...atual.metaLoja },
@@ -1122,29 +1070,22 @@
 
       state.meses[nomeLimpo] = criarMes(nomeLimpo, baseMetas);
       state.mesAtual = nomeLimpo;
-      salvarEstado();
-      recalcAll();
-      renderSelectMes();
+      salvarEstado(); recalcAll(); renderSelectMes();
       toast(`Novo mês criado: ${nomeLimpo}`);
     }
 
     function removerMesAtual() {
-      if (Object.keys(state.meses).length <= 1) {
-        alert('Não é possível remover o único mês cadastrado.');
-        return;
-      }
+      if (Object.keys(state.meses).length <= 1) { alert('Não é possível remover o único mês cadastrado.'); return; }
       if (!confirm(`Remover o mês "${state.mesAtual}" e TODOS os seus dados?`)) return;
       delete state.meses[state.mesAtual];
       const nomes = Object.keys(state.meses).sort();
       state.mesAtual = nomes[0];
-      salvarEstado();
-      recalcAll();
-      renderSelectMes();
+      salvarEstado(); recalcAll(); renderSelectMes();
       toast('Mês removido!');
     }
 
     /* ═══════════════════════════════════════════════════════
-       EXPORTAR IMAGEM — estratégia robusta
+       EXPORTAR IMAGEM — estratégia VISÍVEL (com overlay)
        ═══════════════════════════════════════════════════════ */
     async function exportarImagem() {
       const btn = document.getElementById('btnExport');
@@ -1153,14 +1094,21 @@
       btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> Gerando...`;
       lucide.createIcons();
 
+      // Overlay de loading (fica ATRÁS do wrapper de exportação)
+      const overlay = document.createElement('div');
+      overlay.id = 'exportOverlay';
+      overlay.innerHTML = `<div class="spinner"></div> Gerando imagem...`;
+      document.body.appendChild(overlay);
+
       let wrapper = null;
+
       try {
         const tabAtiva = document.querySelector('.tab-content:not(.hidden)');
         const ultimoDia = ultimoDiaComValor();
         const diaTexto = ultimoDia > 0 ? String(ultimoDia).padStart(2, '0') : '—';
         const mesLabel = mesAtivo().parametros.mes;
 
-        // Wrapper fora do fluxo normal, mas no viewport (0,0) — método confiável para html2canvas
+        // Wrapper VISÍVEL acima do overlay
         wrapper = document.createElement('div');
         wrapper.style.cssText = `
           position: fixed;
@@ -1168,21 +1116,20 @@
           left: 0;
           width: max-content;
           max-width: none;
-          z-index: -1;
           background: #ffffff;
           padding: 32px;
-          pointer-events: none;
           font-family: 'Inter', sans-serif;
-          opacity: 0.001;
+          z-index: 99999;
+          box-shadow: 0 0 60px rgba(0,0,0,0.5);
         `;
 
         // Cabeçalho customizado
         const header = document.createElement('div');
-        header.style.cssText = 'margin-bottom:24px;padding-bottom:16px;border-bottom:3px solid #1F4E78;font-family:\'Inter\',sans-serif;';
+        header.style.cssText = 'margin-bottom:24px;padding-bottom:16px;border-bottom:3px solid #1F4E78;';
         header.innerHTML = `
-          <h1 style="font-size:22px;font-weight:900;color:#1F4E78;margin:0;text-transform:uppercase;letter-spacing:0.02em;">Acompanhamento de Vendas Diário</h1>
-          <p style="font-size:13px;font-weight:800;color:#475569;margin:6px 0 0 0;text-transform:uppercase;letter-spacing:0.08em;">LOJA TIM DOM JOSÉ - INFORTECA GARANHUNS</p>
-          <p style="font-size:12px;font-weight:700;color:#0e8890;margin:6px 0 0 0;text-transform:uppercase;letter-spacing:0.06em;">RESULTADO LOJA DE 01 A ${diaTexto} — MÊS: ${mesLabel}</p>
+          <h1 style="font-size:22px;font-weight:900;color:#1F4E78;margin:0;text-transform:uppercase;letter-spacing:0.02em;font-family:'Inter',sans-serif;">Acompanhamento de Vendas Diário</h1>
+          <p style="font-size:13px;font-weight:800;color:#475569;margin:6px 0 0 0;text-transform:uppercase;letter-spacing:0.08em;font-family:'Inter',sans-serif;">LOJA TIM DOM JOSÉ - INFORTECA GARANHUNS</p>
+          <p style="font-size:12px;font-weight:700;color:#0e8890;margin:6px 0 0 0;text-transform:uppercase;letter-spacing:0.06em;font-family:'Inter',sans-serif;">RESULTADO LOJA DE 01 A ${diaTexto} — MÊS: ${mesLabel}</p>
         `;
         wrapper.appendChild(header);
 
@@ -1197,50 +1144,51 @@
 
         document.body.appendChild(wrapper);
 
-        // Aguarda layout/renders
-        await new Promise(r => setTimeout(r, 250));
+        // Aguarda layout
+        await new Promise(r => setTimeout(r, 300));
 
         const canvas = await html2canvas(wrapper, {
           scale: 2,
           backgroundColor: '#ffffff',
           useCORS: true,
-          allowTaint: true,
           logging: false,
-          width: wrapper.scrollWidth,
-          height: wrapper.scrollHeight,
-          windowWidth: wrapper.scrollWidth,
-          windowHeight: wrapper.scrollHeight,
-          x: 0,
-          y: 0,
+          width: wrapper.offsetWidth,
+          height: wrapper.offsetHeight,
+          windowWidth: wrapper.offsetWidth,
+          windowHeight: wrapper.offsetHeight,
           scrollX: 0,
           scrollY: 0,
         });
 
-        document.body.removeChild(wrapper);
-        wrapper = null;
+        // Converte para blob e força download
+        canvas.toBlob((blob) => {
+          if (!blob) { alert('Erro ao gerar imagem: blob vazio'); return; }
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          const mesArquivo = state.mesAtual.replace(/[^\w]/g, '_');
+          const aba = tabAtiva.id.replace('tab-', '');
+          link.download = `acompanhamento_${aba}_${mesArquivo}.png`;
+          link.href = url;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          toast('Imagem baixada!');
+        }, 'image/png', 1.0);
 
-        const link = document.createElement('a');
-        const mesArquivo = state.mesAtual.replace(/[^\w]/g, '_');
-        const aba = tabAtiva.id.replace('tab-', '');
-        link.download = `acompanhamento_${aba}_${mesArquivo}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-
-        toast('Imagem baixada!');
       } catch (err) {
         console.error('Erro ao exportar:', err);
         alert('Erro ao gerar imagem: ' + err.message);
-        if (wrapper && wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
       } finally {
+        if (wrapper && wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
+        if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
         btn.disabled = false;
         btn.innerHTML = original;
         lucide.createIcons();
       }
     }
 
-    /* ═══════════════════════════════════════════════════════
-       TABS
-       ═══════════════════════════════════════════════════════ */
+    /* ═══ TABS ═══ */
     function initTabs() {
       const botoes = document.querySelectorAll('[data-tab]');
       const conteudos = document.querySelectorAll('.tab-content');
@@ -1265,17 +1213,10 @@
     }
 
     function recalcAll() {
-      renderResumoLoja();
-      renderConsultores();
-      renderDiario();
-      renderConfig();
-      atualizarHeader();
-      renderSelectMes();
+      renderResumoLoja(); renderConsultores(); renderDiario(); renderConfig();
+      atualizarHeader(); renderSelectMes();
     }
 
-    /* ═══════════════════════════════════════════════════════
-       AUTH
-       ═══════════════════════════════════════════════════════ */
     async function verificarAuth() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) { window.location.href = 'index.html'; return; }
@@ -1295,9 +1236,6 @@
       s.classList.toggle('z-40');
     }
 
-    /* ═══════════════════════════════════════════════════════
-       BOOT
-       ═══════════════════════════════════════════════════════ */
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
       state = carregarEstado();
