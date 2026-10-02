@@ -12,13 +12,15 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     :root {
-      --excel-blue:   #1F4E78;
-      --excel-green:  #00B050;
-      --excel-yellow: #FFC000;
-      --excel-red:    #FF0000;
-      --excel-gray:   #D9D9D9;
-      --excel-pos:    #305496;
-      --border-color: #b8c2cc;
+      --xl-blue:    #1F4E78;
+      --xl-blue-lt: #2E75B6;
+      --xl-green:   #92D050;
+      --xl-yellow:  #FFC000;
+      --xl-red:     #FF6B6B;
+      --xl-gray:    #D9D9D9;
+      --xl-gray-lt: #F2F2F2;
+      --xl-pos:     #305496;
+      --border:     #b8c2cc;
     }
     * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
     html, body { height: 100%; }
@@ -32,67 +34,97 @@
     ::-webkit-scrollbar-track { background: #f1f5f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-    .bg-excel-blue   { background-color: var(--excel-blue); }
-    .bg-excel-green  { background-color: var(--excel-green); }
-    .bg-excel-yellow { background-color: var(--excel-yellow); }
-    .bg-excel-red    { background-color: var(--excel-red); }
-    .bg-excel-gray   { background-color: var(--excel-gray); }
-    .bg-excel-pos    { background-color: var(--excel-pos); }
-
-    .vertical-text {
-      writing-mode: vertical-rl;
-      transform: rotate(180deg);
-      text-align: center;
-      letter-spacing: 0.08em;
-      font-size: 9px;
-      font-weight: 900;
-      text-transform: uppercase;
-      padding: 8px 2px;
-      user-select: none;
-    }
-
-    /* ═══ TABELAS — 7 COLUNAS (vertical + 6) ═══ */
-    .table-excel {
+    /* ═══ TABELA ESTILO EXCEL — 7 COLUNAS EXATAS ═══ */
+    .xl-table {
       border-collapse: collapse;
       width: 100%;
       table-layout: fixed;
       font-size: 11px;
       font-variant-numeric: tabular-nums;
+      border: 2px dashed #00B050;
     }
-    .table-excel th, .table-excel td {
-      border: 1px solid var(--border-color);
+    .xl-table th,
+    .xl-table td {
+      border: 1px solid var(--border);
       padding: 0;
+      height: 34px;
       vertical-align: middle;
-      height: 32px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .table-excel thead th {
-      background-color: #E7E6E6;
+
+    /* Cabeçalho da tabela (linha com nomes das colunas) */
+    .xl-table thead th {
+      background: var(--xl-gray);
       color: #1e293b;
-      font-weight: 800;
+      font-weight: 700;
       text-transform: uppercase;
       text-align: center;
-      font-size: 9px;
-      letter-spacing: 0.02em;
+      font-size: 9.5px;
       padding: 6px 4px;
-      height: 34px;
+      letter-spacing: 0.02em;
       line-height: 1.15;
     }
-    .table-excel thead th.bg-excel-blue { color: #fff; }
 
-    .table-excel td.value-cell { padding: 5px 8px; font-size: 11px; }
-    .table-excel td.label-cell {
+    /* Célula da categoria vertical */
+    .xl-vertical {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      text-align: center;
+      letter-spacing: 0.1em;
+      font-size: 9px;
+      font-weight: 900;
+      text-transform: uppercase;
+      padding: 10px 2px;
+      user-select: none;
+      background: var(--xl-blue);
+      color: #fff;
+    }
+    .xl-vertical.gross   { background: #2E75B6; }
+    .xl-vertical.produto { background: #305496; }
+
+    /* Células de conteúdo */
+    .xl-label {
       padding: 5px 8px;
-      font-size: 10px;
+      font-size: 10.5px;
       font-weight: 700;
       color: #334155;
       background: #fff;
     }
-    .table-excel .right  { text-align: right; }
-    .table-excel .center { text-align: center; }
-    .table-excel .num    { font-variant-numeric: tabular-nums; }
+    .xl-value {
+      padding: 5px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .xl-value.right  { text-align: right; }
+    .xl-value.center { text-align: center; }
+    .xl-value.num    { font-variant-numeric: tabular-nums; }
+
+    /* Coluna FALTA e FAZER POR DIA — fundo levemente azulado */
+    .xl-value.falta-col { background: #F7FBFD; }
+    .xl-value.dia-col   { background: #F0F9FB; }
+
+    /* Células coloridas */
+    .xl-cell-green  { background: var(--xl-green);  color: #1a3d00; font-weight: 900; text-align: center; }
+    .xl-cell-yellow { background: var(--xl-yellow); color: #1e293b; font-weight: 900; text-align: center; }
+    .xl-cell-red    { background: var(--xl-red);    color: #fff;    font-weight: 900; text-align: center; }
+
+    /* Célula META ENTREGUE (mescla FALTA + FAZER POR DIA) */
+    .xl-entrega {
+      background: var(--xl-green);
+      color: #1a3d00;
+      font-weight: 900;
+      text-align: center;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      padding: 5px 10px;
+    }
+
+    /* Valor FAZER POR DIA (destaque teal) */
+    .xl-dia-val { color: #0e8890; font-weight: 800; }
 
     /* Tabela diário */
     .table-diario {
@@ -109,7 +141,7 @@
       height: 28px;
     }
     .table-diario thead th {
-      background-color: var(--excel-gray);
+      background: var(--xl-gray);
       font-weight: 800;
       color: #1e293b;
       font-size: 9px;
@@ -117,7 +149,7 @@
       height: 30px;
     }
     .table-diario .label-col {
-      background-color: #E7E6E6;
+      background: #E7E6E6;
       text-align: left;
       font-weight: 700;
       padding: 4px 10px;
@@ -127,16 +159,13 @@
       min-width: 140px;
     }
     .table-diario .label-col.total-row {
-      background-color: var(--excel-blue);
+      background: var(--xl-blue);
       color: #fff;
       font-weight: 900;
     }
-
     .cell-input {
-      width: 100%;
-      height: 100%;
-      border: none;
-      background: transparent;
+      width: 100%; height: 100%;
+      border: none; background: transparent;
       text-align: center;
       font-size: 10px;
       font-family: inherit;
@@ -147,21 +176,12 @@
       min-width: 54px;
       cursor: text;
     }
-    .cell-input:hover { background: #fef9c3; }
-    .cell-input:focus {
-      background: #fef08a;
-      box-shadow: inset 0 0 0 2px #0e8890;
-      font-weight: 700;
-    }
+    .cell-input:hover  { background: #fef9c3; }
+    .cell-input:focus  { background: #fef08a; box-shadow: inset 0 0 0 2px #0e8890; font-weight: 700; }
     .cell-input.filled { background: #f0fdf4; color: #166534; font-weight: 700; }
-    .cell-input.filled:hover { background: #dcfce7; }
-    .cell-input.total-cell {
-      background: #dbeafe;
-      color: #1e40af;
-      font-weight: 800;
-      cursor: not-allowed;
-    }
+    .cell-input.total-cell { background: #dbeafe; color: #1e40af; font-weight: 800; cursor: not-allowed; }
 
+    /* Inputs de config */
     .config-input {
       width: 100%;
       border: 1.5px solid #cbd5e1;
@@ -169,12 +189,12 @@
       padding: 6px 10px;
       font-size: 12px;
       font-weight: 700;
-      color: var(--excel-blue);
+      color: var(--xl-blue);
       text-align: right;
       font-variant-numeric: tabular-nums;
-      transition: all 0.15s;
       background: #fff;
       font-family: inherit;
+      transition: all 0.15s;
     }
     .config-input:focus {
       outline: none;
@@ -186,13 +206,13 @@
 
     .tab-btn { transition: all 0.2s ease; }
     .tab-btn.active {
-      background-color: var(--excel-blue);
+      background: var(--xl-blue);
       color: #fff;
-      border-color: var(--excel-blue);
+      border-color: var(--xl-blue);
       box-shadow: 0 4px 12px -3px rgba(31,78,120,0.4);
     }
-    .tab-btn:not(.active) { background-color: #fff; color: #475569; border-color: #e2e8f0; }
-    .tab-btn:not(.active):hover { background-color: #f1f5f9; border-color: #cbd5e1; }
+    .tab-btn:not(.active) { background: #fff; color: #475569; border-color: #e2e8f0; }
+    .tab-btn:not(.active):hover { background: #f1f5f9; border-color: #cbd5e1; }
 
     .toast {
       position: fixed; bottom: 24px; right: 24px; z-index: 9999;
@@ -212,6 +232,48 @@
       100% { background: #f0fdf4; }
     }
     .saved-anim { animation: pulse-save 0.8s ease; }
+
+    /* Cabeçalho de cada card de consultor */
+    .card-header {
+      background: var(--xl-blue);
+      color: #fff;
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #b8c2cc;
+    }
+    .card-header h3 {
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .status-badge {
+      font-size: 9px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 4px 8px;
+      border-radius: 3px;
+      color: #fff;
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+    .status-badge.green  { background: #E60000; }
+    .status-badge.yellow { background: var(--xl-yellow); color: #1e293b; }
+    .status-badge.red    { background: #E60000; }
+
+    /* Card consultor */
+    .consultor-card {
+      background: #fff;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
   </style>
 </head>
 <body class="text-slate-800 h-screen flex overflow-hidden">
@@ -267,7 +329,7 @@
     </header>
 
     <div class="flex-1 overflow-y-auto p-4 md:p-6">
-      <div id="exportArea" class="bg-excel-blue rounded-t-2xl p-4 md:p-5 shadow-md mb-0 flex flex-col md:flex-row justify-between items-center text-white">
+      <div id="exportArea" class="bg-[#1F4E78] rounded-t-2xl p-4 md:p-5 shadow-md mb-0 flex flex-col md:flex-row justify-between items-center text-white">
         <div class="flex items-center gap-4">
           <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center p-1 shrink-0">
             <img src="/LOGOINFORTECATIM2026.png" alt="Inforteca" class="h-8 w-auto object-contain" onerror="this.style.display='none'">
@@ -312,28 +374,29 @@
 
       <div class="bg-white border border-slate-200 border-t-0 rounded-b-2xl shadow-sm p-4 md:p-6">
 
-        <!-- ABA RESUMO -->
         <div id="tab-resumo" class="tab-content">
-          <div class="rounded-2xl shadow-sm overflow-hidden mb-8 border border-slate-300">
-            <div class="bg-excel-blue px-4 py-2.5 border-b border-slate-400 flex justify-between items-center">
+          <div class="rounded-md overflow-hidden mb-8 border-2 border-dashed" style="border-color:#00B050;">
+            <div class="bg-[#1F4E78] px-4 py-2.5 flex justify-between items-center">
               <h3 class="text-white font-black tracking-widest text-xs uppercase">INFORTECA — LOJA GERAL</h3>
               <span class="bg-white/10 text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/20">
                 <span id="infoDiasTrab">0</span> dias trab. · <span id="infoDiasRest">0</span> rest.
               </span>
             </div>
             <div class="overflow-x-auto">
-              <table class="table-excel" id="tabela-loja">
+              <table class="xl-table">
                 <colgroup>
-                  <col style="width:34px;">    <!-- 1 vertical -->
-                  <col style="width:130px;">   <!-- 2 META LOJA -->
-                  <col style="width:115px;">   <!-- 3 REALIZADO -->
-                  <col style="width:95px;">    <!-- 4 PERCENT -->
-                  <col style="width:110px;">   <!-- 5 FALTA -->
-                  <col style="width:120px;">   <!-- 6 FAZER POR DIA -->
+                  <col style="width:34px;">
+                  <col style="width:140px;">
+                  <col style="width:120px;">
+                  <col style="width:120px;">
+                  <col style="width:95px;">
+                  <col style="width:115px;">
+                  <col style="width:130px;">
                 </colgroup>
                 <thead>
                   <tr>
-                    <th class="bg-excel-blue text-white"></th>
+                    <th></th>
+                    <th></th>
                     <th>META LOJA</th>
                     <th>REALIZADO</th>
                     <th>PERCENT. REAL %</th>
@@ -355,11 +418,10 @@
           <div class="grid grid-cols-1 xl:grid-cols-2 gap-6" id="gridConsultores"></div>
         </div>
 
-        <!-- ABA DIÁRIO -->
         <div id="tab-diario" class="tab-content hidden">
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
             <div class="flex items-center gap-3">
-              <div class="bg-excel-blue p-2 rounded-lg text-white">
+              <div class="bg-[#1F4E78] p-2 rounded-lg text-white">
                 <i data-lucide="calendar-days" class="w-4 h-4"></i>
               </div>
               <div>
@@ -373,7 +435,6 @@
           <div id="gridDiario" class="space-y-8"></div>
         </div>
 
-        <!-- ABA CONFIG -->
         <div id="tab-config" class="tab-content hidden">
           <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-6 flex items-start gap-2">
             <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
@@ -385,7 +446,7 @@
 
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
             <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
-              <div class="bg-excel-gray px-4 py-2 border-b border-slate-400">
+              <div class="bg-[#D9D9D9] px-4 py-2 border-b border-slate-400">
                 <h4 class="text-[11px] font-black text-slate-700 uppercase tracking-widest text-center">Parâmetros do Mês</h4>
               </div>
               <div class="p-4 space-y-3">
@@ -403,11 +464,11 @@
                 </div>
                 <div>
                   <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Qualidade Controle (%)</label>
-                  <input type="text" id="cfgQualControle" class="config-input mt-1" placeholder="Ex: 58,18%">
+                  <input type="text" id="cfgQualControle" class="config-input mt-1">
                 </div>
                 <div>
                   <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Qualidade Pós (%)</label>
-                  <input type="text" id="cfgQualPos" class="config-input mt-1" placeholder="Ex: 85%">
+                  <input type="text" id="cfgQualPos" class="config-input mt-1">
                 </div>
               </div>
             </div>
@@ -415,7 +476,7 @@
             <div class="lg:col-span-2 bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
               <div class="bg-[#0e8890] px-4 py-2 border-b border-slate-400 flex justify-between items-center">
                 <h4 class="text-[11px] font-black text-white uppercase tracking-widest">Consultores Ativos</h4>
-                <button onclick="adicionarConsultor()" class="bg-white/20 hover:bg-white/30 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors">
+                <button onclick="adicionarConsultor()" class="bg-white/20 hover:bg-white/30 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
                   <i data-lucide="plus" class="w-3 h-3"></i> Adicionar
                 </button>
               </div>
@@ -425,43 +486,31 @@
 
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
-              <div class="bg-excel-green px-4 py-2 border-b border-slate-400">
+              <div class="bg-[#92D050] px-4 py-2 border-b border-slate-400">
                 <h4 class="text-[11px] font-black text-white uppercase tracking-widest text-center">Meta Loja</h4>
               </div>
-              <table class="table-excel">
-                <colgroup>
-                  <col style="width:28px;">
-                  <col style="width:110px;">
-                  <col style="width:120px;">
-                </colgroup>
+              <table class="xl-table" style="border:none;">
+                <colgroup><col style="width:28px;"><col style="width:120px;"><col style="width:130px;"></colgroup>
                 <tbody id="tbody-meta-loja"></tbody>
               </table>
             </div>
 
             <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
-              <div class="bg-excel-yellow px-4 py-2 border-b border-slate-400">
+              <div class="bg-[#FFC000] px-4 py-2 border-b border-slate-400">
                 <h4 class="text-[11px] font-black text-white uppercase tracking-widest text-center">Meta por Consultor</h4>
               </div>
-              <table class="table-excel">
-                <colgroup>
-                  <col style="width:28px;">
-                  <col style="width:110px;">
-                  <col style="width:120px;">
-                </colgroup>
+              <table class="xl-table" style="border:none;">
+                <colgroup><col style="width:28px;"><col style="width:120px;"><col style="width:130px;"></colgroup>
                 <tbody id="tbody-meta-consultor"></tbody>
               </table>
             </div>
 
             <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
-              <div class="bg-excel-pos px-4 py-2 border-b border-slate-400">
+              <div class="bg-[#305496] px-4 py-2 border-b border-slate-400">
                 <h4 class="text-[11px] font-black text-white uppercase tracking-widest text-center">Meta Pós-Venda</h4>
               </div>
-              <table class="table-excel">
-                <colgroup>
-                  <col style="width:28px;">
-                  <col style="width:110px;">
-                  <col style="width:120px;">
-                </colgroup>
+              <table class="xl-table" style="border:none;">
+                <colgroup><col style="width:28px;"><col style="width:120px;"><col style="width:130px;"></colgroup>
                 <tbody id="tbody-meta-pos"></tbody>
               </table>
             </div>
@@ -471,18 +520,9 @@
 
       <div class="mt-6 flex flex-wrap items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Legenda:</span>
-        <div class="flex items-center gap-2">
-          <span class="w-4 h-4 rounded-sm" style="background: var(--excel-red);"></span>
-          <span class="text-[10px] font-bold text-slate-600 uppercase">Fora da Tendência &lt; 70%</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="w-4 h-4 rounded-sm" style="background: var(--excel-yellow);"></span>
-          <span class="text-[10px] font-bold text-slate-600 uppercase">Tendência de Entregar &gt; 70%</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="w-4 h-4 rounded-sm" style="background: var(--excel-green);"></span>
-          <span class="text-[10px] font-bold text-slate-600 uppercase">Meta Entregue / Superada &gt; 100%</span>
-        </div>
+        <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-sm" style="background:#FF6B6B;"></span><span class="text-[10px] font-bold text-slate-600 uppercase">Fora da Tendência &lt; 70%</span></div>
+        <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-sm" style="background:#FFC000;"></span><span class="text-[10px] font-bold text-slate-600 uppercase">Tendência de Entregar &gt; 70%</span></div>
+        <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-sm" style="background:#92D050;"></span><span class="text-[10px] font-bold text-slate-600 uppercase">Meta Entregue / Superada &gt; 100%</span></div>
       </div>
     </div>
   </main>
@@ -497,7 +537,7 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const STORAGE_KEY = 'inforteca_metas_v4';
+    const STORAGE_KEY = 'inforteca_metas_v5';
     const DIAS_NO_MES = 30;
 
     const TIPO_VALOR = {
@@ -507,9 +547,9 @@
     };
     const LINHAS_DIARIO = ['CONTROLE FAT.', 'PÓS FAT.', 'CONTROLE', 'PÓS', 'PORTABILIDADE', 'APARELHO', 'ACESSÓRIOS'];
     const CATEGORIAS = [
-      { cat: 'FATURAMENTO', keys: ['FAT TOTAL TIM', 'CONTROLE FAT.', 'PÓS FAT.'] },
-      { cat: 'GROSS',       keys: ['CONTROLE', 'PÓS', 'PORTABILIDADE'] },
-      { cat: 'PRODUTO',     keys: ['APARELHO', 'ACESSÓRIOS'] },
+      { cat: 'FATURAM.', keys: ['FAT TOTAL TIM', 'CONTROLE FAT.', 'PÓS FAT.'], cls: '' },
+      { cat: 'GROSS',    keys: ['CONTROLE', 'PÓS', 'PORTABILIDADE'],           cls: 'gross' },
+      { cat: 'PRODUTO',  keys: ['APARELHO', 'ACESSÓRIOS'],                     cls: 'produto' },
     ];
 
     function criarDiarioZerado() {
@@ -519,6 +559,16 @@
     }
 
     function gerarEstadoPadrao() {
+      const dGab = criarDiarioZerado();
+      // Preenchido com os dados da imagem do Gabriel
+      dGab['CONTROLE FAT.'] = new Array(DIAS_NO_MES).fill(0); dGab['CONTROLE FAT.'][0] = 1124.82;
+      dGab['PÓS FAT.']      = new Array(DIAS_NO_MES).fill(0); dGab['PÓS FAT.'][0]      = 429.96;
+      dGab['CONTROLE']      = new Array(DIAS_NO_MES).fill(0); dGab['CONTROLE'][0]      = 20;
+      dGab['PÓS']           = new Array(DIAS_NO_MES).fill(0); dGab['PÓS'][0]           = 4;
+      dGab['PORTABILIDADE'] = new Array(DIAS_NO_MES).fill(0); dGab['PORTABILIDADE'][0] = 9;
+      dGab['APARELHO']      = new Array(DIAS_NO_MES).fill(0); dGab['APARELHO'][0]      = 5467;
+      dGab['ACESSÓRIOS']    = new Array(DIAS_NO_MES).fill(0); dGab['ACESSÓRIOS'][0]    = 3031.10;
+
       const dDaniel = criarDiarioZerado();
       dDaniel['CONTROLE FAT.'] = [75.99, 0, 279.95, 59.99, 99.98, 0, 0, 99.98, 0, 149.97, 0, 0, 0, 67.99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       dDaniel['PÓS FAT.']      = [119.99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -535,7 +585,7 @@
         metaPos:       { 'FAT TOTAL TIM': 1900, 'CONTROLE FAT.': 1200, 'PÓS FAT.': 700, 'CONTROLE': 20, 'PÓS': 6, 'PORTABILIDADE': 8, 'APARELHO': 7500, 'ACESSÓRIOS': 6000 },
         consultores: [
           { id: 'c1', nome: 'DANIEL ALVES FERREIRA', diario: dDaniel },
-          { id: 'c2', nome: 'GABRIEL VALENÇA DE LIMA', diario: criarDiarioZerado() },
+          { id: 'c2', nome: 'GABRIEL VALENÇA DE LIMA', diario: dGab },
           { id: 'c3', nome: 'JEAN BRENO CARNEIRO DA SILVA', diario: criarDiarioZerado() },
         ]
       };
@@ -574,10 +624,10 @@
     const fmtValor  = (v, tipo) => tipo === 'moeda' ? fmtMoeda(v) : fmtNumero(v);
     const calcPct   = (real, meta) => meta ? (real / meta) * 100 : 0;
     const cap       = (s) => String(s||'').toLowerCase().split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
-    const corPct    = (pct) => {
-      if (pct >= 100) return { bg: 'bg-excel-green',  text: 'text-white' };
-      if (pct >= 70)  return { bg: 'bg-excel-yellow', text: 'text-white' };
-      return { bg: 'bg-excel-red', text: 'text-white' };
+    const cellClass = (pct) => {
+      if (pct >= 100) return 'xl-cell-green';
+      if (pct >= 70)  return 'xl-cell-yellow';
+      return 'xl-cell-red';
     };
 
     function somaDiario(c, key) { return (c.diario[key] || []).reduce((s, v) => s + (Number(v) || 0), 0); }
@@ -589,6 +639,9 @@
       return state.consultores.reduce((s, c) => s + calcRealizadoConsultor(c, key), 0);
     }
 
+    /* ═══════════════════════════════════════════════════════
+       RENDER: TABELA LOJA (mesmo padrão do consultor)
+       ═══════════════════════════════════════════════════════ */
     function renderResumoLoja() {
       const tbody = document.getElementById('tbody-loja');
       const meta = state.metaLoja;
@@ -602,22 +655,22 @@
           const pct   = calcPct(realV, metaV);
           const falta = Math.max(0, metaV - realV);
           const fazerDia = state.parametros.diasRestantes > 0 ? falta / state.parametros.diasRestantes : falta;
-          const c = corPct(pct);
+          const cls = cellClass(pct);
           const entregue = pct >= 100;
 
           html += '<tr>';
           if (idx === 0) {
-            html += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-blue text-white" style="border:1px solid var(--border-color);">${cat.cat}</td>`;
+            html += `<td rowspan="${cat.keys.length}" class="xl-vertical ${cat.cls}">${cat.cat}</td>`;
           }
-          html += `<td class="label-cell">${key}</td>`;
-          html += `<td class="value-cell right num">${fmtValor(metaV, tipo)}</td>`;
-          html += `<td class="value-cell right num">${fmtValor(realV, tipo)}</td>`;
-          html += `<td class="value-cell center ${c.bg} ${c.text}" style="font-weight:900;">${pct.toFixed(0)}%</td>`;
+          html += `<td class="xl-label">${key}</td>`;
+          html += `<td class="xl-value right num">${fmtValor(metaV, tipo)}</td>`;
+          html += `<td class="xl-value right num">${fmtValor(realV, tipo)}</td>`;
+          html += `<td class="${cls}">${pct.toFixed(0)}%</td>`;
           if (entregue) {
-            html += `<td colspan="2" class="value-cell center bg-excel-green text-white" style="font-weight:900;letter-spacing:0.06em;font-size:10px;text-transform:uppercase;">META ENTREGUE</td>`;
+            html += `<td colspan="2" class="xl-entrega">META ENTREGUE</td>`;
           } else {
-            html += `<td class="value-cell right num" style="color:#475569;">${fmtValor(falta, tipo)}</td>`;
-            html += `<td class="value-cell right num" style="font-weight:700;color:#0e8890;">${fmtValor(fazerDia, tipo)}</td>`;
+            html += `<td class="xl-value right num falta-col" style="color:#475569;">${fmtValor(falta, tipo)}</td>`;
+            html += `<td class="xl-value right num dia-col xl-dia-val">${fmtValor(fazerDia, tipo)}</td>`;
           }
           html += '</tr>';
         });
@@ -625,6 +678,9 @@
       tbody.innerHTML = html;
     }
 
+    /* ═══════════════════════════════════════════════════════
+       RENDER: CONSULTORES — LAYOUT IDÊNTICO AO PRINT
+       ═══════════════════════════════════════════════════════ */
     function renderConsultores() {
       const grid = document.getElementById('gridConsultores');
       const meta = state.metaConsultor;
@@ -635,38 +691,40 @@
         const realFat = calcRealizadoConsultor(consult, 'FAT TOTAL TIM');
         const pctFat  = calcPct(realFat, metaFat);
 
-        let statusBadge, statusCor;
-        if (pctFat >= 100) { statusBadge = 'META ENTREGUE'; statusCor = 'bg-excel-green'; }
-        else if (pctFat >= 70) { statusBadge = 'TENDÊNCIA'; statusCor = 'bg-excel-yellow'; }
-        else { statusBadge = 'FORA DA TENDÊNCIA'; statusCor = 'bg-excel-red'; }
+        let statusTxt, statusCls;
+        if (pctFat >= 100) { statusTxt = 'META ENTREGUE'; statusCls = 'green'; }
+        else if (pctFat >= 70) { statusTxt = 'TENDÊNCIA'; statusCls = 'yellow'; }
+        else { statusTxt = 'FORA DA TENDÊNCIA'; statusCls = 'red'; }
 
         html += `
-          <div class="bg-white rounded-xl shadow-sm overflow-hidden border-2 border-slate-300">
-            <div class="bg-excel-blue px-4 py-2.5 border-b border-slate-400 flex justify-between items-center">
-              <h3 class="text-white font-black tracking-widest text-[11px] uppercase truncate">${cap(consult.nome)}</h3>
-              <span class="${statusCor} text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider shrink-0 ml-2">${statusBadge}</span>
+          <div class="consultor-card">
+            <div class="card-header">
+              <h3>${cap(consult.nome)}</h3>
+              <span class="status-badge ${statusCls}">${statusTxt}</span>
             </div>
-            <div class="overflow-x-auto">
-              <table class="table-excel">
-                <colgroup>
-                  <col style="width:30px;">    <!-- 1 vertical -->
-                  <col style="width:120px;">   <!-- 2 META CONSULTOR -->
-                  <col style="width:110px;">   <!-- 3 REALIZADO -->
-                  <col style="width:60px;">    <!-- 4 % -->
-                  <col style="width:110px;">   <!-- 5 FALTA -->
-                  <col style="width:120px;">   <!-- 6 FAZER/DIA -->
-                </colgroup>
-                <thead>
-                  <tr>
-                    <th class="bg-excel-blue text-white"></th>
-                    <th>META CONSULTOR</th>
-                    <th>REALIZADO</th>
-                    <th>%</th>
-                    <th>FALTA</th>
-                    <th>FAZER/DIA</th>
-                  </tr>
-                </thead>
-                <tbody>`;
+
+            <table class="xl-table">
+              <colgroup>
+                <col style="width:34px;">
+                <col style="width:140px;">
+                <col style="width:120px;">
+                <col style="width:120px;">
+                <col style="width:95px;">
+                <col style="width:115px;">
+                <col style="width:130px;">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th></th>
+                  <th></th>
+                  <th>META CONSULTOR</th>
+                  <th>REALIZADO</th>
+                  <th>PERCENT. REAL %</th>
+                  <th>FALTA</th>
+                  <th>FAZER POR DIA</th>
+                </tr>
+              </thead>
+              <tbody>`;
 
         CATEGORIAS.forEach(cat => {
           cat.keys.forEach((key, idx) => {
@@ -676,32 +734,35 @@
             const pct   = calcPct(realV, metaV);
             const falta = Math.max(0, metaV - realV);
             const fazerDia = state.parametros.diasRestantes > 0 ? falta / state.parametros.diasRestantes : falta;
-            const c = corPct(pct);
+            const cls = cellClass(pct);
             const entregue = pct >= 100;
 
             html += '<tr>';
             if (idx === 0) {
-              html += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-blue text-white" style="border:1px solid var(--border-color);">${cat.cat}</td>`;
+              html += `<td rowspan="${cat.keys.length}" class="xl-vertical ${cat.cls}">${cat.cat}</td>`;
             }
-            html += `<td class="label-cell" style="font-size:10px;">${key}</td>`;
-            html += `<td class="value-cell right num">${fmtValor(metaV, tipo)}</td>`;
-            html += `<td class="value-cell right num">${fmtValor(realV, tipo)}</td>`;
-            html += `<td class="value-cell center ${c.bg} ${c.text}" style="font-weight:900;font-size:10px;">${pct.toFixed(0)}%</td>`;
+            html += `<td class="xl-label">${key}</td>`;
+            html += `<td class="xl-value right num">${fmtValor(metaV, tipo)}</td>`;
+            html += `<td class="xl-value right num">${fmtValor(realV, tipo)}</td>`;
+            html += `<td class="${cls}">${pct.toFixed(0)}%</td>`;
             if (entregue) {
-              html += `<td colspan="2" class="value-cell center bg-excel-green text-white" style="font-weight:900;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;">META ENTREGUE</td>`;
+              html += `<td colspan="2" class="xl-entrega">META ENTREGUE</td>`;
             } else {
-              html += `<td class="value-cell right num" style="color:#475569;font-size:10px;">${fmtValor(falta, tipo)}</td>`;
-              html += `<td class="value-cell right num" style="font-weight:700;color:#0e8890;font-size:10px;">${fmtValor(fazerDia, tipo)}</td>`;
+              html += `<td class="xl-value right num falta-col" style="color:#475569;">${fmtValor(falta, tipo)}</td>`;
+              html += `<td class="xl-value right num dia-col xl-dia-val">${fmtValor(fazerDia, tipo)}</td>`;
             }
             html += '</tr>';
           });
         });
 
-        html += `</tbody></table></div></div>`;
+        html += `</tbody></table></div>`;
       });
       grid.innerHTML = html;
     }
 
+    /* ═══════════════════════════════════════════════════════
+       RENDER: DIÁRIO
+       ═══════════════════════════════════════════════════════ */
     function renderDiario() {
       const grid = document.getElementById('gridDiario');
       let html = '';
@@ -709,7 +770,7 @@
       state.consultores.forEach((consult, cIdx) => {
         html += `
           <div class="bg-white rounded-xl shadow-sm overflow-hidden border-2 border-slate-300">
-            <div class="bg-excel-blue px-4 py-2 border-b border-slate-400 flex justify-between items-center">
+            <div class="bg-[#1F4E78] px-4 py-2 border-b border-slate-400 flex justify-between items-center">
               <h3 class="text-white font-black tracking-widest text-[11px] uppercase">${cap(consult.nome)}</h3>
               <span class="text-blue-200 text-[10px] font-bold uppercase">${DIAS_NO_MES} dias no mês</span>
             </div>
@@ -756,7 +817,6 @@
           valor = consult.diario[row][day] || 0;
         }
         input.value = formatarInput(valor, TIPO_VALOR[row]);
-
         if (row !== 'FAT TOTAL TIM') {
           input.addEventListener('change', onEditCell);
           input.addEventListener('blur', onEditCell);
@@ -769,9 +829,7 @@
     function formatarInput(v, tipo) {
       const n = Number(v) || 0;
       if (n === 0) return '';
-      return tipo === 'moeda'
-        ? n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-        : String(n);
+      return tipo === 'moeda' ? n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : String(n);
     }
     function parseValorInput(str) {
       if (!str) return 0;
@@ -779,37 +837,34 @@
       const n = parseFloat(s);
       return isNaN(n) ? 0 : n;
     }
-
     function onEditCell(e) {
       const input = e.target;
       const cIdx  = parseInt(input.dataset.c);
       const row   = input.dataset.row;
       const day   = parseInt(input.dataset.day);
-      const tipo  = TIPO_VALOR[row];
       const novoValor = parseValorInput(input.value);
 
       state.consultores[cIdx].diario[row][day] = novoValor;
-      input.value = formatarInput(novoValor, tipo);
+      input.value = formatarInput(novoValor, TIPO_VALOR[row]);
       input.classList.toggle('filled', novoValor > 0);
       input.classList.remove('saved-anim');
       void input.offsetWidth;
       input.classList.add('saved-anim');
-
       salvarEstado();
       atualizarFatTotalDia(cIdx, day);
       renderResumoLoja();
       renderConsultores();
     }
-
     function atualizarFatTotalDia(cIdx, day) {
       const consult = state.consultores[cIdx];
       const total = (Number(consult.diario['CONTROLE FAT.'][day]) || 0) + (Number(consult.diario['PÓS FAT.'][day]) || 0);
       const input = document.querySelector(`.cell-input[data-c="${cIdx}"][data-row="FAT TOTAL TIM"][data-day="${day}"]`);
-      if (input) {
-        input.value = total > 0 ? total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
-      }
+      if (input) input.value = total > 0 ? total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
     }
 
+    /* ═══════════════════════════════════════════════════════
+       RENDER: CONFIG
+       ═══════════════════════════════════════════════════════ */
     function renderConfig() {
       const p = state.parametros;
       document.getElementById('cfgMes').value = p.mes;
@@ -830,16 +885,13 @@
       renderBlocoMeta('tbody-meta-pos',       state.metaPos,       'metaPos');
     }
 
-    function bindConfig(id, callback) {
+    function bindConfig(id, cb) {
       const el = document.getElementById(id);
       const novoEl = el.cloneNode(true);
       el.parentNode.replaceChild(novoEl, el);
       novoEl.addEventListener('change', () => {
-        callback(novoEl.value);
-        salvarEstado();
-        atualizarHeader();
-        renderResumoLoja();
-        renderConsultores();
+        cb(novoEl.value); salvarEstado(); atualizarHeader();
+        renderResumoLoja(); renderConsultores();
       });
     }
 
@@ -849,11 +901,11 @@
       state.consultores.forEach((c, idx) => {
         html += `
           <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg p-2">
-            <span class="w-7 h-7 rounded-full bg-excel-blue text-white text-[10px] font-black flex items-center justify-center shrink-0">${idx + 1}</span>
+            <span class="w-7 h-7 rounded-full bg-[#1F4E78] text-white text-[10px] font-black flex items-center justify-center shrink-0">${idx + 1}</span>
             <input type="text" class="flex-1 bg-white border border-slate-200 rounded-md px-3 py-1.5 text-sm font-bold text-slate-700 focus:outline-none focus:border-[#0e8890]"
                    value="${c.nome.replace(/"/g, '&quot;')}"
                    onchange="renomearConsultor('${c.id}', this.value)">
-            <button onclick="removerConsultor('${c.id}')" class="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors">
+            <button onclick="removerConsultor('${c.id}')" class="p-1.5 text-red-500 hover:bg-red-50 rounded-md">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </div>`;
@@ -861,75 +913,57 @@
       cont.innerHTML = html;
       lucide.createIcons();
     }
-
     function renomearConsultor(id, novo) {
       const c = state.consultores.find(x => x.id === id);
       if (!c) return;
       c.nome = novo.trim() || c.nome;
-      salvarEstado();
-      renderConsultores();
-      renderDiario();
+      salvarEstado(); renderConsultores(); renderDiario();
       toast('Nome atualizado!');
     }
     function adicionarConsultor() {
       state.consultores.push({ id: 'c' + Date.now(), nome: 'NOVO CONSULTOR', diario: criarDiarioZerado() });
-      salvarEstado();
-      renderConfig();
-      renderConsultores();
-      renderDiario();
+      salvarEstado(); renderConfig(); renderConsultores(); renderDiario();
       toast('Consultor adicionado!');
     }
     function removerConsultor(id) {
       if (!confirm('Remover este consultor e TODOS os seus dados?')) return;
       state.consultores = state.consultores.filter(x => x.id !== id);
-      salvarEstado();
-      renderConfig();
-      renderConsultores();
-      renderDiario();
-      renderResumoLoja();
+      salvarEstado(); renderConfig(); renderConsultores(); renderDiario(); renderResumoLoja();
       toast('Consultor removido!');
     }
 
     function renderBlocoMeta(tbodyId, metaObj, chaveState) {
       const tbody = document.getElementById(tbodyId);
       let html = '';
-
       CATEGORIAS.forEach(cat => {
         cat.keys.forEach((key, idx) => {
           const tipo = TIPO_VALOR[key];
           const valor = metaObj[key] || 0;
           const disabled = key === 'FAT TOTAL TIM' ? 'disabled' : '';
-
           html += '<tr>';
           if (idx === 0) {
-            html += `<td rowspan="${cat.keys.length}" class="vertical-text bg-excel-green text-white" style="border:1px solid var(--border-color);font-size:9px;">${cat.cat}</td>`;
+            html += `<td rowspan="${cat.keys.length}" class="xl-vertical ${cat.cls}" style="font-size:9px;">${cat.cat}</td>`;
           }
-          html += `<td class="label-cell" style="font-size:10px;">${key}${key === 'FAT TOTAL TIM' ? ' <span style="font-size:8px;color:#94a3b8;">(auto)</span>' : ''}</td>`;
-          html += `<td style="padding:3px 5px;">
+          html += `<td class="xl-label" style="font-size:10px;">${key}${key === 'FAT TOTAL TIM' ? ' <span style="font-size:8px;color:#94a3b8;">(auto)</span>' : ''}</td>`;
+          html += `<td style="padding:3px 5px;background:#fff;">
             <input type="text" inputmode="decimal" class="config-input"
                    value="${tipo === 'moeda' ? valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : valor}"
                    data-state="${chaveState}" data-key="${key}" ${disabled}>
-          </td>`;
-          html += '</tr>';
+          </td></tr>`;
         });
       });
       tbody.innerHTML = html;
 
       tbody.querySelectorAll('input[data-state]').forEach(inp => {
         inp.addEventListener('change', () => {
-          const st  = inp.dataset.state;
-          const key = inp.dataset.key;
+          const st = inp.dataset.state, key = inp.dataset.key;
           state[st][key] = parseValorInput(inp.value);
           if (key === 'CONTROLE FAT.' || key === 'PÓS FAT.') {
             state[st]['FAT TOTAL TIM'] = (state[st]['CONTROLE FAT.'] || 0) + (state[st]['PÓS FAT.'] || 0);
             const fatInput = tbody.querySelector(`input[data-state="${st}"][data-key="FAT TOTAL TIM"]`);
-            if (fatInput) {
-              fatInput.value = state[st]['FAT TOTAL TIM'].toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            }
+            if (fatInput) fatInput.value = state[st]['FAT TOTAL TIM'].toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
           }
-          salvarEstado();
-          renderResumoLoja();
-          renderConsultores();
+          salvarEstado(); renderResumoLoja(); renderConsultores();
         });
         inp.addEventListener('focus', e => e.target.select());
       });
@@ -949,46 +983,30 @@
       btn.disabled = true;
       btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> Gerando...`;
       lucide.createIcons();
-
       try {
         const tabAtiva = document.querySelector('.tab-content:not(.hidden)');
         const clone = tabAtiva.cloneNode(true);
-        clone.querySelectorAll('.overflow-x-auto').forEach(el => {
-          el.style.overflow = 'visible';
-          el.style.width = 'auto';
-        });
-
+        clone.querySelectorAll('.overflow-x-auto').forEach(el => { el.style.overflow = 'visible'; el.style.width = 'auto'; });
         const wrapper = document.createElement('div');
-        wrapper.style.cssText = `
-          position: fixed; top: 0; left: -10000px;
-          background: #ffffff; padding: 24px; z-index: -1;
-          width: max-content; max-width: none;
-          font-family: 'Inter', sans-serif;
-        `;
+        wrapper.style.cssText = `position:fixed;top:0;left:-10000px;background:#fff;padding:24px;z-index:-1;width:max-content;max-width:none;font-family:'Inter',sans-serif;`;
         wrapper.appendChild(clone);
         document.body.appendChild(wrapper);
-
         await new Promise(r => setTimeout(r, 100));
-
         const canvas = await html2canvas(wrapper, {
           scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false,
           width: wrapper.scrollWidth, height: wrapper.scrollHeight,
           windowWidth: wrapper.scrollWidth, windowHeight: wrapper.scrollHeight,
         });
-
         document.body.removeChild(wrapper);
-
         const link = document.createElement('a');
         const mes = state.parametros.mes.replace(/[^\w]/g, '_');
-        const aba = tabAtiva.id.replace('tab-', '');
-        link.download = `acompanhamento_${aba}_${mes}.png`;
+        link.download = `acompanhamento_${tabAtiva.id.replace('tab-','')}_${mes}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
-
         toast('Imagem baixada!');
       } catch (err) {
         console.error(err);
-        alert('Erro ao gerar imagem: ' + err.message);
+        alert('Erro: ' + err.message);
       } finally {
         btn.disabled = false;
         btn.innerHTML = original;
@@ -1020,11 +1038,7 @@
     }
 
     function recalcAll() {
-      renderResumoLoja();
-      renderConsultores();
-      renderDiario();
-      renderConfig();
-      atualizarHeader();
+      renderResumoLoja(); renderConsultores(); renderDiario(); renderConfig(); atualizarHeader();
     }
 
     async function verificarAuth() {
