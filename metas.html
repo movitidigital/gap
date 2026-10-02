@@ -12,15 +12,16 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     :root {
-      --xl-blue:    #1F4E78;
-      --xl-blue-lt: #2E75B6;
-      --xl-green:   #92D050;
-      --xl-yellow:  #FFC000;
-      --xl-red:     #FF6B6B;
-      --xl-gray:    #D9D9D9;
-      --xl-pos:     #305496;
-      --xl-fat-bg:  #CFE2F3;
-      --border:     #b8c2cc;
+      --tim-blue:    #00417F;
+      --tim-blue-2:  #1F4E78;
+      --tim-red:     #E60000;
+      --xl-green:    #92D050;
+      --xl-yellow:   #FFC000;
+      --xl-red:      #FF6B6B;
+      --xl-gray:     #D9D9D9;
+      --xl-pos:      #305496;
+      --xl-fat-bg:   #CFE2F3;
+      --border:      #b8c2cc;
     }
     * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
     html, body { height: 100%; }
@@ -73,7 +74,7 @@
       text-transform: uppercase;
       padding: 10px 2px;
       user-select: none;
-      background: var(--xl-blue);
+      background: var(--tim-blue-2);
       color: #fff;
     }
     .xl-vertical.gross   { background: #2E75B6; }
@@ -117,13 +118,11 @@
     .xl-dia-val { color: #0e8890; font-weight: 800; }
 
     /* FAT TOTAL TIM — fundo azul médio com destaque */
-    .row-fat td {
-      background: var(--xl-fat-bg) !important;
-    }
+    .row-fat td { background: var(--xl-fat-bg) !important; }
     .row-fat td.xl-label {
-      color: #1F4E78;
+      color: var(--tim-blue-2);
       font-weight: 900;
-      border-left: 4px solid #1F4E78;
+      border-left: 4px solid var(--tim-blue-2);
     }
 
     /* Tabela diário */
@@ -159,7 +158,7 @@
       min-width: 140px;
     }
     .table-diario .label-col.total-row {
-      background: var(--xl-blue);
+      background: var(--tim-blue-2);
       color: #fff;
       font-weight: 900;
     }
@@ -188,7 +187,7 @@
       padding: 6px 10px;
       font-size: 12px;
       font-weight: 700;
-      color: var(--xl-blue);
+      color: var(--tim-blue-2);
       text-align: right;
       font-variant-numeric: tabular-nums;
       background: #fff;
@@ -205,9 +204,9 @@
 
     .tab-btn { transition: all 0.2s ease; }
     .tab-btn.active {
-      background: var(--xl-blue);
+      background: var(--tim-blue-2);
       color: #fff;
-      border-color: var(--xl-blue);
+      border-color: var(--tim-blue-2);
       box-shadow: 0 4px 12px -3px rgba(31,78,120,0.4);
     }
     .tab-btn:not(.active) { background: #fff; color: #475569; border-color: #e2e8f0; }
@@ -233,7 +232,7 @@
     .saved-anim { animation: pulse-save 0.8s ease; }
 
     .card-header {
-      background: var(--xl-blue);
+      background: var(--tim-blue-2);
       color: #fff;
       padding: 8px 14px;
       display: flex;
@@ -261,9 +260,9 @@
       flex-shrink: 0;
       margin-left: 8px;
     }
-    .status-badge.green  { background: #E60000; }
+    .status-badge.green  { background: var(--tim-red); }
     .status-badge.yellow { background: var(--xl-yellow); color: #1e293b; }
-    .status-badge.red    { background: #E60000; }
+    .status-badge.red    { background: var(--tim-red); }
 
     .consultor-card {
       background: #fff;
@@ -293,11 +292,39 @@
       margin-right: 12px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ═══ HEADER TIM PARA EXPORTAÇÃO ═══ */
+    .export-header {
+      background: linear-gradient(135deg, #00417F 0%, #1F4E78 100%);
+      padding: 20px 24px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .export-header .squares {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      display: grid;
+      grid-template-columns: repeat(2, 16px);
+      gap: 4px;
+    }
+    .export-header .squares span {
+      width: 16px;
+      height: 16px;
+      background: #E60000;
+      display: block;
+    }
+
+    /* Esconde na exportação */
+    .no-export { display: none !important; }
   </style>
 </head>
 <body class="text-slate-800 h-screen flex overflow-hidden">
 
-  <aside id="sidebar" class="w-64 bg-[#000033] text-white flex flex-col justify-between hidden md:flex transition-all duration-300 z-30 shadow-xl shrink-0">
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside id="sidebar" class="w-64 bg-[#000033] text-white flex flex-col justify-between hidden md:flex transition-all duration-300 z-30 shadow-xl shrink-0 no-export">
     <div>
       <div class="h-20 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
         <div class="flex items-center gap-2 min-w-0">
@@ -328,8 +355,11 @@
     </div>
   </aside>
 
+  <!-- ═══ MAIN ═══ -->
   <main class="flex-1 flex flex-col h-screen min-w-0 relative overflow-hidden">
-    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10 shrink-0">
+
+    <!-- Header (fora da exportação) -->
+    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10 shrink-0 no-export">
       <div class="flex items-center gap-3">
         <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
           <i data-lucide="menu" class="w-6 h-6"></i>
@@ -348,8 +378,20 @@
     </header>
 
     <div class="flex-1 overflow-y-auto p-4 md:p-6">
-      <div class="bg-[#1F4E78] rounded-t-2xl p-4 md:p-5 shadow-md flex flex-col md:flex-row justify-between items-center text-white">
-        <div class="flex items-center gap-4">
+
+      <!-- Cabeçalho TIM da página -->
+      <div class="rounded-t-2xl p-4 md:p-5 shadow-md flex flex-col md:flex-row justify-between items-center text-white no-export"
+           style="background: linear-gradient(135deg, #00417F 0%, #1F4E78 100%); position:relative; overflow:hidden;">
+
+        <!-- Quadrados TIM -->
+        <div style="position:absolute;top:14px;right:16px;display:grid;grid-template-columns:repeat(2,14px);gap:4px;opacity:0.9;">
+          <span style="width:14px;height:14px;background:#E60000;display:block;"></span>
+          <span style="width:14px;height:14px;background:#E60000;display:block;"></span>
+          <span style="width:14px;height:14px;background:#E60000;display:block;"></span>
+          <span style="width:14px;height:14px;background:#E60000;display:block;"></span>
+        </div>
+
+        <div class="flex items-center gap-4 relative z-10">
           <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center p-1 shrink-0">
             <img src="/LOGOINFORTECATIM2026.png" alt="Inforteca" class="h-8 w-auto object-contain" onerror="this.style.display='none'">
           </div>
@@ -358,7 +400,7 @@
             <p class="text-[11px] font-bold text-blue-100 uppercase tracking-widest mt-1">LOJA TIM DOM JOSÉ · INFORTECA GARANHUNS</p>
           </div>
         </div>
-        <div class="text-right mt-3 md:mt-0">
+        <div class="text-right mt-3 md:mt-0 relative z-10">
           <div class="text-sm font-bold" id="headerMes">MÊS: —</div>
           <div class="flex gap-4 mt-1 justify-end">
             <div class="text-[10px] font-bold uppercase text-blue-200">QUALIDADE CONTROLE <span class="text-white" id="headerQualControle">| —</span></div>
@@ -367,7 +409,8 @@
         </div>
       </div>
 
-      <div class="bg-white border border-slate-200 border-t-0 px-4 py-3 flex flex-wrap gap-3 items-center justify-between">
+      <!-- Barra de ações -->
+      <div class="bg-white border border-slate-200 border-t-0 px-4 py-3 flex flex-wrap gap-3 items-center justify-between no-export">
         <div class="flex flex-wrap gap-2">
           <button data-tab="resumo" class="tab-btn active px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
             <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Resumo
@@ -401,7 +444,6 @@
 
         <!-- ABA RESUMO -->
         <div id="tab-resumo" class="tab-content">
-          <!-- INFORTECA — mesmo grid dos consultores -->
           <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
             <div class="consultor-card">
               <div class="card-header">
@@ -447,7 +489,7 @@
 
         <!-- ABA DIÁRIO -->
         <div id="tab-diario" class="tab-content hidden">
-          <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200 no-export">
             <div class="flex items-center gap-3">
               <div class="bg-[#1F4E78] p-2 rounded-lg text-white">
                 <i data-lucide="calendar-days" class="w-4 h-4"></i>
@@ -547,7 +589,7 @@
         </div>
       </div>
 
-      <div class="mt-6 flex flex-wrap items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+      <div class="mt-6 flex flex-wrap items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm no-export">
         <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Legenda:</span>
         <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-sm" style="background:#FF6B6B;"></span><span class="text-[10px] font-bold text-slate-600 uppercase">Fora da Tendência &lt; 70%</span></div>
         <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-sm" style="background:#FFC000;"></span><span class="text-[10px] font-bold text-slate-600 uppercase">Tendência de Entregar &gt; 70%</span></div>
@@ -566,7 +608,7 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const STORAGE_KEY = 'inforteca_metas_v7';
+    const STORAGE_KEY = 'inforteca_metas_v8';
     const DIAS_NO_MES = 30;
 
     const TIPO_VALOR = {
@@ -616,7 +658,7 @@
       dDaniel['PORTABILIDADE'] = [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       dDaniel['APARELHO']      = [1999, 3899, 0, 0, 0, 0, 999, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       dDaniel['ACESSÓRIOS']    = [354, 35, 813, 0, 70, 0, 0, 294, 773, 55, 0, 230, 0, 155, 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-      return { versao: 7, mesAtual: 'SETEMBRO / 2026', meses: { 'SETEMBRO / 2026': setembro } };
+      return { versao: 8, mesAtual: 'SETEMBRO / 2026', meses: { 'SETEMBRO / 2026': setembro } };
     }
 
     let state = null;
@@ -675,7 +717,7 @@
       return ultimo;
     }
 
-    /* ═══ RENDER: TABELA LOJA ═══ */
+    /* ═══ RENDER LOJA ═══ */
     function renderResumoLoja() {
       const tbody = document.getElementById('tbody-loja');
       const m = mesAtivo();
@@ -714,7 +756,7 @@
       tbody.innerHTML = html;
     }
 
-    /* ═══ RENDER: CONSULTORES ═══ */
+    /* ═══ RENDER CONSULTORES ═══ */
     function renderConsultores() {
       const grid = document.getElementById('gridConsultores');
       const m = mesAtivo();
@@ -795,7 +837,7 @@
       grid.innerHTML = html;
     }
 
-    /* ═══ RENDER: DIÁRIO ═══ */
+    /* ═══ RENDER DIÁRIO ═══ */
     function renderDiario() {
       const grid = document.getElementById('gridDiario');
       const m = mesAtivo();
@@ -896,7 +938,7 @@
       if (input) input.value = total > 0 ? total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
     }
 
-    /* ═══ RENDER: CONFIG ═══ */
+    /* ═══ RENDER CONFIG ═══ */
     function renderConfig() {
       const m = mesAtivo();
       const p = m.parametros;
@@ -1084,184 +1126,155 @@
       toast('Mês removido!');
     }
 
-/* ═══════════════════════════════════════════════════════
-   EXPORTAR IMAGEM — v3 robusta (sem imgs, sem max-content solto)
-   ═══════════════════════════════════════════════════════ */
-async function exportarImagem() {
-  const btn = document.getElementById('btnExport');
-  const original = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> Gerando...`;
-  lucide.createIcons();
+    /* ═══════════════════════════════════════════════════════
+       EXPORTAR IMAGEM — v4 (header TIM + clone limpo)
+       ═══════════════════════════════════════════════════════ */
+    async function exportarImagem() {
+      const btn = document.getElementById('btnExport');
+      const original = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> Gerando...`;
+      lucide.createIcons();
 
-  const overlay = document.createElement('div');
-  overlay.id = 'exportOverlay';
-  overlay.innerHTML = `<div class="spinner"></div> Gerando imagem...`;
-  document.body.appendChild(overlay);
+      const overlay = document.createElement('div');
+      overlay.id = 'exportOverlay';
+      overlay.innerHTML = `<div class="spinner"></div> Gerando imagem...`;
+      document.body.appendChild(overlay);
 
-  let wrapper = null;
-  const LARGURA_MAX = 2400; // limite seguro
+      let wrapper = null;
 
-  try {
-    const tabAtiva = document.querySelector('.tab-content:not(.hidden)');
-    const ultimoDia = ultimoDiaComValor();
-    const diaTexto = ultimoDia > 0 ? String(ultimoDia).padStart(2, '0') : '—';
-    const mesLabel = mesAtivo().parametros.mes;
+      try {
+        const tabAtiva = document.querySelector('.tab-content:not(.hidden)');
+        const ultimoDia = ultimoDiaComValor();
+        const diaTexto = ultimoDia > 0 ? String(ultimoDia).padStart(2, '0') : '—';
+        const mesLabel = mesAtivo().parametros.mes;
 
-    // Wrapper fora da tela com largura controlada
-    wrapper = document.createElement('div');
-    wrapper.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: -99999px;
-      width: ${LARGURA_MAX}px;
-      max-width: ${LARGURA_MAX}px;
-      background: #ffffff;
-      padding: 24px;
-      font-family: 'Inter', sans-serif;
-      box-sizing: border-box;
-      overflow: hidden;
-    `;
+        // Wrapper fora da tela com largura controlada
+        wrapper = document.createElement('div');
+        wrapper.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: -99999px;
+          width: 1400px;
+          background: #ffffff;
+          padding: 24px;
+          font-family: 'Inter', sans-serif;
+          box-sizing: border-box;
+        `;
 
-    // ── Cabeçalho customizado (SEM IMG — só texto) ──
-    const header = document.createElement('div');
-    header.style.cssText = 'margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #1F4E78;display:flex;align-items:center;gap:16px;';
-    header.innerHTML = `
-      <div style="width:52px;height:52px;border-radius:50%;background:#0e8890;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;font-family:'Inter',sans-serif;flex-shrink:0;">IF</div>
-      <div style="flex:1;">
-        <h1 style="font-size:20px;font-weight:900;color:#1F4E78;margin:0;text-transform:uppercase;letter-spacing:0.02em;font-family:'Inter',sans-serif;line-height:1.15;">Acompanhamento de Vendas Diário</h1>
-        <p style="font-size:12px;font-weight:800;color:#475569;margin:5px 0 0 0;text-transform:uppercase;letter-spacing:0.08em;font-family:'Inter',sans-serif;">LOJA TIM DOM JOSÉ - INFORTECA GARANHUNS</p>
-        <p style="font-size:11px;font-weight:700;color:#0e8890;margin:4px 0 0 0;text-transform:uppercase;letter-spacing:0.06em;font-family:'Inter',sans-serif;">RESULTADO LOJA DE 01 A ${diaTexto} — MÊS: ${mesLabel}</p>
-      </div>
-    `;
-    wrapper.appendChild(header);
+        // ═══ HEADER TIM ═══
+        const header = document.createElement('div');
+        header.className = 'export-header';
+        header.innerHTML = `
+          <div class="squares">
+            <span></span><span></span>
+            <span></span><span></span>
+          </div>
 
-    // ── Clone da aba ativa ──
-    const clone = tabAtiva.cloneNode(true);
+          <div style="display:flex;align-items:center;gap:16px;position:relative;z-index:1;">
+            <div style="width:56px;height:56px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span style="color:#00417F;font-weight:900;font-size:20px;font-family:'Inter',sans-serif;letter-spacing:-0.02em;">IF</span>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <h1 style="color:#fff;font-size:22px;font-weight:900;margin:0;text-transform:uppercase;letter-spacing:0.02em;line-height:1.25;font-family:'Inter',sans-serif;">Acompanhamento de Vendas Diário</h1>
+              <p style="color:#CFE2F3;font-size:12px;font-weight:800;margin:6px 0 0 0;letter-spacing:0.12em;text-transform:uppercase;font-family:'Inter',sans-serif;">LOJA TIM DOM JOSÉ · INFORTECA GARANHUNS</p>
+            </div>
+          </div>
 
-    // 1. Remove TODAS as imagens (evita canvas tainted)
-    clone.querySelectorAll('img').forEach(img => {
-      const placeholder = document.createElement('div');
-      placeholder.style.cssText = img.style.cssText + ';background:#0e8890;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;';
-      placeholder.textContent = 'IF';
-      if (img.parentNode) img.parentNode.replaceChild(placeholder, img);
-    });
+          <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.25);display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1;flex-wrap:wrap;gap:8px;">
+            <span style="color:#fff;font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;font-family:'Inter',sans-serif;">RESULTADO LOJA DE 01 A ${diaTexto}</span>
+            <span style="color:#fff;font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;font-family:'Inter',sans-serif;">MÊS: ${mesLabel}</span>
+          </div>
+        `;
+        wrapper.appendChild(header);
 
-    // 2. Remove larguras "max-content" que estouram
-    clone.querySelectorAll('.overflow-x-auto').forEach(el => {
-      el.style.overflow = 'visible';
-      el.style.width = '100%';
-      el.style.maxWidth = '100%';
-    });
-    clone.querySelectorAll('table').forEach(t => {
-      t.style.width = '100%';
-      t.style.maxWidth = '100%';
-      t.style.tableLayout = 'fixed';
-    });
+        // ═══ CLONE DA ABA ═══
+        const clone = tabAtiva.cloneNode(true);
 
-    // 3. Força as tabelas do diário a mostrarem menos dias (com scroll horizontal no export)
-    clone.querySelectorAll('.table-diario').forEach(t => {
-      t.style.width = '100%';
-      t.style.minWidth = '0';
-    });
+        // Remove imagens
+        clone.querySelectorAll('img').forEach(img => {
+          const ph = document.createElement('div');
+          ph.style.cssText = 'width:36px;height:36px;background:#0e8890;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;font-family:Inter,sans-serif;';
+          ph.textContent = 'IF';
+          if (img.parentNode) img.parentNode.replaceChild(ph, img);
+        });
 
-    // 4. Expande containers internos
-    clone.querySelectorAll('div').forEach(d => {
-      if (d.style && d.style.width === 'max-content') d.style.width = '100%';
-      if (d.style && d.style.maxWidth === 'none') d.style.maxWidth = '100%';
-    });
+        // Remove no-export
+        clone.querySelectorAll('.no-export').forEach(el => el.remove());
 
-    wrapper.appendChild(clone);
-    document.body.appendChild(wrapper);
+        // Overflow
+        clone.querySelectorAll('.overflow-x-auto').forEach(el => {
+          el.style.overflow = 'visible';
+          el.style.width = 'auto';
+        });
 
-    // Aguarda render
-    await new Promise(r => setTimeout(r, 500));
+        wrapper.appendChild(clone);
+        document.body.appendChild(wrapper);
 
-    const larguraReal = Math.min(wrapper.scrollWidth, LARGURA_MAX);
-    const alturaReal = wrapper.scrollHeight;
+        await new Promise(r => setTimeout(r, 400));
 
-    console.log('[Export] Dimensões finais:', larguraReal, 'x', alturaReal);
+        const largura = wrapper.scrollWidth;
+        const altura = wrapper.scrollHeight;
 
-    if (larguraReal === 0 || alturaReal === 0) {
-      throw new Error('Wrapper com dimensões inválidas (0x0)');
+        console.log('[Export] Dimensões:', largura, 'x', altura);
+
+        let scale = 2;
+        if (largura * 2 > 8000 || altura * 2 > 8000) scale = 1;
+
+        const canvas = await html2canvas(wrapper, {
+          scale: scale,
+          backgroundColor: '#ffffff',
+          useCORS: true,
+          allowTaint: false,
+          logging: false,
+          width: largura,
+          height: altura,
+          windowWidth: largura,
+          windowHeight: altura,
+          scrollX: 0,
+          scrollY: 0,
+        });
+
+        if (!canvas || canvas.width === 0) throw new Error('Canvas inválido');
+
+        const mesArquivo = state.mesAtual.replace(/[^\w]/g, '_');
+        const aba = tabAtiva.id.replace('tab-', '');
+        const nomeArquivo = `acompanhamento_${aba}_${mesArquivo}.png`;
+
+        let blob = null;
+        try {
+          blob = await new Promise((resolve, reject) => {
+            canvas.toBlob(b => (b && b.size > 0) ? resolve(b) : reject(new Error('vazio')), 'image/png', 1.0);
+          });
+        } catch (e) { console.warn('[Export] toBlob falhou:', e.message); }
+
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.download = nomeArquivo;
+          link.href = url;
+          document.body.appendChild(link); link.click(); document.body.removeChild(link);
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
+        } else {
+          const dataUrl = canvas.toDataURL('image/png');
+          const link = document.createElement('a');
+          link.download = nomeArquivo;
+          link.href = dataUrl;
+          document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+
+        toast('Imagem baixada!');
+      } catch (err) {
+        console.error('[Export] Erro:', err);
+        alert('Erro ao gerar imagem:\n\n' + err.message);
+      } finally {
+        if (wrapper && wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
+        if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        btn.disabled = false;
+        btn.innerHTML = original;
+        lucide.createIcons();
+      }
     }
-
-    // Scale dinâmico
-    let scale = 2;
-    if (larguraReal * 2 > 8000 || alturaReal * 2 > 8000) scale = 1;
-
-    const canvas = await html2canvas(wrapper, {
-      scale: scale,
-      backgroundColor: '#ffffff',
-      useCORS: true,
-      allowTaint: false,
-      logging: false,
-      imageTimeout: 0,
-      removeContainer: false,
-      width: larguraReal,
-      height: alturaReal,
-      scrollX: 0,
-      scrollY: 0,
-      windowWidth: larguraReal,
-      windowHeight: alturaReal,
-    });
-
-    if (!canvas || canvas.width === 0 || canvas.height === 0) {
-      throw new Error('Canvas inválido: ' + (canvas ? `${canvas.width}x${canvas.height}` : 'null'));
-    }
-
-    console.log('[Export] Canvas:', canvas.width, 'x', canvas.height);
-
-    const mesArquivo = state.mesAtual.replace(/[^\w]/g, '_');
-    const aba = tabAtiva.id.replace('tab-', '');
-    const nomeArquivo = `acompanhamento_${aba}_${mesArquivo}.png`;
-
-    // Tenta toBlob → fallback toDataURL
-    let blob = null;
-    try {
-      blob = await new Promise((resolve, reject) => {
-        canvas.toBlob(b => {
-          if (b && b.size > 0) resolve(b);
-          else reject(new Error('Blob vazio'));
-        }, 'image/png', 1.0);
-      });
-    } catch (e) {
-      console.warn('[Export] toBlob falhou:', e.message);
-    }
-
-    if (blob) {
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.download = nomeArquivo;
-      link.href = url;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setTimeout(() => URL.revokeObjectURL(url), 2000);
-    } else {
-      const dataUrl = canvas.toDataURL('image/png');
-      if (!dataUrl || dataUrl.length < 100) throw new Error('DataURL inválida');
-      const link = document.createElement('a');
-      link.download = nomeArquivo;
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    toast('Imagem baixada!');
-
-  } catch (err) {
-    console.error('[Export] Erro:', err);
-    alert('Erro ao gerar imagem:\n\n' + err.message);
-  } finally {
-    if (wrapper && wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
-    if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
-    btn.disabled = false;
-    btn.innerHTML = original;
-    lucide.createIcons();
-  }
-}
 
     /* ═══ TABS ═══ */
     function initTabs() {
