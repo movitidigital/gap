@@ -5,36 +5,113 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Acompanhamento de Metas — PORTAL INFORTECA</title>
   <link rel="icon" type="image/png" href="favicon-portalinforteca.png">
+  
+  <!-- Configuração do Tailwind para Cores Customizadas e Dark Mode -->
+  <script>
+    tailwind = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              500: '#098c93',
+              600: '#0e8890',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
   <style>
+    /* Variáveis CSS com suporte a Light/Dark Mode */
     :root {
-      --tim-blue:    #00417F;
-      --tim-blue-2:  #1F4E78;
-      --tim-red:     #E60000;
-      --xl-green:    #92D050;
-      --xl-yellow:   #FFC000;
-      --xl-red:      #FF6B6B;
-      --xl-gray:     #D9D9D9;
-      --xl-pos:      #305496;
-      --xl-fat-bg:   #CFE2F3;
-      --border:      #b8c2cc;
+      --bg-body: #eef2f7;
+      --bg-card: #ffffff;
+      --bg-glass: rgba(255, 255, 255, 0.75);
+      --border: #e2e8f0;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      
+      --brand-1: #098c93;
+      --brand-2: #0e8890;
+      --brand-light: rgba(9, 140, 147, 0.1);
+      
+      --tim-red: #E60000;
+      --xl-green: #10b981;
+      --xl-yellow: #f59e0b;
+      --xl-red: #ef4444;
+      --xl-gray: #f8fafc;
+      --xl-pos: #0e8890;
+      --xl-fat-bg: #f0fdfa;
+      
+      --input-hover: #fef9c3;
+      --input-focus: #fef08a;
+      --input-filled: #f0fdf4;
+      --input-filled-text: #166534;
+      --input-total: #e0f2fe;
+      --input-total-text: #0369a1;
     }
+
+    .dark {
+      --bg-body: #0f172a;
+      --bg-card: #1e293b;
+      --bg-glass: rgba(30, 41, 59, 0.75);
+      --border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      --brand-light: rgba(9, 140, 147, 0.25);
+      
+      --xl-gray: #0f172a;
+      --xl-fat-bg: #115e59; /* Tons escuros de Teal/Brand */
+      
+      --input-hover: #334155;
+      --input-focus: #475569;
+      --input-filled: rgba(16, 185, 129, 0.2);
+      --input-filled-text: #6ee7b7;
+      --input-total: rgba(14, 136, 144, 0.25);
+      --input-total-text: #5eead4;
+    }
+
     * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
     html, body { height: 100%; }
     body {
-      font-family: 'Inter', sans-serif;
-      background: #eef2f7;
+      background: var(--bg-body);
+      color: var(--text-main);
       font-feature-settings: 'tnum' 1;
       -webkit-font-smoothing: antialiased;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
+    
     ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #f1f5f9; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
+    /* Glassmorphism Classes */
+    .glass {
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .glass-sidebar {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Tabelas */
     .xl-table {
       border-collapse: collapse;
       width: 100%;
@@ -53,14 +130,13 @@
     }
     .xl-table thead th {
       background: var(--xl-gray);
-      color: #1e293b;
+      color: var(--text-main);
       font-weight: 700;
       text-transform: uppercase;
       text-align: center;
       font-size: 9.5px;
       padding: 6px 4px;
       letter-spacing: 0.02em;
-      line-height: 1.15;
     }
 
     .xl-vertical {
@@ -73,39 +149,39 @@
       text-transform: uppercase;
       padding: 10px 2px;
       user-select: none;
-      background: var(--tim-blue-2);
+      background: var(--brand-2);
       color: #fff;
     }
-    .xl-vertical.gross   { background: #2E75B6; }
-    .xl-vertical.produto { background: #305496; }
+    .xl-vertical.gross   { background: var(--brand-1); }
+    .xl-vertical.produto { background: #334155; }
 
     .xl-label {
       padding: 5px 8px;
       font-size: 10.5px;
       font-weight: 700;
-      color: #334155;
-      background: #fff;
+      color: var(--text-muted);
+      background: var(--bg-card);
       text-align: left;
     }
     .xl-value {
       padding: 5px 10px;
       font-size: 11px;
       font-weight: 600;
-      color: #1e293b;
+      color: var(--text-main);
+      background: var(--bg-card);
       text-align: center;
-      font-variant-numeric: tabular-nums;
     }
 
-    .xl-value.falta-col { background: #F7FBFD; }
-    .xl-value.dia-col   { background: #F0F9FB; }
+    .xl-value.falta-col { background: var(--bg-body); }
+    .xl-value.dia-col   { background: var(--brand-light); }
 
-    .xl-cell-green  { background: var(--xl-green);  color: #1a3d00; font-weight: 900; text-align: center; }
-    .xl-cell-yellow { background: var(--xl-yellow); color: #1e293b; font-weight: 900; text-align: center; }
-    .xl-cell-red    { background: var(--xl-red);    color: #fff;    font-weight: 900; text-align: center; }
+    .xl-cell-green  { background: var(--xl-green);  color: #fff; font-weight: 900; text-align: center; }
+    .xl-cell-yellow { background: var(--xl-yellow); color: #fff; font-weight: 900; text-align: center; text-shadow: 0 1px 2px rgba(0,0,0,0.2);}
+    .xl-cell-red    { background: var(--xl-red);    color: #fff; font-weight: 900; text-align: center; }
 
     .xl-entrega {
       background: var(--xl-green);
-      color: #1a3d00;
+      color: #fff;
       font-weight: 900;
       text-align: center;
       text-transform: uppercase;
@@ -114,15 +190,16 @@
       padding: 5px 10px;
     }
 
-    .xl-dia-val { color: #0e8890; font-weight: 800; }
+    .xl-dia-val { color: var(--brand-1); font-weight: 800; }
 
     .row-fat td { background: var(--xl-fat-bg) !important; }
     .row-fat td.xl-label {
-      color: var(--tim-blue-2);
+      color: var(--brand-1);
       font-weight: 900;
-      border-left: 4px solid var(--tim-blue-2);
+      border-left: 4px solid var(--brand-1);
     }
 
+    /* Diário */
     .table-diario {
       border-collapse: collapse;
       width: max-content;
@@ -131,31 +208,32 @@
       font-variant-numeric: tabular-nums;
     }
     .table-diario th, .table-diario td {
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--border);
       text-align: center;
       padding: 0;
       height: 28px;
+      background: var(--bg-card);
     }
     .table-diario thead th {
       background: var(--xl-gray);
       font-weight: 800;
-      color: #1e293b;
+      color: var(--text-main);
       font-size: 9px;
       padding: 4px 2px;
       height: 30px;
     }
     .table-diario .label-col {
-      background: #E7E6E6;
+      background: var(--xl-gray);
       text-align: left;
       font-weight: 700;
       padding: 4px 10px;
       font-size: 10px;
-      color: #334155;
+      color: var(--text-muted);
       width: 140px;
       min-width: 140px;
     }
     .table-diario .label-col.total-row {
-      background: var(--tim-blue-2);
+      background: var(--brand-2);
       color: #fff;
       font-weight: 900;
     }
@@ -163,51 +241,53 @@
       width: 100%; height: 100%;
       border: none; background: transparent;
       text-align: center;
+      color: var(--text-main);
       font-size: 10px;
       font-family: inherit;
       font-variant-numeric: tabular-nums;
       padding: 5px 3px;
       outline: none;
-      transition: background 0.15s;
+      transition: all 0.2s;
       min-width: 54px;
       cursor: text;
     }
-    .cell-input:hover  { background: #fef9c3; }
-    .cell-input:focus  { background: #fef08a; box-shadow: inset 0 0 0 2px #0e8890; font-weight: 700; }
-    .cell-input.filled { background: #f0fdf4; color: #166534; font-weight: 700; }
-    .cell-input.total-cell { background: #dbeafe; color: #1e40af; font-weight: 800; cursor: not-allowed; }
+    .cell-input:hover  { background: var(--input-hover); }
+    .cell-input:focus  { background: var(--input-focus); box-shadow: inset 0 0 0 2px var(--brand-1); font-weight: 700; }
+    .cell-input.filled { background: var(--input-filled); color: var(--input-filled-text); font-weight: 700; }
+    .cell-input.total-cell { background: var(--input-total); color: var(--input-total-text); font-weight: 800; cursor: not-allowed; }
 
     .config-input {
       width: 100%;
-      border: 1.5px solid #cbd5e1;
+      border: 1.5px solid var(--border);
       border-radius: 6px;
       padding: 6px 10px;
       font-size: 12px;
       font-weight: 700;
-      color: var(--tim-blue-2);
+      color: var(--brand-1);
       text-align: right;
       font-variant-numeric: tabular-nums;
-      background: #fff;
+      background: var(--bg-card);
       font-family: inherit;
-      transition: all 0.15s;
+      transition: all 0.2s;
     }
     .config-input:focus {
       outline: none;
-      border-color: #0e8890;
-      box-shadow: 0 0 0 3px rgba(14,136,144,0.15);
-      background: #f0fdfa;
+      border-color: var(--brand-1);
+      box-shadow: 0 0 0 3px var(--brand-light);
+      background: var(--bg-body);
     }
-    .config-input:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+    .config-input:disabled { background: var(--bg-body); color: var(--text-muted); cursor: not-allowed; }
 
-    .tab-btn { transition: all 0.2s ease; }
+    /* Custom Tabs */
+    .tab-btn { transition: all 0.3s ease; }
     .tab-btn.active {
-      background: var(--tim-blue-2);
+      background: var(--brand-2);
       color: #fff;
-      border-color: var(--tim-blue-2);
-      box-shadow: 0 4px 12px -3px rgba(31,78,120,0.4);
+      border-color: var(--brand-2);
+      box-shadow: 0 4px 12px -3px rgba(9, 140, 147, 0.4);
     }
-    .tab-btn:not(.active) { background: #fff; color: #475569; border-color: #e2e8f0; }
-    .tab-btn:not(.active):hover { background: #f1f5f9; border-color: #cbd5e1; }
+    .tab-btn:not(.active) { background: var(--bg-card); color: var(--text-muted); border-color: var(--border); }
+    .tab-btn:not(.active):hover { background: var(--bg-body); border-color: var(--text-muted); }
 
     .toast {
       position: fixed; bottom: 24px; right: 24px; z-index: 9999;
@@ -219,23 +299,24 @@
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       pointer-events: none;
     }
+    .dark .toast { background: #fff; color: #0f172a; }
     .toast.show { opacity: 1; transform: translateY(0); }
 
     @keyframes pulse-save {
-      0% { background: #fef9c3; }
-      50% { background: #86efac; }
-      100% { background: #f0fdf4; }
+      0% { background: var(--input-hover); }
+      50% { background: var(--xl-green); }
+      100% { background: var(--input-filled); }
     }
     .saved-anim { animation: pulse-save 0.8s ease; }
 
     .card-header {
-      background: var(--tim-blue-2);
+      background: var(--brand-2);
       color: #fff;
       padding: 8px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid #b8c2cc;
+      border-bottom: 1px solid var(--border);
     }
     .card-header h3 {
       font-size: 11px;
@@ -246,6 +327,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    
     .status-badge {
       font-size: 9px;
       font-weight: 900;
@@ -257,20 +339,22 @@
       flex-shrink: 0;
       margin-left: 8px;
     }
-    .status-badge.green  { background: var(--tim-red); }
-    .status-badge.yellow { background: var(--xl-yellow); color: #1e293b; }
-    .status-badge.red    { background: var(--tim-red); }
+    .status-badge.green  { background: var(--xl-green); }
+    .status-badge.yellow { background: var(--xl-yellow); text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+    .status-badge.red    { background: var(--xl-red); }
 
     .consultor-card {
-      background: #fff;
-      border-radius: 4px;
+      background: var(--bg-card);
+      border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+      border: 1px solid var(--border);
     }
 
     #exportOverlay {
       position: fixed; inset: 0;
       background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
       z-index: 99998;
       display: flex; align-items: center; justify-content: center;
       color: #fff;
@@ -282,7 +366,7 @@
     #exportOverlay .spinner {
       width: 32px; height: 32px;
       border: 3px solid rgba(255,255,255,0.2);
-      border-top-color: #0e8890;
+      border-top-color: var(--brand-1);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
       margin-right: 12px;
@@ -290,7 +374,7 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .export-header {
-      background: linear-gradient(135deg, #00417F 0%, #1F4E78 100%);
+      background: linear-gradient(135deg, var(--brand-1) 0%, var(--brand-2) 100%);
       padding: 20px 24px;
       border-radius: 8px;
       margin-bottom: 20px;
@@ -308,133 +392,163 @@
     .export-header .squares span {
       width: 16px;
       height: 16px;
-      background: #E60000;
+      background: var(--tim-red);
       display: block;
     }
   </style>
 </head>
-<body class="text-slate-800 h-screen flex overflow-hidden">
+<body class="flex overflow-hidden transition-colors duration-300">
 
-  <aside id="sidebar" class="w-64 bg-[#000033] text-white flex flex-col justify-between hidden md:flex transition-all duration-300 z-30 shadow-xl shrink-0">
+  <!-- Sidebar com Glassmorphism Dark -->
+  <aside id="sidebar" class="w-64 glass-sidebar text-white flex flex-col justify-between hidden md:flex transition-all duration-300 z-30 shadow-2xl shrink-0">
     <div>
       <div class="h-20 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
-        <div class="flex items-center gap-2 min-w-0">
-          <img src="/LOGOINFORTECATIM2026.png" alt="Inforteca" class="h-9 w-auto object-contain shrink-0" onerror="this.style.display='none'">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center p-1 shrink-0">
+            <img src="/LOGOINFORTECATIM2026.png" alt="Inforteca" class="h-6 w-auto object-contain" onerror="this.style.display='none'">
+          </div>
           <div class="min-w-0">
-            <h1 class="text-sm font-black tracking-tight leading-none truncate">PORTAL INFORTECA</h1>
-            <p class="text-[9px] text-slate-400 font-medium uppercase tracking-widest mt-1 truncate">Loja TIM Dom José</p>
+            <h1 class="text-sm font-black tracking-tight leading-none truncate text-white">PORTAL INFORTECA</h1>
+            <p class="text-[9px] text-brand-500 font-bold uppercase tracking-widest mt-1 truncate">Loja TIM Dom José</p>
           </div>
         </div>
       </div>
-      <nav class="p-4 space-y-1.5 mt-2">
-        <p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Menu Principal</p>
-        <a href="dashboard.html" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer">
-          <i data-lucide="layout-dashboard" class="w-5 h-5 shrink-0"></i>
+      <nav class="p-4 space-y-2 mt-2">
+        <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Menu Principal</p>
+        <a href="dashboard.html" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-all cursor-pointer">
+          <i data-lucide="layout-dashboard" class="w-5 h-5 shrink-0 text-slate-400"></i>
           <span class="text-sm font-medium">Dashboard</span>
         </a>
-        <a href="metas.html" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium shadow-md shadow-[#0e8890]/20 cursor-pointer">
+        <a href="metas.html" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 bg-gradient-to-r from-brand-500 to-brand-600 text-white rounded-xl font-semibold shadow-lg shadow-brand-500/30 cursor-pointer">
           <i data-lucide="target" class="w-5 h-5 shrink-0"></i>
-          <span class="text-sm font-medium">Acompanhamento de Metas</span>
+          <span class="text-sm">Acompanhamento de Metas</span>
         </a>
       </nav>
     </div>
     <div class="p-4 border-t border-white/10">
-      <button onclick="terminarSessao()" class="flex items-center gap-3 px-3 py-2.5 w-full text-slate-300 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors text-sm font-medium cursor-pointer">
+      <button onclick="terminarSessao()" class="flex items-center gap-3 px-3 py-2.5 w-full text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all text-sm font-medium cursor-pointer">
         <i data-lucide="log-out" class="w-5 h-5 shrink-0"></i>
         <span>Encerrar Sessão</span>
       </button>
     </div>
   </aside>
 
+  <!-- Main Content -->
   <main class="flex-1 flex flex-col h-screen min-w-0 relative overflow-hidden">
 
-    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10 shrink-0">
-      <div class="flex items-center gap-3">
-        <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+    <!-- Header Glassmorphism -->
+    <header class="h-16 glass flex items-center justify-between px-6 z-20 shrink-0">
+      <div class="flex items-center gap-4">
+        <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
           <i data-lucide="menu" class="w-6 h-6"></i>
         </button>
-        <h2 class="text-lg font-bold text-[#000033]">Acompanhamento de Vendas Diário</h2>
+        <h2 class="text-lg font-bold text-slate-800 dark:text-white tracking-tight">Acompanhamento de Vendas</h2>
       </div>
+      
       <div class="flex items-center gap-4">
+        <!-- Theme Toggle -->
+        <button id="themeToggle" class="p-2 text-slate-500 hover:text-brand-500 dark:text-slate-400 dark:hover:text-brand-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Alternar Tema">
+          <i data-lucide="moon" class="w-5 h-5 dark:hidden"></i>
+          <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+        </button>
+
+        <div class="w-px h-6 bg-slate-300 dark:bg-slate-700 hidden sm:block"></div>
+
         <div class="text-right hidden sm:block">
-          <p id="userName" class="text-sm font-semibold text-slate-700 leading-none">Carregando...</p>
-          <p id="userPerm" class="text-xs text-slate-500 mt-1">...</p>
+          <p id="userName" class="text-sm font-bold text-slate-800 dark:text-white leading-none">Carregando...</p>
+          <p id="userPerm" class="text-xs text-brand-500 font-semibold mt-1">...</p>
         </div>
-        <div class="w-10 h-10 rounded-full bg-[#0e8890]/10 border border-[#0e8890]/20 flex items-center justify-center text-[#0e8890] font-bold">
+        <div class="w-10 h-10 rounded-full bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-500 font-bold shrink-0 shadow-inner">
           <i data-lucide="user" class="w-5 h-5"></i>
         </div>
       </div>
     </header>
 
-    <div class="flex-1 overflow-y-auto p-4 md:p-6">
+    <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
 
-      <div class="rounded-t-2xl p-4 md:p-5 shadow-md flex flex-col md:flex-row justify-between items-center text-white"
-           style="background: linear-gradient(135deg, #00417F 0%, #1F4E78 100%); position:relative; overflow:hidden;">
-        <div style="position:absolute;top:14px;right:16px;display:grid;grid-template-columns:repeat(2,14px);gap:4px;opacity:0.9;">
-          <span style="width:14px;height:14px;background:#E60000;display:block;"></span>
-          <span style="width:14px;height:14px;background:#E60000;display:block;"></span>
-          <span style="width:14px;height:14px;background:#E60000;display:block;"></span>
-          <span style="width:14px;height:14px;background:#E60000;display:block;"></span>
+      <!-- Header do Mês -->
+      <div class="rounded-2xl p-5 shadow-lg flex flex-col md:flex-row justify-between items-center text-white relative overflow-hidden"
+           style="background: linear-gradient(135deg, var(--brand-1) 0%, var(--brand-2) 100%);">
+        
+        <!-- Elemento Geométrico de Fundo -->
+        <div class="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-5 rounded-full blur-2xl"></div>
+        <div class="absolute right-20 -bottom-10 w-32 h-32 bg-black opacity-10 rounded-full blur-xl"></div>
+
+        <div style="position:absolute;top:16px;right:16px;display:grid;grid-template-columns:repeat(2,12px);gap:4px;opacity:0.9;">
+          <span style="width:12px;height:12px;background:var(--tim-red);border-radius:2px;display:block;"></span>
+          <span style="width:12px;height:12px;background:var(--tim-red);border-radius:2px;display:block;"></span>
+          <span style="width:12px;height:12px;background:var(--tim-red);border-radius:2px;display:block;"></span>
+          <span style="width:12px;height:12px;background:var(--tim-red);border-radius:2px;display:block;"></span>
         </div>
+        
         <div class="flex items-center gap-4 relative z-10">
-          <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center p-1 shrink-0">
-            <img src="/LOGOINFORTECATIM2026.png" alt="Inforteca" class="h-8 w-auto object-contain" onerror="this.style.display='none'">
+          <div class="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center p-2 shrink-0 shadow-inner">
+            <i data-lucide="bar-chart-2" class="w-8 h-8 text-white"></i>
           </div>
           <div>
-            <h1 class="text-lg md:text-2xl font-black tracking-tight uppercase">Acompanhamento de Vendas Diário</h1>
-            <p class="text-[11px] font-bold text-blue-100 uppercase tracking-widest mt-1">LOJA TIM DOM JOSÉ · INFORTECA GARANHUNS</p>
+            <h1 class="text-xl md:text-2xl font-black tracking-tight uppercase drop-shadow-md">Acompanhamento Diário</h1>
+            <p class="text-[11px] font-bold text-white/80 uppercase tracking-widest mt-1">LOJA TIM DOM JOSÉ · INFORTECA</p>
           </div>
         </div>
-        <div class="text-right mt-3 md:mt-0 relative z-10">
-          <div class="text-sm font-bold" id="headerMes">MÊS: —</div>
-          <div class="flex gap-4 mt-1 justify-end">
-            <div class="text-[10px] font-bold uppercase text-blue-200">QUALIDADE CONTROLE <span class="text-white" id="headerQualControle">| —</span></div>
-            <div class="text-[10px] font-bold uppercase text-blue-200">QUALIDADE PÓS <span class="text-white" id="headerQualPos">| —</span></div>
+        
+        <div class="text-center md:text-right mt-4 md:mt-0 relative z-10 bg-black/20 p-3 rounded-xl border border-white/10 backdrop-blur-md">
+          <div class="text-sm font-black tracking-wider text-white drop-shadow-sm" id="headerMes">MÊS: —</div>
+          <div class="flex flex-wrap justify-center md:justify-end gap-3 mt-1.5">
+            <div class="text-[9px] font-bold uppercase text-white/70">QUALIDADE CONTROLE <span class="text-white ml-1" id="headerQualControle">| —</span></div>
+            <div class="text-[9px] font-bold uppercase text-white/70">QUALIDADE PÓS <span class="text-white ml-1" id="headerQualPos">| —</span></div>
           </div>
         </div>
       </div>
 
-      <div class="bg-white border border-slate-200 border-t-0 px-4 py-3 flex flex-wrap gap-3 items-center justify-between">
+      <!-- Controles (Abas e Ações) -->
+      <div class="bg-card border border-border rounded-xl p-3 flex flex-wrap gap-4 items-center justify-between shadow-sm" style="background-color: var(--bg-card); border-color: var(--border);">
         <div class="flex flex-wrap gap-2">
-          <button data-tab="resumo" class="tab-btn active px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
-            <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Resumo
+          <button data-tab="resumo" class="tab-btn active px-4 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
+            <i data-lucide="pie-chart" class="w-4 h-4"></i> Resumo
           </button>
-          <button data-tab="diario" class="tab-btn px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
+          <button data-tab="diario" class="tab-btn px-4 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
             <i data-lucide="calendar-days" class="w-4 h-4"></i> Diário
           </button>
-          <button data-tab="config" class="tab-btn px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
-            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i> Parâmetros & Metas
+          <button data-tab="config" class="tab-btn px-4 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i> Parâmetros
           </button>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2">
-          <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Mês:</label>
+        <div class="flex flex-wrap items-center gap-2 p-1">
+          <label class="text-[10px] font-black text-muted uppercase tracking-wider hidden sm:block" style="color: var(--text-muted)">Período:</label>
           <select id="selectMes" onchange="selecionarMes(this.value)"
-            class="bg-slate-50 border border-slate-200 text-slate-800 font-bold rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0e8890]"></select>
-          <button onclick="adicionarMes()" class="bg-[#0e8890] hover:bg-[#0b6c72] text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors">
-            <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i> Novo Mês
+            class="bg-body border border-border text-main font-bold rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-brand-1 transition-colors"
+            style="background-color: var(--bg-body); color: var(--text-main); border-color: var(--border);"></select>
+          
+          <button onclick="adicionarMes()" class="bg-brand-500 hover:bg-brand-600 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm">
+            <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">Novo</span>
           </button>
-          <button onclick="removerMesAtual()" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 border border-red-200 transition-colors" title="Remover mês atual">
+          <button onclick="removerMesAtual()" class="bg-red-500/10 hover:bg-red-500/20 text-red-500 px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 border border-red-500/20 transition-colors" title="Remover mês atual">
             <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
           </button>
-          <div class="w-px h-6 bg-slate-200 mx-1"></div>
-          <button onclick="exportarImagem()" id="btnExport" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors">
+          
+          <div class="w-px h-6 bg-border mx-1 hidden sm:block" style="background-color: var(--border);"></div>
+          
+          <button onclick="exportarImagem()" id="btnExport" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm shadow-emerald-600/20">
             <i data-lucide="image-down" class="w-3.5 h-3.5"></i> Baixar Imagem
           </button>
         </div>
       </div>
 
-      <div class="bg-white border border-slate-200 border-t-0 rounded-b-2xl shadow-sm p-4 md:p-6">
-
-        <div id="tab-resumo" class="tab-content">
-          <div class="mb-8">
-            <div class="consultor-card" style="width:100%;">
-              <div class="card-header">
-                <h3>INFORTECA — LOJA GERAL</h3>
-                <span class="text-blue-100 text-[10px] font-bold uppercase tracking-widest">
-                  <span id="infoDiasTrab">0</span> trab · <span id="infoDiasRest">0</span> rest
-                </span>
-              </div>
+      <!-- CONTEÚDO DAS ABAS -->
+      <div class="pb-6">
+        
+        <!-- ABA: RESUMO -->
+        <div id="tab-resumo" class="tab-content space-y-6">
+          
+          <div class="consultor-card">
+            <div class="card-header">
+              <h3 class="flex items-center gap-2"><i data-lucide="store" class="w-4 h-4"></i> INFORTECA — LOJA GERAL</h3>
+              <span class="text-white/80 text-[10px] font-bold uppercase tracking-widest bg-black/20 px-2 py-1 rounded">
+                <span id="infoDiasTrab">0</span> trab · <span id="infoDiasRest">0</span> rest
+              </span>
+            </div>
+            <div class="overflow-x-auto">
               <table class="xl-table">
                 <colgroup>
                   <col style="width:34px;">
@@ -461,130 +575,178 @@
             </div>
           </div>
 
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-2">
-              <i data-lucide="users" class="w-4 h-4 text-[#0e8890]"></i>
-              Desempenho por Consultor
+          <div class="flex items-center gap-3">
+            <div class="h-px bg-border flex-1" style="background-color: var(--border);"></div>
+            <h3 class="text-xs font-black uppercase tracking-widest flex items-center gap-2" style="color: var(--brand-1);">
+              <i data-lucide="users" class="w-4 h-4"></i> Desempenho da Equipe
             </h3>
+            <div class="h-px bg-border flex-1" style="background-color: var(--border);"></div>
           </div>
+          
           <div class="grid grid-cols-1 xl:grid-cols-2 gap-6" id="gridConsultores"></div>
         </div>
 
+        <!-- ABA: DIÁRIO -->
         <div id="tab-diario" class="tab-content hidden">
-          <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
-            <div class="flex items-center gap-3">
-              <div class="bg-[#1F4E78] p-2 rounded-lg text-white">
-                <i data-lucide="calendar-days" class="w-4 h-4"></i>
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-6 p-4 rounded-xl border border-border shadow-sm" style="background-color: var(--bg-card); border-color: var(--border);">
+            <div class="flex items-center gap-4">
+              <div class="bg-brand-1/10 p-2.5 rounded-xl text-brand-1 border border-brand-1/20">
+                <i data-lucide="calendar-check" class="w-5 h-5"></i>
               </div>
               <div>
-                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Acompanhamento por Dia</p>
-                <p class="text-xs text-slate-600 font-semibold">
-                  Clique em qualquer célula para preencher · <span class="text-emerald-600 font-bold">FAT TOTAL TIM</span> é auto-calculado
+                <p class="text-[11px] font-black uppercase tracking-widest" style="color: var(--brand-1);">Lançamentos Diários</p>
+                <p class="text-xs font-medium mt-0.5" style="color: var(--text-muted);">
+                  Clique nas células para preencher · <span class="text-emerald-500 font-bold">FAT TOTAL TIM</span> é automático
                 </p>
               </div>
             </div>
           </div>
-          <div id="gridDiario" class="space-y-8"></div>
+          <div id="gridDiario" class="space-y-6"></div>
         </div>
 
-        <div id="tab-config" class="tab-content hidden">
-          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-6 flex items-start gap-2">
-            <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
+        <!-- ABA: CONFIGURAÇÕES -->
+        <div id="tab-config" class="tab-content hidden space-y-6">
+          <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex items-start gap-3">
+            <i data-lucide="info" class="w-5 h-5 text-amber-500 shrink-0 mt-0.5"></i>
             <div>
-              <p class="text-xs text-amber-800 font-bold">Todos os valores abaixo são editáveis.</p>
-              <p class="text-[11px] text-amber-700">Salvos automaticamente por mês. Ao criar um novo mês, as metas são copiadas mas os valores do diário vêm em branco.</p>
+              <p class="text-sm text-amber-600 dark:text-amber-400 font-bold">Gerenciamento de Metas e Parâmetros</p>
+              <p class="text-xs text-amber-700/80 dark:text-amber-500/80 mt-1">Modificações aqui são salvas automaticamente no mês selecionado. Novos meses iniciam zerados herdando estas metas.</p>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-            <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
-              <div class="bg-[#D9D9D9] px-4 py-2 border-b border-slate-400">
-                <h4 class="text-[11px] font-black text-slate-700 uppercase tracking-widest text-center">Parâmetros do Mês</h4>
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <!-- Params -->
+            <div class="consultor-card flex flex-col">
+              <div class="card-header bg-slate-700">
+                <h4 class="text-[11px] font-black uppercase tracking-widest"><i data-lucide="settings-2" class="w-3.5 h-3.5 inline mr-1"></i> Parâmetros do Mês</h4>
               </div>
-              <div class="p-4 space-y-3">
+              <div class="p-5 space-y-4 flex-1">
                 <div>
-                  <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Mês de Referência</label>
-                  <input type="text" id="cfgMes" class="config-input mt-1" style="text-align:left;">
+                  <label class="text-[10px] font-black uppercase tracking-wider" style="color: var(--text-muted);">Mês de Referência</label>
+                  <input type="text" id="cfgMes" class="config-input mt-1.5" style="text-align:left;">
                 </div>
-                <div>
-                  <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Dias Trabalhados Mês</label>
-                  <input type="number" id="cfgDiasTrab" class="config-input mt-1" min="0" max="31">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="text-[10px] font-black uppercase tracking-wider" style="color: var(--text-muted);">Dias Trab.</label>
+                    <input type="number" id="cfgDiasTrab" class="config-input mt-1.5" min="0" max="31">
+                  </div>
+                  <div>
+                    <label class="text-[10px] font-black uppercase tracking-wider" style="color: var(--text-muted);">Dias Rest.</label>
+                    <input type="number" id="cfgDiasRest" class="config-input mt-1.5" min="0" max="31">
+                  </div>
                 </div>
-                <div>
-                  <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Dias Restantes Mês</label>
-                  <input type="number" id="cfgDiasRest" class="config-input mt-1" min="0" max="31">
-                </div>
-                <div>
-                  <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Qualidade Controle (%)</label>
-                  <input type="text" id="cfgQualControle" class="config-input mt-1">
-                </div>
-                <div>
-                  <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Qualidade Pós (%)</label>
-                  <input type="text" id="cfgQualPos" class="config-input mt-1">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="text-[10px] font-black uppercase tracking-wider" style="color: var(--text-muted);">Qual. Controle</label>
+                    <input type="text" id="cfgQualControle" class="config-input mt-1.5">
+                  </div>
+                  <div>
+                    <label class="text-[10px] font-black uppercase tracking-wider" style="color: var(--text-muted);">Qual. Pós</label>
+                    <input type="text" id="cfgQualPos" class="config-input mt-1.5">
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="lg:col-span-2 bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
-              <div class="bg-[#0e8890] px-4 py-2 border-b border-slate-400 flex justify-between items-center">
-                <h4 class="text-[11px] font-black text-white uppercase tracking-widest">Consultores Ativos</h4>
-                <button onclick="adicionarConsultor()" class="bg-white/20 hover:bg-white/30 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
-                  <i data-lucide="plus" class="w-3 h-3"></i> Adicionar
+            <!-- Equipe -->
+            <div class="xl:col-span-2 consultor-card flex flex-col">
+              <div class="card-header" style="background: var(--brand-1);">
+                <h4 class="text-[11px] font-black uppercase tracking-widest"><i data-lucide="users" class="w-3.5 h-3.5 inline mr-1"></i> Equipe Comercial</h4>
+                <button onclick="adicionarConsultor()" class="bg-black/20 hover:bg-black/30 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors">
+                  <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Adicionar
                 </button>
               </div>
-              <div id="listaConsultores" class="p-4 space-y-2"></div>
+              <div id="listaConsultores" class="p-5 space-y-3 flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3 content-start"></div>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
-              <div class="bg-[#92D050] px-4 py-2 border-b border-slate-400">
-                <h4 class="text-[11px] font-black text-white uppercase tracking-widest text-center">Meta Loja</h4>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Meta Loja -->
+            <div class="consultor-card">
+              <div class="card-header bg-emerald-600">
+                <h4 class="text-[11px] font-black uppercase tracking-widest text-center w-full">Meta Total Loja</h4>
               </div>
-              <table class="xl-table" style="border:none;">
+              <table class="xl-table border-0">
                 <colgroup><col style="width:28px;"><col style="width:120px;"><col style="width:130px;"></colgroup>
                 <tbody id="tbody-meta-loja"></tbody>
               </table>
             </div>
 
-            <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
-              <div class="bg-[#FFC000] px-4 py-2 border-b border-slate-400">
-                <h4 class="text-[11px] font-black text-white uppercase tracking-widest text-center">Meta por Consultor</h4>
+            <!-- Meta Consultor -->
+            <div class="consultor-card">
+              <div class="card-header bg-amber-500">
+                <h4 class="text-[11px] font-black uppercase tracking-widest text-center w-full">Meta Individual Base</h4>
               </div>
-              <table class="xl-table" style="border:none;">
+              <table class="xl-table border-0">
                 <colgroup><col style="width:28px;"><col style="width:120px;"><col style="width:130px;"></colgroup>
                 <tbody id="tbody-meta-consultor"></tbody>
               </table>
             </div>
 
-            <div class="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
-              <div class="bg-[#305496] px-4 py-2 border-b border-slate-400">
-                <h4 class="text-[11px] font-black text-white uppercase tracking-widest text-center">Meta Pós-Venda</h4>
+            <!-- Meta Pós -->
+            <div class="consultor-card">
+              <div class="card-header bg-indigo-600">
+                <h4 class="text-[11px] font-black uppercase tracking-widest text-center w-full">Meta Pós-Venda (Ref)</h4>
               </div>
-              <table class="xl-table" style="border:none;">
+              <table class="xl-table border-0">
                 <colgroup><col style="width:28px;"><col style="width:120px;"><col style="width:130px;"></colgroup>
                 <tbody id="tbody-meta-pos"></tbody>
               </table>
             </div>
           </div>
         </div>
+
       </div>
 
-      <div class="mt-6 flex flex-wrap items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Legenda:</span>
-        <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-sm" style="background:#FF6B6B;"></span><span class="text-[10px] font-bold text-slate-600 uppercase">Fora da Tendência &lt; 70%</span></div>
-        <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-sm" style="background:#FFC000;"></span><span class="text-[10px] font-bold text-slate-600 uppercase">Tendência de Entregar &gt; 70%</span></div>
-        <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-sm" style="background:#92D050;"></span><span class="text-[10px] font-bold text-slate-600 uppercase">Meta Entregue / Superada &gt; 100%</span></div>
+      <!-- Legenda Inferior -->
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-3 p-4 rounded-xl border shadow-sm" style="background-color: var(--bg-card); border-color: var(--border);">
+        <span class="text-[10px] font-black uppercase tracking-wider" style="color: var(--text-muted);">Legenda de Performance:</span>
+        <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded-full shadow-sm bg-red-500"></span><span class="text-[10px] font-bold uppercase" style="color: var(--text-main);">Fora da Tendência &lt; 70%</span></div>
+        <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded-full shadow-sm bg-amber-500"></span><span class="text-[10px] font-bold uppercase" style="color: var(--text-main);">Tendência &gt; 70%</span></div>
+        <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded-full shadow-sm bg-emerald-500"></span><span class="text-[10px] font-bold uppercase" style="color: var(--text-main);">Entregue / Superada &gt; 100%</span></div>
       </div>
+
     </div>
   </main>
 
   <div id="toast" class="toast">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400"></i>
     <span id="toastText">Salvo!</span>
   </div>
 
   <script>
+    // Theme Toggle Logic
+    const themeBtn = document.getElementById('themeToggle');
+    const htmlEl = document.documentElement;
+
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        htmlEl.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        htmlEl.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
+    }
+
+    // Check system preference or saved preference
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+      applyTheme('dark');
+    } else {
+      applyTheme('light');
+    }
+
+    themeBtn.addEventListener('click', () => {
+      if (htmlEl.classList.contains('dark')) {
+        applyTheme('light');
+      } else {
+        applyTheme('dark');
+      }
+    });
+
+    // Supabase Config
     const SUPABASE_URL = 'https://zldugoqlcrzarpqvtaoh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -662,6 +824,7 @@
       } catch (e) { console.warn(e); }
       return gerarEstadoPadrao();
     }
+    
     function salvarEstado() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {} }
     function mesAtivo() { return state.meses[state.mesAtual]; }
 
@@ -722,12 +885,12 @@
           }
           html += `<td class="xl-label">${key}</td>`;
           html += `<td class="xl-value num">${fmtValor(metaV, tipo)}</td>`;
-          html += `<td class="xl-value num">${fmtValor(realV, tipo)}</td>`;
+          html += `<td class="xl-value num font-bold" style="color: var(--brand-1);">${fmtValor(realV, tipo)}</td>`;
           html += `<td class="${cls}">${pct.toFixed(0)}%</td>`;
           if (entregue) {
-            html += `<td colspan="2" class="xl-entrega">META ENTREGUE</td>`;
+            html += `<td colspan="2" class="xl-entrega"><i data-lucide="check" class="w-3.5 h-3.5 inline"></i> META ENTREGUE</td>`;
           } else {
-            html += `<td class="xl-value num falta-col" style="color:#475569;">${fmtValor(falta, tipo)}</td>`;
+            html += `<td class="xl-value num falta-col" style="color:var(--text-muted);">${fmtValor(falta, tipo)}</td>`;
             html += `<td class="xl-value num dia-col xl-dia-val">${fmtValor(fazerDia, tipo)}</td>`;
           }
           html += '</tr>';
@@ -748,9 +911,9 @@
         const pctFat  = calcPct(realFat, metaFat);
 
         let statusTxt, statusCls;
-        if (pctFat >= 100) { statusTxt = 'META ENTREGUE'; statusCls = 'green'; }
+        if (pctFat >= 100) { statusTxt = 'ENTREGUE'; statusCls = 'green'; }
         else if (pctFat >= 70) { statusTxt = 'TENDÊNCIA'; statusCls = 'yellow'; }
-        else { statusTxt = 'FORA DA TENDÊNCIA'; statusCls = 'red'; }
+        else { statusTxt = 'FORA TENDÊNCIA'; statusCls = 'red'; }
 
         html += `
           <div class="consultor-card">
@@ -758,28 +921,29 @@
               <h3>${cap(consult.nome)}</h3>
               <span class="status-badge ${statusCls}">${statusTxt}</span>
             </div>
-            <table class="xl-table">
-              <colgroup>
-                <col style="width:34px;">
-                <col style="width:140px;">
-                <col style="width:120px;">
-                <col style="width:120px;">
-                <col style="width:95px;">
-                <col style="width:115px;">
-                <col style="width:130px;">
-              </colgroup>
-              <thead>
-                <tr>
-                  <th></th>
-                  <th></th>
-                  <th>META CONSULTOR</th>
-                  <th>REALIZADO</th>
-                  <th>PERCENT. REAL %</th>
-                  <th>FALTA</th>
-                  <th>FAZER POR DIA</th>
-                </tr>
-              </thead>
-              <tbody>`;
+            <div class="overflow-x-auto">
+              <table class="xl-table border-0">
+                <colgroup>
+                  <col style="width:34px;">
+                  <col style="width:140px;">
+                  <col style="width:120px;">
+                  <col style="width:120px;">
+                  <col style="width:95px;">
+                  <col style="width:115px;">
+                  <col style="width:130px;">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th></th>
+                    <th>META CONSULTOR</th>
+                    <th>REALIZADO</th>
+                    <th>% REAL</th>
+                    <th>FALTA</th>
+                    <th>FAZER POR DIA</th>
+                  </tr>
+                </thead>
+                <tbody>`;
 
         CATEGORIAS.forEach(cat => {
           cat.keys.forEach((key, idx) => {
@@ -799,19 +963,19 @@
             }
             html += `<td class="xl-label">${key}</td>`;
             html += `<td class="xl-value num">${fmtValor(metaV, tipo)}</td>`;
-            html += `<td class="xl-value num">${fmtValor(realV, tipo)}</td>`;
+            html += `<td class="xl-value num font-bold" style="color: var(--brand-1);">${fmtValor(realV, tipo)}</td>`;
             html += `<td class="${cls}">${pct.toFixed(0)}%</td>`;
             if (entregue) {
-              html += `<td colspan="2" class="xl-entrega">META ENTREGUE</td>`;
+              html += `<td colspan="2" class="xl-entrega"><i data-lucide="check" class="w-3.5 h-3.5 inline"></i> META ENTREGUE</td>`;
             } else {
-              html += `<td class="xl-value num falta-col" style="color:#475569;">${fmtValor(falta, tipo)}</td>`;
+              html += `<td class="xl-value num falta-col" style="color:var(--text-muted);">${fmtValor(falta, tipo)}</td>`;
               html += `<td class="xl-value num dia-col xl-dia-val">${fmtValor(fazerDia, tipo)}</td>`;
             }
             html += '</tr>';
           });
         });
 
-        html += `</tbody></table></div>`;
+        html += `</tbody></table></div></div>`;
       });
       grid.innerHTML = html;
     }
@@ -823,10 +987,10 @@
 
       m.consultores.forEach((consult, cIdx) => {
         html += `
-          <div class="bg-white rounded-xl shadow-sm overflow-hidden border-2 border-slate-300">
-            <div class="bg-[#1F4E78] px-4 py-2 border-b border-slate-400 flex justify-between items-center">
+          <div class="consultor-card flex flex-col">
+            <div class="card-header bg-slate-700">
               <h3 class="text-white font-black tracking-widest text-[11px] uppercase">${cap(consult.nome)}</h3>
-              <span class="text-blue-200 text-[10px] font-bold uppercase">${DIAS_NO_MES} dias no mês</span>
+              <span class="text-slate-300 text-[9px] font-bold uppercase tracking-widest">${DIAS_NO_MES} dias no mês</span>
             </div>
             <div class="overflow-x-auto">
               <table class="table-diario">
@@ -839,7 +1003,7 @@
         html += `</tr></thead><tbody>`;
 
         html += `<tr>
-          <td class="label-col total-row">FAT TOTAL TIM <span style="font-size:8px;opacity:0.75;">(auto)</span></td>`;
+          <td class="label-col total-row">FAT TOTAL TIM <span style="font-size:8px;opacity:0.75;font-weight:normal;">(auto)</span></td>`;
         for (let d = 0; d < DIAS_NO_MES; d++) {
           html += `<td><input type="text" class="cell-input total-cell" data-c="${cIdx}" data-row="FAT TOTAL TIM" data-day="${d}" readonly tabindex="-1"></td>`;
         }
@@ -885,12 +1049,14 @@
       if (n === 0) return '';
       return tipo === 'moeda' ? n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : String(n);
     }
+    
     function parseValorInput(str) {
       if (!str) return 0;
       const s = String(str).replace(/[R$\s.]/g, '').replace(',', '.');
       const n = parseFloat(s);
       return isNaN(n) ? 0 : n;
     }
+    
     function onEditCell(e) {
       const input = e.target;
       const cIdx  = parseInt(input.dataset.c);
@@ -909,6 +1075,7 @@
       renderResumoLoja();
       renderConsultores();
     }
+    
     function atualizarFatTotalDia(cIdx, day) {
       const consult = mesAtivo().consultores[cIdx];
       const total = (Number(consult.diario['CONTROLE FAT.'][day]) || 0) + (Number(consult.diario['PÓS FAT.'][day]) || 0);
@@ -953,12 +1120,13 @@
       let html = '';
       m.consultores.forEach((c, idx) => {
         html += `
-          <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg p-2">
-            <span class="w-7 h-7 rounded-full bg-[#1F4E78] text-white text-[10px] font-black flex items-center justify-center shrink-0">${idx + 1}</span>
-            <input type="text" class="flex-1 bg-white border border-slate-200 rounded-md px-3 py-1.5 text-sm font-bold text-slate-700 focus:outline-none focus:border-[#0e8890]"
+          <div class="flex items-center gap-2 rounded-lg p-2" style="background:var(--bg-body); border:1px solid var(--border);">
+            <span class="w-6 h-6 rounded-md bg-brand-500 text-white text-[10px] font-black flex items-center justify-center shrink-0 shadow-sm">${idx + 1}</span>
+            <input type="text" class="flex-1 rounded-md px-3 py-1.5 text-xs font-bold focus:outline-none focus:border-brand-1 transition-colors"
+                   style="background:var(--bg-card); color:var(--text-main); border:1px solid var(--border);"
                    value="${c.nome.replace(/"/g, '&quot;')}"
                    onchange="renomearConsultor('${c.id}', this.value)">
-            <button onclick="removerConsultor('${c.id}')" class="p-1.5 text-red-500 hover:bg-red-50 rounded-md">
+            <button onclick="removerConsultor('${c.id}')" class="p-1.5 text-red-500 hover:bg-red-500/10 rounded-md transition-colors">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </div>`;
@@ -966,6 +1134,7 @@
       cont.innerHTML = html;
       lucide.createIcons();
     }
+    
     function renomearConsultor(id, novo) {
       const c = mesAtivo().consultores.find(x => x.id === id);
       if (!c) return;
@@ -973,11 +1142,13 @@
       salvarEstado(); renderConsultores(); renderDiario();
       toast('Nome atualizado!');
     }
+    
     function adicionarConsultor() {
       mesAtivo().consultores.push({ id: 'c' + Date.now(), nome: 'NOVO CONSULTOR', diario: criarDiarioZerado() });
       salvarEstado(); renderConfig(); renderConsultores(); renderDiario();
       toast('Consultor adicionado!');
     }
+    
     function removerConsultor(id) {
       if (!confirm('Remover este consultor e TODOS os seus dados?')) return;
       const m = mesAtivo();
@@ -1000,9 +1171,9 @@
           if (idx === 0) {
             html += `<td rowspan="${cat.keys.length}" class="xl-vertical ${cat.cls}" style="font-size:9px;">${cat.cat}</td>`;
           }
-          html += `<td class="xl-label" style="font-size:10px;">${key}${isFat ? ' <span style="font-size:8px;color:#94a3b8;">(auto)</span>' : ''}</td>`;
-          html += `<td style="padding:3px 5px;background:${isFat ? 'var(--xl-fat-bg)' : '#fff'};">
-            <input type="text" inputmode="decimal" class="config-input"
+          html += `<td class="xl-label" style="font-size:10px;">${key}${isFat ? ' <span style="font-size:8px;color:var(--text-muted);">(auto)</span>' : ''}</td>`;
+          html += `<td style="padding:4px 6px;background:${isFat ? 'var(--xl-fat-bg)' : 'var(--bg-card)'};">
+            <input type="text" inputmode="decimal" class="config-input w-full"
                    value="${tipo === 'moeda' ? valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : valor}"
                    data-state="${chaveState}" data-key="${key}" ${disabled}>
           </td></tr>`;
@@ -1103,10 +1274,6 @@
       toast('Mês removido!');
     }
 
-    /* ═══════════════════════════════════════════════════════
-       EXPORTAR IMAGEM — v6
-       Cada card ocupa 100% da largura, empilhando verticalmente
-       ═══════════════════════════════════════════════════════ */
     async function exportarImagem() {
       const btn = document.getElementById('btnExport');
       const original = btn.innerHTML;
@@ -1120,6 +1287,11 @@
       document.body.appendChild(overlay);
 
       let wrapper = null;
+      
+      // Armazena modo atual para restaurar
+      const isDark = htmlEl.classList.contains('dark');
+      // Força modo light na exportação para garantir que fique bem em imagens (especialmente WhatsApp, PDFs)
+      if (isDark) htmlEl.classList.remove('dark');
 
       try {
         const tabAtiva = document.querySelector('.tab-content:not(.hidden)');
@@ -1127,69 +1299,53 @@
         const diaTexto = ultimoDia > 0 ? String(ultimoDia).padStart(2, '0') : '—';
         const mesLabel = mesAtivo().parametros.mes;
 
-        // Wrapper LARGO (1500px) — cada card vai ocupar 100%
         wrapper = document.createElement('div');
         wrapper.style.cssText = `
-          position: fixed;
-          top: 0;
-          left: -99999px;
-          width: 1500px;
-          background: #ffffff;
-          padding: 24px;
-          font-family: 'Inter', sans-serif;
+          position: fixed; top: 0; left: -99999px;
+          width: 1500px; background: #eef2f7; /* bg-body light */
+          padding: 32px; font-family: 'Inter', sans-serif;
           box-sizing: border-box;
         `;
 
-        // ═══ HEADER TIM ═══
         const header = document.createElement('div');
-        header.className = 'export-header';
+        header.className = 'export-header shadow-xl';
         header.innerHTML = `
           <div class="squares">
             <span></span><span></span>
             <span></span><span></span>
           </div>
-
-          <div style="display:flex;align-items:center;gap:16px;position:relative;z-index:1;">
-            <div style="width:56px;height:56px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <span style="color:#00417F;font-weight:900;font-size:20px;font-family:'Inter',sans-serif;letter-spacing:-0.02em;">IF</span>
+          <div style="display:flex;align-items:center;gap:20px;position:relative;z-index:1;">
+            <div style="width:64px;height:64px;background:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 2px 4px rgba(0,0,0,0.1);">
+              <span style="color:#098c93;font-weight:900;font-size:24px;font-family:'Inter',sans-serif;letter-spacing:-0.02em;">IF</span>
             </div>
             <div style="flex:1;min-width:0;">
-              <h1 style="color:#fff;font-size:22px;font-weight:900;margin:0;text-transform:uppercase;letter-spacing:0.02em;line-height:1.25;font-family:'Inter',sans-serif;">Acompanhamento de Vendas Diário</h1>
-              <p style="color:#CFE2F3;font-size:12px;font-weight:800;margin:6px 0 0 0;letter-spacing:0.12em;text-transform:uppercase;font-family:'Inter',sans-serif;">LOJA TIM DOM JOSÉ · INFORTECA GARANHUNS</p>
+              <h1 style="color:#fff;font-size:26px;font-weight:900;margin:0;text-transform:uppercase;letter-spacing:0.02em;line-height:1.2;font-family:'Inter',sans-serif;text-shadow:0 2px 4px rgba(0,0,0,0.3);">Acompanhamento de Vendas</h1>
+              <p style="color:rgba(255,255,255,0.8);font-size:13px;font-weight:800;margin:6px 0 0 0;letter-spacing:0.12em;text-transform:uppercase;font-family:'Inter',sans-serif;">LOJA TIM DOM JOSÉ · INFORTECA GARANHUNS</p>
             </div>
           </div>
-
-          <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.25);display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1;flex-wrap:wrap;gap:8px;">
-            <span style="color:#fff;font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;font-family:'Inter',sans-serif;">RESULTADO LOJA DE 01 A ${diaTexto}</span>
-            <span style="color:#fff;font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;font-family:'Inter',sans-serif;">MÊS: ${mesLabel}</span>
+          <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.2);display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1;">
+            <span style="color:#fff;font-size:13px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;font-family:'Inter',sans-serif;">RESULTADO LOJA DE 01 A ${diaTexto}</span>
+            <span style="color:#fff;font-size:13px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;font-family:'Inter',sans-serif;background:rgba(0,0,0,0.2);padding:6px 12px;border-radius:8px;">MÊS: ${mesLabel}</span>
           </div>
         `;
         wrapper.appendChild(header);
 
-        // ═══ CLONE DA ABA ═══
         const clone = tabAtiva.cloneNode(true);
 
-        // Remove imagens
         clone.querySelectorAll('img').forEach(img => {
           const ph = document.createElement('div');
-          ph.style.cssText = 'width:36px;height:36px;background:#0e8890;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;font-family:Inter,sans-serif;';
+          ph.style.cssText = 'width:36px;height:36px;background:#098c93;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;font-family:Inter,sans-serif;';
           ph.textContent = 'IF';
           if (img.parentNode) img.parentNode.replaceChild(ph, img);
         });
 
-        // ═══ FORÇA CADA CARD A 100% E EMPILHA VERTICALMENTE ═══
-        // Grid dos consultores → block (1 por linha)
-        clone.querySelectorAll('.grid').forEach(el => {
-          el.style.display = 'block';
-        });
-        // Cada card ocupar 100% e ter margem inferior
+        clone.querySelectorAll('.grid').forEach(el => { el.style.display = 'block'; });
         clone.querySelectorAll('.consultor-card').forEach(card => {
           card.style.width = '100%';
-          card.style.marginBottom = '16px';
+          card.style.marginBottom = '24px';
           card.style.display = 'block';
         });
 
-        // Overflow visível
         clone.querySelectorAll('.overflow-x-auto').forEach(el => {
           el.style.overflow = 'visible';
           el.style.width = 'auto';
@@ -1198,19 +1354,17 @@
         wrapper.appendChild(clone);
         document.body.appendChild(wrapper);
 
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise(r => setTimeout(r, 600));
 
         const largura = wrapper.scrollWidth;
         const altura = wrapper.scrollHeight;
-
-        console.log('[Export] Dimensões:', largura, 'x', altura);
 
         let scale = 2;
         if (largura * 2 > 8000 || altura * 2 > 8000) scale = 1;
 
         const canvas = await html2canvas(wrapper, {
           scale: scale,
-          backgroundColor: '#ffffff',
+          backgroundColor: '#eef2f7',
           useCORS: true,
           allowTaint: false,
           logging: false,
@@ -1233,7 +1387,7 @@
           blob = await new Promise((resolve, reject) => {
             canvas.toBlob(b => (b && b.size > 0) ? resolve(b) : reject(new Error('vazio')), 'image/png', 1.0);
           });
-        } catch (e) { console.warn('[Export] toBlob falhou:', e.message); }
+        } catch (e) {}
 
         if (blob) {
           const url = URL.createObjectURL(blob);
@@ -1250,7 +1404,7 @@
           document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
 
-        toast('Imagem baixada!');
+        toast('Imagem exportada com sucesso!');
       } catch (err) {
         console.error('[Export] Erro:', err);
         alert('Erro ao gerar imagem:\n\n' + err.message);
@@ -1259,6 +1413,8 @@
         if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
         btn.disabled = false;
         btn.innerHTML = original;
+        // Restaura o modo
+        if (isDark) htmlEl.classList.add('dark');
         lucide.createIcons();
       }
     }
@@ -1283,12 +1439,13 @@
       document.getElementById('toastText').textContent = msg;
       t.classList.add('show');
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
     }
 
     function recalcAll() {
       renderResumoLoja(); renderConsultores(); renderDiario(); renderConfig();
       atualizarHeader(); renderSelectMes();
+      lucide.createIcons();
     }
 
     async function verificarAuth() {
@@ -1298,10 +1455,12 @@
       document.getElementById('userName').textContent = perfil?.nome_completo || session.user.email;
       document.getElementById('userPerm').textContent = perfil?.permissao || 'Operador';
     }
+    
     async function terminarSessao() {
       await supabaseClient.auth.signOut();
       window.location.href = 'index.html';
     }
+    
     function toggleSidebar() {
       const s = document.getElementById('sidebar');
       s.classList.toggle('hidden');
