@@ -6,60 +6,39 @@
   <title>Acompanhamento de Metas — PORTAL INFORTECA</title>
   <link rel="icon" type="image/png" href="favicon-portalinforteca.png">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
-    /* ═══════════════════════════════════════════════════════════
-       DESIGN TOKENS
-       ═══════════════════════════════════════════════════════════ */
     :root {
       --excel-blue:   #1F4E78;
-      --excel-blue-2: #2E75B6;
       --excel-green:  #00B050;
       --excel-yellow: #FFC000;
       --excel-red:    #FF0000;
       --excel-gray:   #D9D9D9;
-      --excel-light:  #F2F2F2;
       --excel-pos:    #305496;
       --border-color: #b8c2cc;
-      --cell-radius:  4px;
     }
-
     * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
     html, body { height: 100%; }
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Inter', sans-serif;
       background: #eef2f7;
-      font-feature-settings: 'tnum' 1, 'cv11' 1;
+      font-feature-settings: 'tnum' 1;
       -webkit-font-smoothing: antialiased;
     }
-
-    /* ═══════════════════════════════════════════════════════════
-       SCROLLBAR
-       ═══════════════════════════════════════════════════════════ */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-    /* ═══════════════════════════════════════════════════════════
-       EXCEL COLOR UTILITIES
-       ═══════════════════════════════════════════════════════════ */
     .bg-excel-blue   { background-color: var(--excel-blue); }
     .bg-excel-green  { background-color: var(--excel-green); }
     .bg-excel-yellow { background-color: var(--excel-yellow); }
     .bg-excel-red    { background-color: var(--excel-red); }
     .bg-excel-gray   { background-color: var(--excel-gray); }
-    .bg-excel-light  { background-color: var(--excel-light); }
     .bg-excel-pos    { background-color: var(--excel-pos); }
 
-    /* ═══════════════════════════════════════════════════════════
-       CABEÇALHO VERTICAL (FATURAMENTO / GROSS / PRODUTO)
-       ═══════════════════════════════════════════════════════════ */
     .vertical-text {
       writing-mode: vertical-rl;
       transform: rotate(180deg);
@@ -72,9 +51,7 @@
       user-select: none;
     }
 
-    /* ═══════════════════════════════════════════════════════════
-       TABELAS — ESTRUTURA EXCEL (6 COLUNAS EXATAS)
-       ═══════════════════════════════════════════════════════════ */
+    /* ═══ TABELAS — 7 COLUNAS (vertical + 6) ═══ */
     .table-excel {
       border-collapse: collapse;
       width: 100%;
@@ -82,8 +59,7 @@
       font-size: 11px;
       font-variant-numeric: tabular-nums;
     }
-    .table-excel th,
-    .table-excel td {
+    .table-excel th, .table-excel td {
       border: 1px solid var(--border-color);
       padding: 0;
       vertical-align: middle;
@@ -104,32 +80,21 @@
       height: 34px;
       line-height: 1.15;
     }
-    .table-excel thead th.bg-excel-blue {
-      color: #ffffff;
-    }
+    .table-excel thead th.bg-excel-blue { color: #fff; }
 
-    /* Células com padding para valores */
-    .table-excel td.value-cell {
-      padding: 5px 8px;
-      font-size: 11px;
-    }
+    .table-excel td.value-cell { padding: 5px 8px; font-size: 11px; }
     .table-excel td.label-cell {
       padding: 5px 8px;
       font-size: 10px;
       font-weight: 700;
       color: #334155;
-      background: #ffffff;
+      background: #fff;
     }
-    .table-excel tbody tr:hover td.label-cell { background: #f8fafc; }
-    .table-excel tbody tr:hover td.value-cell { background: #f8fafc; }
-
     .table-excel .right  { text-align: right; }
     .table-excel .center { text-align: center; }
     .table-excel .num    { font-variant-numeric: tabular-nums; }
 
-    /* ═══════════════════════════════════════════════════════════
-       TABELA DIÁRIO (30 DIAS)
-       ═══════════════════════════════════════════════════════════ */
+    /* Tabela diário */
     .table-diario {
       border-collapse: collapse;
       width: max-content;
@@ -137,8 +102,7 @@
       font-size: 10px;
       font-variant-numeric: tabular-nums;
     }
-    .table-diario th,
-    .table-diario td {
+    .table-diario th, .table-diario td {
       border: 1px solid #cbd5e1;
       text-align: center;
       padding: 0;
@@ -151,9 +115,6 @@
       font-size: 9px;
       padding: 4px 2px;
       height: 30px;
-      position: sticky;
-      top: 0;
-      z-index: 1;
     }
     .table-diario .label-col {
       background-color: #E7E6E6;
@@ -164,13 +125,6 @@
       color: #334155;
       width: 140px;
       min-width: 140px;
-      position: sticky;
-      left: 0;
-      z-index: 2;
-    }
-    .table-diario thead .label-col {
-      z-index: 3;
-      background-color: #D9D9D9;
     }
     .table-diario .label-col.total-row {
       background-color: var(--excel-blue);
@@ -178,7 +132,6 @@
       font-weight: 900;
     }
 
-    /* Células editáveis */
     .cell-input {
       width: 100%;
       height: 100%;
@@ -190,7 +143,7 @@
       font-variant-numeric: tabular-nums;
       padding: 5px 3px;
       outline: none;
-      transition: background 0.15s ease;
+      transition: background 0.15s;
       min-width: 54px;
       cursor: text;
     }
@@ -200,11 +153,7 @@
       box-shadow: inset 0 0 0 2px #0e8890;
       font-weight: 700;
     }
-    .cell-input.filled {
-      background: #f0fdf4;
-      color: #166534;
-      font-weight: 700;
-    }
+    .cell-input.filled { background: #f0fdf4; color: #166534; font-weight: 700; }
     .cell-input.filled:hover { background: #dcfce7; }
     .cell-input.total-cell {
       background: #dbeafe;
@@ -213,9 +162,6 @@
       cursor: not-allowed;
     }
 
-    /* ═══════════════════════════════════════════════════════════
-       INPUTS DE CONFIGURAÇÃO
-       ═══════════════════════════════════════════════════════════ */
     .config-input {
       width: 100%;
       border: 1.5px solid #cbd5e1;
@@ -226,7 +172,7 @@
       color: var(--excel-blue);
       text-align: right;
       font-variant-numeric: tabular-nums;
-      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+      transition: all 0.15s;
       background: #fff;
       font-family: inherit;
     }
@@ -236,15 +182,8 @@
       box-shadow: 0 0 0 3px rgba(14,136,144,0.15);
       background: #f0fdfa;
     }
-    .config-input:disabled {
-      background: #f1f5f9;
-      color: #94a3b8;
-      cursor: not-allowed;
-    }
+    .config-input:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
 
-    /* ═══════════════════════════════════════════════════════════
-       TABS
-       ═══════════════════════════════════════════════════════════ */
     .tab-btn { transition: all 0.2s ease; }
     .tab-btn.active {
       background-color: var(--excel-blue);
@@ -252,19 +191,9 @@
       border-color: var(--excel-blue);
       box-shadow: 0 4px 12px -3px rgba(31,78,120,0.4);
     }
-    .tab-btn:not(.active) {
-      background-color: #fff;
-      color: #475569;
-      border-color: #e2e8f0;
-    }
-    .tab-btn:not(.active):hover {
-      background-color: #f1f5f9;
-      border-color: #cbd5e1;
-    }
+    .tab-btn:not(.active) { background-color: #fff; color: #475569; border-color: #e2e8f0; }
+    .tab-btn:not(.active):hover { background-color: #f1f5f9; border-color: #cbd5e1; }
 
-    /* ═══════════════════════════════════════════════════════════
-       TOAST
-       ═══════════════════════════════════════════════════════════ */
     .toast {
       position: fixed; bottom: 24px; right: 24px; z-index: 9999;
       background: #0f172a; color: #fff; padding: 12px 18px;
@@ -272,45 +201,21 @@
       display: flex; align-items: center; gap: 10px;
       font-size: 13px; font-weight: 600;
       opacity: 0; transform: translateY(20px);
-      transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                  transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       pointer-events: none;
     }
     .toast.show { opacity: 1; transform: translateY(0); }
 
-    /* ═══════════════════════════════════════════════════════════
-       ANIMAÇÃO DE SAVE
-       ═══════════════════════════════════════════════════════════ */
     @keyframes pulse-save {
-      0%   { background: #fef9c3; }
-      50%  { background: #86efac; }
+      0% { background: #fef9c3; }
+      50% { background: #86efac; }
       100% { background: #f0fdf4; }
     }
     .saved-anim { animation: pulse-save 0.8s ease; }
-
-    /* Badges de status */
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      font-size: 9px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      padding: 4px 8px;
-      border-radius: 4px;
-      color: #fff;
-    }
-
-    /* Performance hint */
-    .tab-content { content-visibility: auto; }
-    .tab-content.hidden { content-visibility: visible; }
   </style>
 </head>
 <body class="text-slate-800 h-screen flex overflow-hidden">
 
-  <!-- ══════════════════════════════════════════════════════
-       SIDEBAR
-       ══════════════════════════════════════════════════════ -->
   <aside id="sidebar" class="w-64 bg-[#000033] text-white flex flex-col justify-between hidden md:flex transition-all duration-300 z-30 shadow-xl shrink-0">
     <div>
       <div class="h-20 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
@@ -342,11 +247,7 @@
     </div>
   </aside>
 
-  <!-- ══════════════════════════════════════════════════════
-       MAIN
-       ══════════════════════════════════════════════════════ -->
   <main class="flex-1 flex flex-col h-screen min-w-0 relative overflow-hidden">
-
     <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10 shrink-0">
       <div class="flex items-center gap-3">
         <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
@@ -366,8 +267,6 @@
     </header>
 
     <div class="flex-1 overflow-y-auto p-4 md:p-6">
-
-      <!-- CABEÇALHO PRINCIPAL -->
       <div id="exportArea" class="bg-excel-blue rounded-t-2xl p-4 md:p-5 shadow-md mb-0 flex flex-col md:flex-row justify-between items-center text-white">
         <div class="flex items-center gap-4">
           <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center p-1 shrink-0">
@@ -389,7 +288,6 @@
         </div>
       </div>
 
-      <!-- TABS -->
       <div class="bg-white border border-slate-200 border-t-0 px-4 py-3 flex flex-wrap gap-2 items-center justify-between">
         <div class="flex flex-wrap gap-2">
           <button data-tab="resumo" class="tab-btn active px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border flex items-center gap-2">
@@ -414,12 +312,8 @@
 
       <div class="bg-white border border-slate-200 border-t-0 rounded-b-2xl shadow-sm p-4 md:p-6">
 
-        <!-- ═══════════════════════════════════════════════════
-             ABA 1 — RESUMO
-             ═══════════════════════════════════════════════════ -->
+        <!-- ABA RESUMO -->
         <div id="tab-resumo" class="tab-content">
-
-          <!-- Painel Loja -->
           <div class="rounded-2xl shadow-sm overflow-hidden mb-8 border border-slate-300">
             <div class="bg-excel-blue px-4 py-2.5 border-b border-slate-400 flex justify-between items-center">
               <h3 class="text-white font-black tracking-widest text-xs uppercase">INFORTECA — LOJA GERAL</h3>
@@ -430,12 +324,12 @@
             <div class="overflow-x-auto">
               <table class="table-excel" id="tabela-loja">
                 <colgroup>
-                  <col style="width:34px;">    <!-- vertical categoria -->
-                  <col style="width:130px;">   <!-- META LOJA -->
-                  <col style="width:115px;">   <!-- REALIZADO -->
-                  <col style="width:95px;">    <!-- PERCENT. REAL % -->
-                  <col style="width:110px;">   <!-- FALTA -->
-                  <col style="width:120px;">   <!-- FAZER POR DIA -->
+                  <col style="width:34px;">    <!-- 1 vertical -->
+                  <col style="width:130px;">   <!-- 2 META LOJA -->
+                  <col style="width:115px;">   <!-- 3 REALIZADO -->
+                  <col style="width:95px;">    <!-- 4 PERCENT -->
+                  <col style="width:110px;">   <!-- 5 FALTA -->
+                  <col style="width:120px;">   <!-- 6 FAZER POR DIA -->
                 </colgroup>
                 <thead>
                   <tr>
@@ -452,7 +346,6 @@
             </div>
           </div>
 
-          <!-- Consultores -->
           <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-2">
               <i data-lucide="users" class="w-4 h-4 text-[#0e8890]"></i>
@@ -462,9 +355,7 @@
           <div class="grid grid-cols-1 xl:grid-cols-2 gap-6" id="gridConsultores"></div>
         </div>
 
-        <!-- ═══════════════════════════════════════════════════
-             ABA 2 — DIÁRIO
-             ═══════════════════════════════════════════════════ -->
+        <!-- ABA DIÁRIO -->
         <div id="tab-diario" class="tab-content hidden">
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
             <div class="flex items-center gap-3">
@@ -482,9 +373,7 @@
           <div id="gridDiario" class="space-y-8"></div>
         </div>
 
-        <!-- ═══════════════════════════════════════════════════
-             ABA 3 — CONFIG
-             ═══════════════════════════════════════════════════ -->
+        <!-- ABA CONFIG -->
         <div id="tab-config" class="tab-content hidden">
           <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-6 flex items-start gap-2">
             <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
@@ -580,7 +469,6 @@
         </div>
       </div>
 
-      <!-- LEGENDA -->
       <div class="mt-6 flex flex-wrap items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Legenda:</span>
         <div class="flex items-center gap-2">
@@ -605,14 +493,11 @@
   </div>
 
   <script>
-    /* ═══════════════════════════════════════════════════════════
-       CONFIG
-       ═══════════════════════════════════════════════════════════ */
     const SUPABASE_URL = 'https://zldugoqlcrzarpqvtaoh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const STORAGE_KEY = 'inforteca_metas_v3';
+    const STORAGE_KEY = 'inforteca_metas_v4';
     const DIAS_NO_MES = 30;
 
     const TIPO_VALOR = {
@@ -627,9 +512,6 @@
       { cat: 'PRODUTO',     keys: ['APARELHO', 'ACESSÓRIOS'] },
     ];
 
-    /* ═══════════════════════════════════════════════════════════
-       ESTADO PADRÃO
-       ═══════════════════════════════════════════════════════════ */
     function criarDiarioZerado() {
       const d = {};
       LINHAS_DIARIO.forEach(k => d[k] = new Array(DIAS_NO_MES).fill(0));
@@ -687,9 +569,6 @@
       toast('Dados resetados!');
     }
 
-    /* ═══════════════════════════════════════════════════════════
-       HELPERS
-       ═══════════════════════════════════════════════════════════ */
     const fmtMoeda  = (v) => 'R$ ' + (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const fmtNumero = (v) => String(Number(v) || 0);
     const fmtValor  = (v, tipo) => tipo === 'moeda' ? fmtMoeda(v) : fmtNumero(v);
@@ -701,9 +580,7 @@
       return { bg: 'bg-excel-red', text: 'text-white' };
     };
 
-    function somaDiario(c, key) {
-      return (c.diario[key] || []).reduce((s, v) => s + (Number(v) || 0), 0);
-    }
+    function somaDiario(c, key) { return (c.diario[key] || []).reduce((s, v) => s + (Number(v) || 0), 0); }
     function calcRealizadoConsultor(c, key) {
       if (key === 'FAT TOTAL TIM') return somaDiario(c, 'CONTROLE FAT.') + somaDiario(c, 'PÓS FAT.');
       return somaDiario(c, key);
@@ -712,9 +589,6 @@
       return state.consultores.reduce((s, c) => s + calcRealizadoConsultor(c, key), 0);
     }
 
-    /* ═══════════════════════════════════════════════════════════
-       RENDER: RESUMO LOJA
-       ═══════════════════════════════════════════════════════════ */
     function renderResumoLoja() {
       const tbody = document.getElementById('tbody-loja');
       const meta = state.metaLoja;
@@ -751,9 +625,6 @@
       tbody.innerHTML = html;
     }
 
-    /* ═══════════════════════════════════════════════════════════
-       RENDER: CONSULTORES
-       ═══════════════════════════════════════════════════════════ */
     function renderConsultores() {
       const grid = document.getElementById('gridConsultores');
       const meta = state.metaConsultor;
@@ -765,8 +636,8 @@
         const pctFat  = calcPct(realFat, metaFat);
 
         let statusBadge, statusCor;
-        if (pctFat >= 100) { statusBadge = 'META ENTREGUE';      statusCor = 'bg-excel-green'; }
-        else if (pctFat >= 70) { statusBadge = 'TENDÊNCIA';      statusCor = 'bg-excel-yellow'; }
+        if (pctFat >= 100) { statusBadge = 'META ENTREGUE'; statusCor = 'bg-excel-green'; }
+        else if (pctFat >= 70) { statusBadge = 'TENDÊNCIA'; statusCor = 'bg-excel-yellow'; }
         else { statusBadge = 'FORA DA TENDÊNCIA'; statusCor = 'bg-excel-red'; }
 
         html += `
@@ -778,12 +649,12 @@
             <div class="overflow-x-auto">
               <table class="table-excel">
                 <colgroup>
-                  <col style="width:30px;">    <!-- vertical categoria -->
-                  <col style="width:110px;">   <!-- META CONSULTOR -->
-                  <col style="width:100px;">   <!-- REALIZADO -->
-                  <col style="width:60px;">    <!-- % -->
-                  <col style="width:100px;">   <!-- FALTA -->
-                  <col style="width:110px;">   <!-- FAZER/DIA -->
+                  <col style="width:30px;">    <!-- 1 vertical -->
+                  <col style="width:120px;">   <!-- 2 META CONSULTOR -->
+                  <col style="width:110px;">   <!-- 3 REALIZADO -->
+                  <col style="width:60px;">    <!-- 4 % -->
+                  <col style="width:110px;">   <!-- 5 FALTA -->
+                  <col style="width:120px;">   <!-- 6 FAZER/DIA -->
                 </colgroup>
                 <thead>
                   <tr>
@@ -831,9 +702,6 @@
       grid.innerHTML = html;
     }
 
-    /* ═══════════════════════════════════════════════════════════
-       RENDER: DIÁRIO
-       ═══════════════════════════════════════════════════════════ */
     function renderDiario() {
       const grid = document.getElementById('gridDiario');
       let html = '';
@@ -942,9 +810,6 @@
       }
     }
 
-    /* ═══════════════════════════════════════════════════════════
-       RENDER: CONFIG
-       ═══════════════════════════════════════════════════════════ */
     function renderConfig() {
       const p = state.parametros;
       document.getElementById('cfgMes').value = p.mes;
@@ -1055,7 +920,6 @@
           const st  = inp.dataset.state;
           const key = inp.dataset.key;
           state[st][key] = parseValorInput(inp.value);
-          // Auto-cálculo FAT TOTAL TIM
           if (key === 'CONTROLE FAT.' || key === 'PÓS FAT.') {
             state[st]['FAT TOTAL TIM'] = (state[st]['CONTROLE FAT.'] || 0) + (state[st]['PÓS FAT.'] || 0);
             const fatInput = tbody.querySelector(`input[data-state="${st}"][data-key="FAT TOTAL TIM"]`);
@@ -1079,9 +943,6 @@
       document.getElementById('headerQualPos').textContent = '| ' + state.parametros.qualPos;
     }
 
-    /* ═══════════════════════════════════════════════════════════
-       EXPORTAR IMAGEM — captura com largura natural
-       ═══════════════════════════════════════════════════════════ */
     async function exportarImagem() {
       const btn = document.getElementById('btnExport');
       const original = btn.innerHTML;
@@ -1096,17 +957,12 @@
           el.style.overflow = 'visible';
           el.style.width = 'auto';
         });
-        clone.querySelectorAll('.hidden').forEach(el => el.classList.remove('hidden'));
 
         const wrapper = document.createElement('div');
         wrapper.style.cssText = `
-          position: fixed;
-          top: 0; left: -10000px;
-          background: #ffffff;
-          padding: 24px;
-          z-index: -1;
-          width: max-content;
-          max-width: none;
+          position: fixed; top: 0; left: -10000px;
+          background: #ffffff; padding: 24px; z-index: -1;
+          width: max-content; max-width: none;
           font-family: 'Inter', sans-serif;
         `;
         wrapper.appendChild(clone);
@@ -1115,14 +971,9 @@
         await new Promise(r => setTimeout(r, 100));
 
         const canvas = await html2canvas(wrapper, {
-          scale: 2,
-          backgroundColor: '#ffffff',
-          useCORS: true,
-          logging: false,
-          width: wrapper.scrollWidth,
-          height: wrapper.scrollHeight,
-          windowWidth: wrapper.scrollWidth,
-          windowHeight: wrapper.scrollHeight,
+          scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false,
+          width: wrapper.scrollWidth, height: wrapper.scrollHeight,
+          windowWidth: wrapper.scrollWidth, windowHeight: wrapper.scrollHeight,
         });
 
         document.body.removeChild(wrapper);
@@ -1145,9 +996,6 @@
       }
     }
 
-    /* ═══════════════════════════════════════════════════════════
-       TABS
-       ═══════════════════════════════════════════════════════════ */
     function initTabs() {
       const botoes = document.querySelectorAll('[data-tab]');
       const conteudos = document.querySelectorAll('.tab-content');
@@ -1179,9 +1027,6 @@
       atualizarHeader();
     }
 
-    /* ═══════════════════════════════════════════════════════════
-       AUTH
-       ═══════════════════════════════════════════════════════════ */
     async function verificarAuth() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) { window.location.href = 'index.html'; return; }
