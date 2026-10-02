@@ -1085,7 +1085,7 @@
     }
 
 /* ═══════════════════════════════════════════════════════
-   EXPORTAR IMAGEM — estratégia robusta com múltiplos fallbacks
+   EXPORTAR IMAGEM — v3 robusta (sem imgs, sem max-content solto)
    ═══════════════════════════════════════════════════════ */
 async function exportarImagem() {
   const btn = document.getElementById('btnExport');
@@ -1094,13 +1094,13 @@ async function exportarImagem() {
   btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> Gerando...`;
   lucide.createIcons();
 
-  // Overlay de loading
   const overlay = document.createElement('div');
   overlay.id = 'exportOverlay';
   overlay.innerHTML = `<div class="spinner"></div> Gerando imagem...`;
   document.body.appendChild(overlay);
 
   let wrapper = null;
+  const LARGURA_MAX = 2400; // limite seguro
 
   try {
     const tabAtiva = document.querySelector('.tab-content:not(.hidden)');
@@ -1108,89 +1108,107 @@ async function exportarImagem() {
     const diaTexto = ultimoDia > 0 ? String(ultimoDia).padStart(2, '0') : '—';
     const mesLabel = mesAtivo().parametros.mes;
 
-    // Wrapper FORA da tela (esquerda) mas renderizado — método mais confiável
+    // Wrapper fora da tela com largura controlada
     wrapper = document.createElement('div');
     wrapper.style.cssText = `
       position: fixed;
       top: 0;
       left: -99999px;
-      width: max-content;
-      max-width: none;
+      width: ${LARGURA_MAX}px;
+      max-width: ${LARGURA_MAX}px;
       background: #ffffff;
-      padding: 32px;
+      padding: 24px;
       font-family: 'Inter', sans-serif;
-      display: block;
-      z-index: 1;
+      box-sizing: border-box;
+      overflow: hidden;
     `;
 
-    // Cabeçalho customizado
+    // ── Cabeçalho customizado (SEM IMG — só texto) ──
     const header = document.createElement('div');
-    header.style.cssText = "margin-bottom:24px;padding-bottom:16px;border-bottom:3px solid #1F4E78;";
+    header.style.cssText = 'margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #1F4E78;display:flex;align-items:center;gap:16px;';
     header.innerHTML = `
-      <h1 style="font-size:22px;font-weight:900;color:#1F4E78;margin:0;text-transform:uppercase;letter-spacing:0.02em;">Acompanhamento de Vendas Diário</h1>
-      <p style="font-size:13px;font-weight:800;color:#475569;margin:6px 0 0 0;text-transform:uppercase;letter-spacing:0.08em;">LOJA TIM DOM JOSÉ - INFORTECA GARANHUNS</p>
-      <p style="font-size:12px;font-weight:700;color:#0e8890;margin:6px 0 0 0;text-transform:uppercase;letter-spacing:0.06em;">RESULTADO LOJA DE 01 A ${diaTexto} — MÊS: ${mesLabel}</p>
+      <div style="width:52px;height:52px;border-radius:50%;background:#0e8890;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;font-family:'Inter',sans-serif;flex-shrink:0;">IF</div>
+      <div style="flex:1;">
+        <h1 style="font-size:20px;font-weight:900;color:#1F4E78;margin:0;text-transform:uppercase;letter-spacing:0.02em;font-family:'Inter',sans-serif;line-height:1.15;">Acompanhamento de Vendas Diário</h1>
+        <p style="font-size:12px;font-weight:800;color:#475569;margin:5px 0 0 0;text-transform:uppercase;letter-spacing:0.08em;font-family:'Inter',sans-serif;">LOJA TIM DOM JOSÉ - INFORTECA GARANHUNS</p>
+        <p style="font-size:11px;font-weight:700;color:#0e8890;margin:4px 0 0 0;text-transform:uppercase;letter-spacing:0.06em;font-family:'Inter',sans-serif;">RESULTADO LOJA DE 01 A ${diaTexto} — MÊS: ${mesLabel}</p>
+      </div>
     `;
     wrapper.appendChild(header);
 
-    // Clona a aba ativa
+    // ── Clone da aba ativa ──
     const clone = tabAtiva.cloneNode(true);
-    clone.style.width = 'max-content';
-    clone.style.display = 'block';
+
+    // 1. Remove TODAS as imagens (evita canvas tainted)
+    clone.querySelectorAll('img').forEach(img => {
+      const placeholder = document.createElement('div');
+      placeholder.style.cssText = img.style.cssText + ';background:#0e8890;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;';
+      placeholder.textContent = 'IF';
+      if (img.parentNode) img.parentNode.replaceChild(placeholder, img);
+    });
+
+    // 2. Remove larguras "max-content" que estouram
     clone.querySelectorAll('.overflow-x-auto').forEach(el => {
       el.style.overflow = 'visible';
-      el.style.width = 'max-content';
-      el.style.maxWidth = 'none';
+      el.style.width = '100%';
+      el.style.maxWidth = '100%';
     });
-    clone.querySelectorAll('.hidden').forEach(el => el.classList.remove('hidden'));
-    wrapper.appendChild(clone);
+    clone.querySelectorAll('table').forEach(t => {
+      t.style.width = '100%';
+      t.style.maxWidth = '100%';
+      t.style.tableLayout = 'fixed';
+    });
 
+    // 3. Força as tabelas do diário a mostrarem menos dias (com scroll horizontal no export)
+    clone.querySelectorAll('.table-diario').forEach(t => {
+      t.style.width = '100%';
+      t.style.minWidth = '0';
+    });
+
+    // 4. Expande containers internos
+    clone.querySelectorAll('div').forEach(d => {
+      if (d.style && d.style.width === 'max-content') d.style.width = '100%';
+      if (d.style && d.style.maxWidth === 'none') d.style.maxWidth = '100%';
+    });
+
+    wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
 
-    // Aguarda imagens (logo) carregarem
-    const imgs = wrapper.querySelectorAll('img');
-    await Promise.all(Array.from(imgs).map(img => {
-      if (img.complete && img.naturalWidth > 0) return Promise.resolve();
-      return new Promise(resolve => {
-        img.onload = resolve;
-        img.onerror = resolve;
-        setTimeout(resolve, 3000); // timeout de segurança
-      });
-    }));
+    // Aguarda render
+    await new Promise(r => setTimeout(r, 500));
 
-    // Aguarda um frame extra para o layout estabilizar
-    await new Promise(r => setTimeout(r, 400));
+    const larguraReal = Math.min(wrapper.scrollWidth, LARGURA_MAX);
+    const alturaReal = wrapper.scrollHeight;
 
-    // Calcula scale dinâmico para não estourar o limite do Chrome (~16384px)
-    const larguraNatural = wrapper.scrollWidth;
-    const alturaNatural = wrapper.scrollHeight;
-    const LIMITE = 8000; // margem segura
+    console.log('[Export] Dimensões finais:', larguraReal, 'x', alturaReal);
+
+    if (larguraReal === 0 || alturaReal === 0) {
+      throw new Error('Wrapper com dimensões inválidas (0x0)');
+    }
+
+    // Scale dinâmico
     let scale = 2;
-    if (larguraNatural * 2 > LIMITE || alturaNatural * 2 > LIMITE) scale = 1;
-    if (larguraNatural * 1.5 > LIMITE || alturaNatural * 1.5 > LIMITE) scale = 1;
+    if (larguraReal * 2 > 8000 || alturaReal * 2 > 8000) scale = 1;
 
-    console.log('[Export] Largura:', larguraNatural, 'Altura:', alturaNatural, 'Scale:', scale);
-
-    // Renderiza
     const canvas = await html2canvas(wrapper, {
       scale: scale,
       backgroundColor: '#ffffff',
       useCORS: true,
       allowTaint: false,
       logging: false,
-      imageTimeout: 15000,
+      imageTimeout: 0,
       removeContainer: false,
-      width: larguraNatural,
-      height: alturaNatural,
+      width: larguraReal,
+      height: alturaReal,
       scrollX: 0,
       scrollY: 0,
-      windowWidth: larguraNatural,
-      windowHeight: alturaNatural,
+      windowWidth: larguraReal,
+      windowHeight: alturaReal,
     });
 
-    // Validações
-    if (!canvas) throw new Error('Canvas não foi gerado');
-    if (canvas.width === 0 || canvas.height === 0) throw new Error('Canvas com dimensões inválidas');
+    if (!canvas || canvas.width === 0 || canvas.height === 0) {
+      throw new Error('Canvas inválido: ' + (canvas ? `${canvas.width}x${canvas.height}` : 'null'));
+    }
 
     console.log('[Export] Canvas:', canvas.width, 'x', canvas.height);
 
@@ -1198,18 +1216,20 @@ async function exportarImagem() {
     const aba = tabAtiva.id.replace('tab-', '');
     const nomeArquivo = `acompanhamento_${aba}_${mesArquivo}.png`;
 
-    // Estratégia 1: toBlob + createObjectURL
-    let sucesso = false;
+    // Tenta toBlob → fallback toDataURL
+    let blob = null;
     try {
-      const blob = await new Promise((resolve, reject) => {
-        try {
-          canvas.toBlob(b => {
-            if (b && b.size > 0) resolve(b);
-            else reject(new Error('Blob vazio ou nulo'));
-          }, 'image/png', 1.0);
-        } catch (e) { reject(e); }
+      blob = await new Promise((resolve, reject) => {
+        canvas.toBlob(b => {
+          if (b && b.size > 0) resolve(b);
+          else reject(new Error('Blob vazio'));
+        }, 'image/png', 1.0);
       });
+    } catch (e) {
+      console.warn('[Export] toBlob falhou:', e.message);
+    }
 
+    if (blob) {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.download = nomeArquivo;
@@ -1218,31 +1238,22 @@ async function exportarImagem() {
       link.click();
       document.body.removeChild(link);
       setTimeout(() => URL.revokeObjectURL(url), 2000);
-      sucesso = true;
-    } catch (e) {
-      console.warn('[Export] toBlob falhou, tentando toDataURL:', e.message);
-    }
-
-    // Estratégia 2 (fallback): toDataURL direto
-    if (!sucesso) {
+    } else {
       const dataUrl = canvas.toDataURL('image/png');
-      if (!dataUrl || dataUrl === 'data:,' || dataUrl.length < 100) {
-        throw new Error('Canvas tainted — não foi possível exportar. Verifique se as imagens têm CORS habilitado.');
-      }
+      if (!dataUrl || dataUrl.length < 100) throw new Error('DataURL inválida');
       const link = document.createElement('a');
       link.download = nomeArquivo;
       link.href = dataUrl;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      sucesso = true;
     }
 
-    if (sucesso) toast('Imagem baixada!');
+    toast('Imagem baixada!');
 
   } catch (err) {
     console.error('[Export] Erro:', err);
-    alert('Erro ao gerar imagem:\n\n' + err.message + '\n\nVerifique o console (F12) para mais detalhes.');
+    alert('Erro ao gerar imagem:\n\n' + err.message);
   } finally {
     if (wrapper && wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
     if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
