@@ -281,10 +281,10 @@
       <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">E-mail</label>
       <input type="email" id="muEmail" placeholder="email@exemplo.com"
         class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-mono focus:outline-none focus:border-indigo-500">
-      <p class="text-[9px] text-slate-400 mt-1 flex items-center gap-1">
-        <i data-lucide="info" class="w-3 h-3"></i>
-        Alterar aqui não troca o e-mail de login. Fale com o TI pra mudar o acesso.
-      </p>
+      <p class="text-[9px] text-amber-600 mt-1 flex items-center gap-1">
+  <i data-lucide="alert-triangle" class="w-3 h-3"></i>
+  Alterar aqui também troca o e-mail de login. O usuário precisará entrar novamente com o novo e-mail.
+</p>
     </div>
   </div>
 
@@ -787,11 +787,11 @@ async function salvarUsuario() {
   const btn = $('muBtnSalvar');
   const alertBox = $('muAlert');
 
-  // 👇 NOVO — Lê os campos editáveis antes de qualquer coisa
+  // Lê os campos editáveis
   const nomeCompleto = $('muNomeCompleto').value.trim();
   const email        = $('muEmail').value.trim();
 
-  // Validação do nome (não pode ficar vazio)
+  // Validação do nome
   if (!nomeCompleto) {
     alertBox.textContent = 'Informe o nome completo.';
     alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
@@ -804,17 +804,37 @@ async function salvarUsuario() {
   lucide.createIcons();
 
   try {
+    // ─────────────────────────────────────────────────────
+    // 👇 Se o e-mail MUDOU, chama a função RPC que altera o login
+    // ─────────────────────────────────────────────────────
+    const emailAntigo = _userEdit.email || '';
+    const emailMudou = email && email.toLowerCase() !== emailAntigo.toLowerCase();
+
+    if (emailMudou) {
+      const { data, error } = await supabaseClient.rpc('atualizar_email_usuario', {
+        p_user_id: _userEdit.id,
+        p_novo_email: email,
+      });
+
+      if (error) throw new Error(error.message || 'Falha ao atualizar e-mail de login');
+      if (data?.error) throw new Error(data.error);
+    }
+
+    // ─────────────────────────────────────────────────────
+    // Update normal na tabela perfis (nome, cargo, email)
+    // ─────────────────────────────────────────────────────
     const { error: errPerfil } = await supabaseClient
       .from('perfis')
       .update({ 
         cargo_id: _userEdit.cargo_id || null,
         permissao: _userEdit._cargo?.nome || 'Operador',
-        nome_completo: nomeCompleto,   // 👈 NOVO
-        email: email || null,           // 👈 NOVO
+        nome_completo: nomeCompleto,
+        email: email || null,
       })
       .eq('id', _userEdit.id);
     if (errPerfil) throw errPerfil;
 
+    // Overrides individuais
     await supabaseClient.from('usuario_permissoes').delete().eq('user_id', _userEdit.id);
 
     if (!_userEdit._isAdmin && _userEdit._overrides.length) {
@@ -827,7 +847,8 @@ async function salvarUsuario() {
 
     fecharModalUsuario();
     await carregarUsuarios();
-    toast('Dados salvos!');
+    toast(emailMudou ? 'Dados e login atualizados!' : 'Dados salvos!');
+
   } catch (err) {
     alertBox.textContent = 'Erro: ' + err.message;
     alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
