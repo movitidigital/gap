@@ -383,7 +383,7 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const STORAGE_KEY = 'inforteca_metas_v12'; // Alterado cache
+    const STORAGE_KEY = 'inforteca_metas_v14'; // Atualizado Cache para V14 (Permitir zeros explícitos)
     const DIAS_NO_MES = 30;
 
     const TIPO_VALOR = {
@@ -405,7 +405,7 @@
 
     function criarDiarioZerado() {
       const d = {};
-      LINHAS_DIARIO.forEach(k => d[k] = new Array(DIAS_NO_MES).fill(0));
+      LINHAS_DIARIO.forEach(k => d[k] = new Array(DIAS_NO_MES).fill('')); // Agora inicia vazio em vez de 0
       return d;
     }
 
@@ -428,7 +428,26 @@
 
     function gerarEstadoPadrao() {
       const outubro = criarMes('OUTUBRO / 2026');
-      return { versao: 12, mesAtual: 'OUTUBRO / 2026', meses: { 'OUTUBRO / 2026': outubro } };
+      return { versao: 14, mesAtual: 'OUTUBRO / 2026', meses: { 'OUTUBRO / 2026': outubro } };
+    }
+
+    // Limpa zeros antigos indesejados caso venham de versões anteriores
+    function migrarEstado(st) {
+      if (!st.versao || st.versao < 14) {
+        Object.keys(st.meses).forEach(nm => {
+          st.meses[nm].consultores.forEach(c => {
+            LINHAS_DIARIO.forEach(k => {
+              if (Array.isArray(c.diario[k])) {
+                for (let i = 0; i < c.diario[k].length; i++) {
+                  if (c.diario[k][i] === 0) c.diario[k][i] = '';
+                }
+              }
+            });
+          });
+        });
+        st.versao = 14;
+      }
+      return st;
     }
 
     /* ════════════════════════════════════════════════════════
@@ -436,23 +455,20 @@
        ════════════════════════════════════════════════════════ */
     async function carregarEstado() {
       try {
-        // Tenta buscar todas as linhas da tabela `metas_mensais`
         const { data, error } = await supabaseClient.from('metas_mensais').select('*');
         if (data && data.length > 0) {
           const mesesFromDB = {};
           data.forEach(row => { mesesFromDB[row.mes] = row.dados; });
           
-          // Garante a integridade dos arrays (caso adicionemos linhas depois)
           Object.keys(mesesFromDB).forEach(nm => {
             mesesFromDB[nm].consultores.forEach(c => {
               LINHAS_DIARIO.forEach(k => {
-                if (!Array.isArray(c.diario[k])) c.diario[k] = new Array(DIAS_NO_MES).fill(0);
-                while (c.diario[k].length < DIAS_NO_MES) c.diario[k].push(0);
+                if (!Array.isArray(c.diario[k])) c.diario[k] = new Array(DIAS_NO_MES).fill('');
+                while (c.diario[k].length < DIAS_NO_MES) c.diario[k].push('');
               });
             });
           });
 
-          // Define o mês ativo (puxa o salvo do cache local, senão puxa o mais recente)
           let mesAtual = null;
           const localRaw = localStorage.getItem(STORAGE_KEY);
           if (localRaw) {
@@ -464,24 +480,21 @@
              mesAtual = nomesMeses[nomesMeses.length - 1];
           }
 
-          return { versao: 12, mesAtual: mesAtual, meses: mesesFromDB };
+          let stDB = { versao: 13, mesAtual: mesAtual, meses: mesesFromDB };
+          return migrarEstado(stDB);
         }
       } catch (e) {
         console.warn("Supabase fetch failed. Carregando dados locais.", e);
       }
       
-      // Fallback para LocalStorage se o banco estiver vazio ou offline
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return JSON.parse(raw);
+      if (raw) return migrarEstado(JSON.parse(raw));
       
       return gerarEstadoPadrao();
     }
     
     async function salvarEstado() {
-      // 1. Salva Backup Local Imediato
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); 
-      
-      // 2. Sincroniza Mês atual com o Banco
       try {
         await supabaseClient.from('metas_mensais').upsert({ 
           mes: state.mesAtual, 
@@ -495,7 +508,14 @@
     function mesAtivo() { return state.meses[state.mesAtual]; }
 
     const fmtN = (v) => String(Number(v) || 0);
-    const fmtVal = (v, t) => t === 'moeda' ? `<div class="td-money"><span>R$</span> <span>${(Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>` : fmtN(v);
+    const fmtVal = (v, t) => {
+      const num = Number(v) || 0;
+      if (t === 'moeda') {
+        return `<div class="td-money"><span>R$</span> <span>${num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>`;
+      } else {
+        return num % 1 === 0 ? num.toString() : num.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+      }
+    };
     
     function getStatusClass(pct) {
       if (pct >= 100) return 'status-green';
@@ -516,7 +536,6 @@
       const m = mesAtivo();
       const txtMeta = "META LOJA"; 
       
-      // Adição de Emojis!
       const icon = isLoja ? '🏢 ' : '👨‍💼 ';
       const titleWithIcon = icon + titulo;
 
@@ -635,30 +654,61 @@
       document.querySelectorAll('.cell-input:not([readonly])').forEach(inp => {
         const cIdx = parseInt(inp.dataset.c), row = inp.dataset.row, day = parseInt(inp.dataset.day);
         const val = m.consultores[cIdx].diario[row][day];
-        inp.value = (Number(val)||0)>0 ? (TIPO_VALOR[row]==='moeda' ? Number(val).toLocaleString('pt-BR',{minimumFractionDigits:2}) : val) : '';
-        if(val>0) inp.classList.add('filled');
+        
+        // Verifica se está vazio
+        if (val === '' || val === null || val === undefined) {
+          inp.value = '';
+        } else {
+          inp.value = TIPO_VALOR[row] === 'moeda' ? Number(val).toLocaleString('pt-BR',{minimumFractionDigits:2}) : val;
+        }
+
+        if(val !== '' && Number(val) > 0) inp.classList.add('filled');
         inp.addEventListener('change', onEditCell);
         inp.addEventListener('focus', e=>e.target.select());
       });
+      
       m.consultores.forEach((_, i) => { for(let d=0;d<DIAS_NO_MES;d++) atualizaFatTotal(i,d); });
     }
 
     function onEditCell(e) {
       const inp = e.target, cIdx = parseInt(inp.dataset.c), row = inp.dataset.row, day = parseInt(inp.dataset.day);
-      let v = parseFloat(String(inp.value).replace(/[^\d,-]/g,'').replace(',','.'));
-      if(isNaN(v)) v=0;
+      const rawVal = String(inp.value).trim();
+      
+      let v;
+      if (rawVal === '') {
+        v = ''; // Limpou a célula
+      } else {
+        v = parseFloat(rawVal.replace(/[^\d,-]/g,'').replace(',','.'));
+        if(isNaN(v)) v = '';
+      }
+      
       mesAtivo().consultores[cIdx].diario[row][day] = v;
-      inp.value = v>0 ? (TIPO_VALOR[row]==='moeda' ? v.toLocaleString('pt-BR',{minimumFractionDigits:2}) : v) : '';
-      inp.classList.toggle('filled', v>0);
+      
+      if (v === '') {
+        inp.value = '';
+      } else {
+        inp.value = TIPO_VALOR[row] === 'moeda' ? v.toLocaleString('pt-BR',{minimumFractionDigits:2}) : v;
+      }
+      
+      inp.classList.toggle('filled', v !== '' && v > 0);
       atualizaFatTotal(cIdx, day);
       salvarEstado(); renderDashboardExcel();
     }
 
     function atualizaFatTotal(cIdx, day) {
       const m = mesAtivo().consultores[cIdx];
-      const tot = (Number(m.diario['CONTROLE FAT.'][day])||0) + (Number(m.diario['PÓS FAT.'][day])||0);
+      const v1 = m.diario['CONTROLE FAT.'][day];
+      const v2 = m.diario['PÓS FAT.'][day];
       const inp = document.querySelector(`.cell-input[readonly][data-c="${cIdx}"][data-day="${day}"]`);
-      if(inp) inp.value = tot>0 ? tot.toLocaleString('pt-BR',{minimumFractionDigits:2}) : '';
+      
+      if (inp) {
+        if (v1 === '' && v2 === '') {
+          inp.value = ''; // Mantém em branco se ambas estiverem vazias
+        } else {
+          const tot = (Number(v1)||0) + (Number(v2)||0);
+          inp.value = tot.toLocaleString('pt-BR',{minimumFractionDigits:2});
+        }
+      }
     }
 
     function renderConfig() {
@@ -754,7 +804,6 @@
       salvarEstado(); recalcAll();
       toast('Mês removido!');
 
-      // Remove do banco de dados (Supabase)
       try {
         await supabaseClient.from('metas_mensais').delete().eq('mes', mesParaRemover);
       } catch (e) {
