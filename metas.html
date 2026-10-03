@@ -675,22 +675,32 @@ html += `<td class="${stsCls}" style="padding:4px 2px;line-height:1.15;">
       return html;
     }
 
-    function renderDashboardExcel() {
-      const grid = document.getElementById('dashboard-grid');
-      const m = mesAtivo();
-      
-      document.getElementById('headerSub1').textContent = `RESULTADO LOJA DE 01 A ${String(m.parametros.diasTrabalhados).padStart(2,'0')}`;
-      document.getElementById('headerSub2').textContent = `MÊS: ${m.parametros.mes}`;
-      document.getElementById('headerQC').textContent = m.parametros.qualControle;
-      document.getElementById('headerQP').textContent = m.parametros.qualPos;
+function renderDashboardExcel() {
+  const grid = document.getElementById('dashboard-grid');
+  const m = mesAtivo();
 
-      let html = '';
-      html += `<div>${gerarTabelaExcel('INFORTECA', m.metaLoja, true, null)}</div>`;
-      m.consultores.forEach(c => {
-        html += `<div>${gerarTabelaExcel(c.nome, m.metaConsultor, false, c)}</div>`;
-      });
-      grid.innerHTML = html;
-    }
+  // 👇 Calcula o dia anterior (ontem) automaticamente
+  const _hoje = new Date();
+  const _ontem = new Date(_hoje);
+  _ontem.setDate(_hoje.getDate() - 1);
+
+  // Se ontem caiu no mês passado (hoje é dia 1), mostra "01 A 01"
+  const _diaRef = _ontem.getMonth() === _hoje.getMonth() ? _ontem.getDate() : 1;
+
+  document.getElementById('headerSub1').textContent =
+    `RESULTADO LOJA DE 01 A ${String(_diaRef).padStart(2, '0')}`;
+
+  document.getElementById('headerSub2').textContent = `MÊS: ${m.parametros.mes}`;
+  document.getElementById('headerQC').textContent = m.parametros.qualControle;
+  document.getElementById('headerQP').textContent = m.parametros.qualPos;
+
+  let html = '';
+  html += `<div>${gerarTabelaExcel('INFORTECA', m.metaLoja, true, null)}</div>`;
+  m.consultores.forEach(c => {
+    html += `<div>${gerarTabelaExcel(c.nome, m.metaConsultor, false, c)}</div>`;
+  });
+  grid.innerHTML = html;
+}
 
     function renderDiario() {
       const grid = document.getElementById('gridDiario');
