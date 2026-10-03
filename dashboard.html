@@ -1384,6 +1384,30 @@ function fmtBR(date) {
   return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
 }
 
+    /* Converte "1.234,56", "R$ 99,90", 99.9 ou "99,90" em número */
+function parseMoedaBR(v) {
+  if (v === null || v === undefined || v === '') return null;
+  if (typeof v === 'number' && isFinite(v)) return v;
+  let s = String(v).trim().replace(/[R$\s]/g, '');
+  if (!s) return null;
+  const temVirgula = s.includes(',');
+  const temPonto   = s.includes('.');
+  if (temVirgula && temPonto) {
+    s = s.replace(/\./g, '').replace(',', '.');   // 1.234,56 → 1234.56
+  } else if (temVirgula) {
+    s = s.replace(',', '.');                       // 1234,56  → 1234.56
+  }                                                // senão: assume ponto decimal
+  const n = parseFloat(s);
+  return isNaN(n) ? null : n;
+}
+
+/* Formata número → "R$ 99,90" */
+function fmtMoeda(v) {
+  const n = parseMoedaBR(v);
+  if (n === null) return '—';
+  return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
     function statusFatura(txt) {
       const t = String(txt || '').toUpperCase();
       if (!t || t === '---' || t === 'N/A') return 'vazio';
@@ -1871,7 +1895,7 @@ function filtrar() {
                 <span>Alt:</span>
                 <span class="rounded px-1 transition-all group-hover/alt:bg-emerald-50 group-hover/alt:text-emerald-700">${escapeHTML(c.telefone_alt)}</span>
               </p>` : ''}
-            <p class="text-[#E60000] uppercase font-bold text-[11px] mt-1">${escapeHTML(c.plano || '—')}</p>
+            <p class="text-[#E60000] uppercase font-bold text-[11px] mt-1">${escapeHTML(c.plano || '—')}</p> ${c.valor_receita_contratada != null ? ` <p class="text-emerald-700 font-black text-[11px] mt-0.5 flex items-center gap-1"> <i data-lucide="badge-dollar-sign" class="w-3 h-3"></i> ${fmtMoeda(c.valor_receita_contratada)}<span class="text-slate-400 font-medium">/mês</span> </p>` : ''}
             ${c.consultor ? `<p class="text-slate-500 text-[11px] mt-1 flex items-center gap-1">
               <i data-lucide="user-check" class="w-3 h-3"></i> ${escapeHTML(c.consultor)}
             </p>` : ''}
@@ -2212,160 +2236,192 @@ function filtrar() {
       lucide.createIcons();
     }
 
-    function renderClienteCard(c) {
-      const cpfFmt = normalizarCPF(c.cpf);
-      const telefone = normalizarTelefone(c.telefone);
-      const telFormatado = telefone.length === 11
-        ? `(${telefone.slice(0,2)}) ${telefone.slice(2,7)}-${telefone.slice(7)}`
-        : telefone;
-      const altFormatado = c.telefone_alt ? normalizarTelefone(c.telefone_alt) : null;
-      const venc = c.data_vencimento_base
-        ? (String(c.data_vencimento_base).toUpperCase() === 'CC' ? 'CC' : `DIA ${c.data_vencimento_base}`)
-        : '—';
+function renderClienteCard(c) {
+  const cpfFmt = normalizarCPF(c.cpf);
+  const telefone = normalizarTelefone(c.telefone);
+  const telFormatado = telefone.length === 11
+    ? `(${telefone.slice(0,2)}) ${telefone.slice(2,7)}-${telefone.slice(7)}`
+    : telefone;
+  const altFormatado = c.telefone_alt ? normalizarTelefone(c.telefone_alt) : null;
+  const venc = c.data_vencimento_base
+    ? (String(c.data_vencimento_base).toUpperCase() === 'CC' ? 'CC' : `DIA ${c.data_vencimento_base}`)
+    : '—';
 
-      const faturaCell = (valor) => {
-        const st = statusFatura(valor);
-        const cor = {
-          pago: 'text-emerald-600', cc: 'text-sky-600',
-          prejuizo: 'text-red-600', enviada: 'text-orange-600',
-          pendente: 'text-slate-700', vazio: 'text-slate-400',
-        }[st] || 'text-slate-400';
-        const icone = {
-          pago: 'check-circle-2', cc: 'credit-card',
-          prejuizo: 'alert-octagon', enviada: 'send',
-          pendente: 'calendar', vazio: 'minus',
-        }[st] || 'minus';
+  const faturaCell = (valor) => {
+    const st = statusFatura(valor);
+    const cor = {
+      pago: 'text-emerald-600', cc: 'text-sky-600',
+      prejuizo: 'text-red-600', enviada: 'text-orange-600',
+      pendente: 'text-slate-700', vazio: 'text-slate-400',
+    }[st] || 'text-slate-400';
+    const icone = {
+      pago: 'check-circle-2', cc: 'credit-card',
+      prejuizo: 'alert-octagon', enviada: 'send',
+      pendente: 'calendar', vazio: 'minus',
+    }[st] || 'minus';
 
-        return `<div class="flex items-center gap-1.5 ${cor} font-semibold">
-          <i data-lucide="${icone}" class="w-3.5 h-3.5"></i>
-          <span class="text-xs">${escapeHTML(valor || '—')}</span>
-        </div>`;
-      };
+    return `<div class="flex items-center gap-1.5 ${cor} font-semibold">
+      <i data-lucide="${icone}" class="w-3.5 h-3.5"></i>
+      <span class="text-xs">${escapeHTML(valor || '—')}</span>
+    </div>`;
+  };
 
-      return `
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-          <div class="p-5 border-b border-slate-100 flex justify-between items-start gap-4">
-            <div class="min-w-0 flex-1">
-              <h3 class="font-bold text-[#000033] text-base md:text-lg truncate">${escapeHTML(capitalizar(c.nome) || 'Sem Nome')}</h3>
-              <div class="flex flex-wrap items-center gap-2 mt-2">
-                <span class="inline-block bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold border border-slate-200">
-                  BASE ${escapeHTML(c.ano_base || '—')}
-                </span>
-                ${venc !== '—' ? `
-                  <span class="inline-block bg-amber-50 text-amber-700 px-2 py-0.5 rounded text-[10px] font-bold border border-amber-200">
-                    VENCIMENTO: ${escapeHTML(venc)}
-                  </span>` : ''}
-                ${String(c.modalidade || '').toUpperCase().includes('TROCA DE APARELHO') ? `
-                  <span class="inline-block bg-slate-900 text-white px-2 py-0.5 rounded text-[10px] font-bold">
-                    TROCA DE APARELHO
-                  </span>` : ''}
-              </div>
-            </div>
-            <button onclick="copiarClienteCard('${cpfFmt}')"
-              title="Copiar dados do cliente"
-              class="p-2 text-slate-400 hover:text-[#0e8890] hover:bg-slate-50 rounded-lg transition-colors shrink-0">
-              <i data-lucide="copy" class="w-4 h-4"></i>
-            </button>
-          </div>
+  // 👇 NOVO — valor da receita contratada formatado
+  const valorPlano = c.valor_receita_contratada != null
+    ? fmtMoeda(c.valor_receita_contratada)
+    : null;
 
-          <div class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-            <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Número da Linha</p>
-              <p class="font-mono text-sm text-slate-800 font-semibold cursor-pointer hover:text-[#0e8890] transition-colors"
-                 onclick="copiarTexto('${telefone}', this)" title="Clique para copiar">
-                ${escapeHTML(telFormatado || '—')}
-              </p>
-            </div>
-            <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">CPF</p>
-              <p class="font-mono text-sm text-slate-800 cursor-pointer hover:text-[#0e8890] transition-colors"
-                 onclick="copiarTexto('${cpfFmt}', this)" title="Clique para copiar">
-                ${escapeHTML(cpfFmt || '—')}
-              </p>
-            </div>
-            <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Data da Venda</p>
-              <p class="text-sm text-slate-800">${c.data_venda ? fmtBR(c.data_venda) : '—'}</p>
-            </div>
-            <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Consultor</p>
-              <p class="text-sm text-slate-800 uppercase">${escapeHTML(c.consultor || '—')}</p>
-            </div>
-            <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Plano</p>
-              <p class="text-sm text-[#E60000] font-bold uppercase">${escapeHTML(c.plano || '—')}</p>
-            </div>
-            <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Modalidade</p>
-              <p class="text-sm text-slate-700 uppercase">${escapeHTML(c.modalidade || '—')}</p>
-            </div>
-            <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Contato Alternativo</p>
-              ${altFormatado ? `
-                <p class="font-mono text-sm text-slate-800 cursor-pointer hover:text-[#0e8890] transition-colors"
-                   onclick="copiarTexto('${altFormatado}', this)" title="Clique para copiar">
-                  ${escapeHTML(altFormatado)}
-                </p>` : '<p class="text-sm text-slate-400">—</p>'}
-            </div>
-            <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Data Nascimento</p>
-              <p class="text-sm text-slate-800">${c.data_nascimento ? fmtBR(c.data_nascimento) : '—'}</p>
-            </div>
-            <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">IMEI</p>
-              <p class="font-mono text-xs text-slate-600 truncate" title="${escapeHTML(c.imei || '')}">${escapeHTML(c.imei || '—')}</p>
-            </div>
-          </div>
-
-          <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">1ª Fatura</p>
-              ${faturaCell(c.fatura_p)}
-            </div>
-            <div>
-              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">2ª Fatura</p>
-              ${faturaCell(c.fatura_q)}
-            </div>
-            <div>
-              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">3ª Fatura</p>
-              ${faturaCell(c.fatura_r)}
-            </div>
+  return `
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+      <div class="p-5 border-b border-slate-100 flex justify-between items-start gap-4">
+        <div class="min-w-0 flex-1">
+          <h3 class="font-bold text-[#000033] text-base md:text-lg truncate">${escapeHTML(capitalizar(c.nome) || 'Sem Nome')}</h3>
+          <div class="flex flex-wrap items-center gap-2 mt-2">
+            <span class="inline-block bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold border border-slate-200">
+              BASE ${escapeHTML(c.ano_base || '—')}
+            </span>
+            ${venc !== '—' ? `
+              <span class="inline-block bg-amber-50 text-amber-700 px-2 py-0.5 rounded text-[10px] font-bold border border-amber-200">
+                VENCIMENTO: ${escapeHTML(venc)}
+              </span>` : ''}
+            ${valorPlano ? `
+              <span class="inline-block bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-black border border-emerald-200 flex items-center gap-1">
+                <i data-lucide="badge-dollar-sign" class="w-3 h-3"></i>
+                ${valorPlano}/mês
+              </span>` : ''}
+            ${String(c.modalidade || '').toUpperCase().includes('TROCA DE APARELHO') ? `
+              <span class="inline-block bg-slate-900 text-white px-2 py-0.5 rounded text-[10px] font-bold">
+                TROCA DE APARELHO
+              </span>` : ''}
           </div>
         </div>
-      `;
-    }
+        <button onclick="copiarClienteCard('${cpfFmt}')"
+          title="Copiar dados do cliente"
+          class="p-2 text-slate-400 hover:text-[#0e8890] hover:bg-slate-50 rounded-lg transition-colors shrink-0">
+          <i data-lucide="copy" class="w-4 h-4"></i>
+        </button>
+      </div>
 
-    function copiarClienteCard(cpf) {
-      const c = (state.clientesBusca || []).find(x => normalizarCPF(x.cpf) === cpf);
-      if (!c) return;
+      <div class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Número da Linha</p>
+          <p class="font-mono text-sm text-slate-800 font-semibold cursor-pointer hover:text-[#0e8890] transition-colors"
+             onclick="copiarTexto('${telefone}', this)" title="Clique para copiar">
+            ${escapeHTML(telFormatado || '—')}
+          </p>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">CPF</p>
+          <p class="font-mono text-sm text-slate-800 cursor-pointer hover:text-[#0e8890] transition-colors"
+             onclick="copiarTexto('${cpfFmt}', this)" title="Clique para copiar">
+            ${escapeHTML(cpfFmt || '—')}
+          </p>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Data da Venda</p>
+          <p class="text-sm text-slate-800">${c.data_venda ? fmtBR(c.data_venda) : '—'}</p>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Consultor</p>
+          <p class="text-sm text-slate-800 uppercase">${escapeHTML(c.consultor || '—')}</p>
+        </div>
 
-      const telefone = normalizarTelefone(c.telefone);
-      const telFormat = telefone.length === 11
-        ? `(${telefone.slice(0,2)}) ${telefone.slice(2,7)}-${telefone.slice(7)}`
-        : telefone;
+        <!-- 👇 Bloco Plano + Valor agrupados -->
+        <div class="lg:col-span-2 grid grid-cols-2 gap-x-6">
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Plano</p>
+            <p class="text-sm text-[#E60000] font-bold uppercase truncate" title="${escapeHTML(c.plano || '')}">
+              ${escapeHTML(c.plano || '—')}
+            </p>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Valor Mensal</p>
+            ${valorPlano
+              ? `<p class="text-sm text-emerald-700 font-black flex items-center gap-1">
+                   <i data-lucide="badge-dollar-sign" class="w-3.5 h-3.5"></i>
+                   ${valorPlano}
+                 </p>`
+              : `<p class="text-sm text-slate-400">—</p>`}
+          </div>
+        </div>
 
-      const texto =
-        `CLIENTE: ${capitalizar(c.nome)}\n` +
-        `CPF: ${normalizarCPF(c.cpf)}\n` +
-        `LINHA: ${telFormat}\n` +
-        `PLANO: ${c.plano || '—'}\n` +
-        `MODALIDADE: ${c.modalidade || '—'}\n` +
-        `CONSULTOR: ${c.consultor || '—'}\n` +
-        `VENCIMENTO: Dia ${c.data_vencimento_base || '—'}\n` +
-        `BASE: ${c.ano_base || '—'}`;
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Modalidade</p>
+          <p class="text-sm text-slate-700 uppercase">${escapeHTML(c.modalidade || '—')}</p>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Contato Alternativo</p>
+          ${altFormatado ? `
+            <p class="font-mono text-sm text-slate-800 cursor-pointer hover:text-[#0e8890] transition-colors"
+               onclick="copiarTexto('${altFormatado}', this)" title="Clique para copiar">
+              ${escapeHTML(altFormatado)}
+            </p>` : '<p class="text-sm text-slate-400">—</p>'}
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Data Nascimento</p>
+          <p class="text-sm text-slate-800">${c.data_nascimento ? fmtBR(c.data_nascimento) : '—'}</p>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">IMEI</p>
+          <p class="font-mono text-xs text-slate-600 truncate" title="${escapeHTML(c.imei || '')}">${escapeHTML(c.imei || '—')}</p>
+        </div>
+      </div>
 
-      navigator.clipboard.writeText(texto).then(() => {
-        mostrarToastCopy('Dados do cliente copiados!');
-      }).catch(() => {
-        const ta = document.createElement('textarea');
-        ta.value = texto;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        mostrarToastCopy('Dados do cliente copiados!');
-      });
-    }
+      <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">1ª Fatura</p>
+          ${faturaCell(c.fatura_p)}
+        </div>
+        <div>
+          <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">2ª Fatura</p>
+          ${faturaCell(c.fatura_q)}
+        </div>
+        <div>
+          <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">3ª Fatura</p>
+          ${faturaCell(c.fatura_r)}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function copiarClienteCard(cpf) {
+  const c = (state.clientesBusca || []).find(x => normalizarCPF(x.cpf) === cpf);
+  if (!c) return;
+
+  const telefone = normalizarTelefone(c.telefone);
+  const telFormat = telefone.length === 11
+    ? `(${telefone.slice(0,2)}) ${telefone.slice(2,7)}-${telefone.slice(7)}`
+    : telefone;
+
+  // 👇 NOVO — formata o valor da receita contratada (ou deixa "—" se não houver)
+  const valorPlano = c.valor_receita_contratada != null
+    ? fmtMoeda(c.valor_receita_contratada)
+    : '—';
+
+  const texto =
+    `CLIENTE: ${capitalizar(c.nome)}\n` +
+    `CPF: ${normalizarCPF(c.cpf)}\n` +
+    `LINHA: ${telFormat}\n` +
+    `PLANO: ${c.plano || '—'}\n` +
+    `VALOR MENSAL: ${valorPlano}\n` +          // 👈 NOVO
+    `MODALIDADE: ${c.modalidade || '—'}\n` +
+    `CONSULTOR: ${c.consultor || '—'}\n` +
+    `VENCIMENTO: Dia ${c.data_vencimento_base || '—'}\n` +
+    `BASE: ${c.ano_base || '—'}`;
+
+  navigator.clipboard.writeText(texto).then(() => {
+    mostrarToastCopy('Dados do cliente copiados!');
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = texto;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    mostrarToastCopy('Dados do cliente copiados!');
+  });
+}
 
     /* ==========================================================
        IMPORTAÇÃO CSV
@@ -3319,6 +3375,7 @@ async function processarDatasys(input) {
       consultor:  acharColuna('VENDEDOR', 'CONSULTOR'),
       fidelAp:    acharColuna('FIDELIZACAO', 'FIDELIZAÇÃO'),  // [17] Fidelização
       fidelPl:    acharColuna('FIDELIZACAO PLANO', 'FIDELIZAÇÃO PLANO'),
+      valorReceita: acharColuna( 'VALOR RECEITA CONTRATADA', 'VALOR DA RECEITA CONTRATADA', 'RECEITA CONTRATADA', 'VALOR RECEITA' ),
     };
 
     console.log('[Datasys] Colunas mapeadas:', COL);
@@ -3409,6 +3466,7 @@ async function processarDatasys(input) {
         status_thales: null,
         status_saneamento: 'PENDENTE',
         debito_automatico: 'NÃO',
+        valor_receita_contratada: COL.valorReceita >= 0 ? parseMoedaBR(r[COL.valorReceita]) : null,
       });
     }
 
