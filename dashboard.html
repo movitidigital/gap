@@ -1696,10 +1696,13 @@ document.getElementById('btnMenuUsuarios')?.classList.remove('hidden');
     document.getElementById('badgeGestao')?.classList.add('hidden');
   }
 
-  navegar('dashboard');
-  carregarClientes();
-  atualizarBadgeGestao();
-  atualizarBadgeSuspensoes();
+ const hash = window.location.hash.replace('#', '').trim();
+const destinoInicial = (hash && TITULOS[hash]) ? hash : 'dashboard';
+
+navegar(destinoInicial);
+carregarClientes();
+atualizarBadgeGestao();
+atualizarBadgeSuspensoes();
 }
 
     async function terminarSessao() {
