@@ -17,7 +17,7 @@
       --tim-blue:      #002060;
       --tim-blue-light:#1F4E78;
       --excel-border:  #000000;
-      --cat-fatura:   #8EA9DB;
+      --cat-fatura:    #8EA9DB;
       --cat-gross:     #B4C6E7;
       --cat-produto:   #D9D9D9;
       
@@ -98,7 +98,7 @@
       text-transform: uppercase;
     }
 
-    /* Ajuste definitivo para html2canvas renderizar texto vertical perfeitamente */
+    /* Ajuste para renderizar texto vertical perfeitamente */
     .cat-vertical {
       text-align: center;
       vertical-align: middle;
@@ -121,6 +121,7 @@
 
     .td-label { font-weight: 700; color: #000; text-align: right; padding-right: 8px !important; background: #ffffff; }
     .td-value { font-weight: 700; text-align: center; background: #ffffff; font-variant-numeric: tabular-nums; }
+    
     .td-money { display: flex; justify-content: space-between; padding: 6px 8px !important; }
     
     .row-destaque td { background-color: #F2F2F2; }
@@ -236,7 +237,7 @@
       </div>
     </header>
 
-    <!-- ÁREA DE SCROLL (Dashboard, Controles, Diário) -->
+    <!-- ÁREA DE SCROLL -->
     <div class="flex-1 overflow-y-auto">
       
       <!-- BARRA DE CONTROLE DE ABAS -->
@@ -265,7 +266,7 @@
         </div>
       </div>
 
-      <!-- ABA 1: DASHBOARD EXCEL-LIKE (VISÃO PRINCIPAL) -->
+      <!-- ABA 1: DASHBOARD EXCEL -->
       <div id="tab-resumo" class="tab-content">
         <div id="export-area">
           <div class="dash-header">
@@ -300,11 +301,11 @@
         </div>
       </div>
 
-      <!-- ABA 2: DIÁRIO (LANÇAMENTOS) -->
+      <!-- ABA 2: LANÇAMENTOS DIÁRIOS -->
       <div id="tab-diario" class="tab-content hidden p-6">
         <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 mb-4">
           <h2 class="text-sm font-black text-slate-800 uppercase">Lançamentos Diários</h2>
-          <p class="text-xs text-slate-500 mt-1">Preencha os resultados do dia. A linha FAT TOTAL TIM calcula automaticamente.</p>
+          <p class="text-xs text-slate-500 mt-1">Preencha os resultados do dia. Você pode digitar "0" para marcar um dia sem vendas. A linha FAT TOTAL TIM calcula automaticamente.</p>
         </div>
         <div id="gridDiario" class="space-y-6"></div>
       </div>
@@ -383,7 +384,7 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const STORAGE_KEY = 'inforteca_metas_v14'; // Atualizado Cache para V14 (Permitir zeros explícitos)
+    const STORAGE_KEY = 'inforteca_metas_v15'; // Versão 15: Cores na legenda + Arredondamento perfeito + Zeros visíveis
     const DIAS_NO_MES = 30;
 
     const TIPO_VALOR = {
@@ -399,13 +400,11 @@
       { id: 'produto', nome: 'PRODUTO',  cls: 'cat-produto', rows: 2, keys: ['APARELHO', 'ACESSÓRIOS'] }
     ];
 
-    const MESES = ['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
-
     let state = null;
 
     function criarDiarioZerado() {
       const d = {};
-      LINHAS_DIARIO.forEach(k => d[k] = new Array(DIAS_NO_MES).fill('')); // Agora inicia vazio em vez de 0
+      LINHAS_DIARIO.forEach(k => d[k] = new Array(DIAS_NO_MES).fill('')); 
       return d;
     }
 
@@ -428,31 +427,27 @@
 
     function gerarEstadoPadrao() {
       const outubro = criarMes('OUTUBRO / 2026');
-      return { versao: 14, mesAtual: 'OUTUBRO / 2026', meses: { 'OUTUBRO / 2026': outubro } };
+      return { versao: 15, mesAtual: 'OUTUBRO / 2026', meses: { 'OUTUBRO / 2026': outubro } };
     }
 
-    // Limpa zeros antigos indesejados caso venham de versões anteriores
     function migrarEstado(st) {
-      if (!st.versao || st.versao < 14) {
+      if (!st.versao || st.versao < 15) {
         Object.keys(st.meses).forEach(nm => {
           st.meses[nm].consultores.forEach(c => {
             LINHAS_DIARIO.forEach(k => {
               if (Array.isArray(c.diario[k])) {
                 for (let i = 0; i < c.diario[k].length; i++) {
-                  if (c.diario[k][i] === 0) c.diario[k][i] = '';
+                  if (c.diario[k][i] === 0) c.diario[k][i] = ''; // Limpa os zeros falsos herdados de versões antigas
                 }
               }
             });
           });
         });
-        st.versao = 14;
+        st.versao = 15;
       }
       return st;
     }
 
-    /* ════════════════════════════════════════════════════════
-       LÓGICA SUPABASE MÊS-A-MÊS
-       ════════════════════════════════════════════════════════ */
     async function carregarEstado() {
       try {
         const { data, error } = await supabaseClient.from('metas_mensais').select('*');
@@ -480,7 +475,7 @@
              mesAtual = nomesMeses[nomesMeses.length - 1];
           }
 
-          let stDB = { versao: 13, mesAtual: mesAtual, meses: mesesFromDB };
+          let stDB = { versao: 14, mesAtual: mesAtual, meses: mesesFromDB };
           return migrarEstado(stDB);
         }
       } catch (e) {
@@ -507,13 +502,15 @@
 
     function mesAtivo() { return state.meses[state.mesAtual]; }
 
-    const fmtN = (v) => String(Number(v) || 0);
+    // MODIFICAÇÃO 2: Arredondamento limpo para não estourar dízimas nas células numéricas
     const fmtVal = (v, t) => {
       const num = Number(v) || 0;
       if (t === 'moeda') {
         return `<div class="td-money"><span>R$</span> <span>${num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>`;
       } else {
-        return num % 1 === 0 ? num.toString() : num.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        // Multiplica por 100, arredonda, e divide por 100 para forçar precisão sem erros de dízima (Ex: 1.1111 -> 1.11)
+        const rounded = Math.round(num * 100) / 100;
+        return rounded.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
       }
     };
     
@@ -573,6 +570,8 @@
           const fzdia = m.parametros.diasRestantes > 0 ? falta / m.parametros.diasRestantes : falta;
           
           const pctText = pct.toFixed(0) + '%';
+          
+          // Classe responsável pelas cores
           const stsCls  = getStatusClass(pct);
           const rowCls  = (key === 'FAT TOTAL TIM') ? 'row-destaque' : '';
 
@@ -591,16 +590,17 @@
             html += `<td class="td-value" style="padding:0;">${fmtVal(realV, tipo)}</td>`;
           }
 
+          // MODIFICAÇÃO 1: Cores aplicadas para as colunas Percent %, Falta e Fazer Por Dia
           html += `<td class="${stsCls}">${pctText}</td>`;
 
           if (pct >= 100) {
             html += `<td colspan="2" class="meta-entregue">META ENTREGUE</td>`;
           } else {
             if(falta === 0 && tipo === 'moeda') {
-               html += `<td class="td-value" style="text-align:center;">-</td><td class="td-value" style="text-align:center;">-</td>`;
+               html += `<td class="${stsCls}" style="text-align:center;">-</td><td class="${stsCls}" style="text-align:center;">-</td>`;
             } else {
-               html += `<td class="td-value" style="padding:0;">${fmtVal(falta, tipo)}</td>`;
-               html += `<td class="td-value" style="padding:0;">${fmtVal(fzdia, tipo)}</td>`;
+               html += `<td class="${stsCls}" style="padding:0;">${fmtVal(falta, tipo)}</td>`;
+               html += `<td class="${stsCls}" style="padding:0;">${fmtVal(fzdia, tipo)}</td>`;
             }
           }
           html += `</tr>`;
@@ -655,14 +655,15 @@
         const cIdx = parseInt(inp.dataset.c), row = inp.dataset.row, day = parseInt(inp.dataset.day);
         const val = m.consultores[cIdx].diario[row][day];
         
-        // Verifica se está vazio
         if (val === '' || val === null || val === undefined) {
           inp.value = '';
         } else {
           inp.value = TIPO_VALOR[row] === 'moeda' ? Number(val).toLocaleString('pt-BR',{minimumFractionDigits:2}) : val;
         }
 
-        if(val !== '' && Number(val) > 0) inp.classList.add('filled');
+        // MODIFICAÇÃO 3: Se houver qualquer coisa preenchida (mesmo que seja zero explícito), marca como 'filled'
+        if(val !== '') inp.classList.add('filled');
+        
         inp.addEventListener('change', onEditCell);
         inp.addEventListener('focus', e=>e.target.select());
       });
@@ -676,7 +677,7 @@
       
       let v;
       if (rawVal === '') {
-        v = ''; // Limpou a célula
+        v = ''; 
       } else {
         v = parseFloat(rawVal.replace(/[^\d,-]/g,'').replace(',','.'));
         if(isNaN(v)) v = '';
@@ -687,10 +688,12 @@
       if (v === '') {
         inp.value = '';
       } else {
-        inp.value = TIPO_VALOR[row] === 'moeda' ? v.toLocaleString('pt-BR',{minimumFractionDigits:2}) : v;
+        inp.value = TIPO_VALOR[row] === 'moeda' ? Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2}) : v;
       }
       
-      inp.classList.toggle('filled', v !== '' && v > 0);
+      // Adiciona o destaque verde visual indicando que o zero ou valor foi contabilizado e salvo
+      inp.classList.toggle('filled', v !== '');
+      
       atualizaFatTotal(cIdx, day);
       salvarEstado(); renderDashboardExcel();
     }
@@ -703,10 +706,12 @@
       
       if (inp) {
         if (v1 === '' && v2 === '') {
-          inp.value = ''; // Mantém em branco se ambas estiverem vazias
+          inp.value = ''; 
+          inp.classList.remove('filled');
         } else {
           const tot = (Number(v1)||0) + (Number(v2)||0);
           inp.value = tot.toLocaleString('pt-BR',{minimumFractionDigits:2});
+          inp.classList.add('filled');
         }
       }
     }
