@@ -293,11 +293,11 @@
           </div>
 
           <div class="dash-legend">
-            <div class="leg-title">LEGENDA</div>
-            <div class="leg-red">FORA DA TENDÊNCIA &lt;70%</div>
-            <div class="leg-yellow">TENDÊNCIA DE ENTREGAR &gt; 70%</div>
-            <div class="leg-green">META ENTREGUE/SUPERADA &gt; 100%</div>
-          </div>
+  <div class="leg-title">LEGENDA</div>
+  <div class="leg-red">FORA DA TENDÊNCIA &lt; 70%</div>
+  <div class="leg-yellow">TENDÊNCIA DE ENTREGAR 70–99%</div>
+  <div class="leg-green">NA TENDÊNCIA DE BATER ≥ 100%</div>
+</div>
         </div>
       </div>
 
@@ -430,23 +430,21 @@
       return { versao: 15, mesAtual: 'OUTUBRO / 2026', meses: { 'OUTUBRO / 2026': outubro } };
     }
 
-    function migrarEstado(st) {
-      if (!st.versao || st.versao < 15) {
-        Object.keys(st.meses).forEach(nm => {
-          st.meses[nm].consultores.forEach(c => {
-            LINHAS_DIARIO.forEach(k => {
-              if (Array.isArray(c.diario[k])) {
-                for (let i = 0; i < c.diario[k].length; i++) {
-                  if (c.diario[k][i] === 0) c.diario[k][i] = ''; // Limpa os zeros falsos herdados de versões antigas
-                }
-              }
-            });
-          });
+function migrarEstado(st) {
+  // v16: zeros agora são VÁLIDOS e persistem — não apagar mais
+  if (!st.versao || st.versao < 16) {
+    Object.keys(st.meses || {}).forEach(nm => {
+      (st.meses[nm].consultores || []).forEach(c => {
+        LINHAS_DIARIO.forEach(k => {
+          if (!Array.isArray(c.diario[k])) c.diario[k] = new Array(DIAS_NO_MES).fill('');
+          while (c.diario[k].length < DIAS_NO_MES) c.diario[k].push('');
         });
-        st.versao = 15;
-      }
-      return st;
-    }
+      });
+    });
+    st.versao = 16;
+  }
+  return st;
+}
 
     async function carregarEstado() {
       try {
@@ -475,7 +473,7 @@
              mesAtual = nomesMeses[nomesMeses.length - 1];
           }
 
-          let stDB = { versao: 14, mesAtual: mesAtual, meses: mesesFromDB };
+          let stDB = { versao: 16, mesAtual: mesAtual, meses: mesesFromDB };
           return migrarEstado(stDB);
         }
       } catch (e) {
@@ -529,6 +527,27 @@
       return mesAtivo().consultores.reduce((s, c) => s + calcReal(c, key), 0);
     }
 
+/* =========================================================
+   TENDÊNCIA
+   Fórmula: (realV / diasTrabalhados) × (diasTrabalhados + diasRestantes)
+   → projeta o total do mês mantendo o ritmo atual
+   → pct = projeção / meta × 100
+   ========================================================= */
+function calcTendencia(realV, metaV, diasTrabalhados, diasRestantes) {
+  const dT = Number(diasTrabalhados) || 0;
+  const dR = Number(diasRestantes)   || 0;
+
+  if (!metaV || metaV <= 0 || dT <= 0) {
+    return { pct: 0, projecao: 0, mediaDiaria: 0 };
+  }
+
+  const mediaDiaria = realV / dT;
+  const projecao    = mediaDiaria * (dT + dR);
+  const pct         = (projecao / metaV) * 100;
+
+  return { pct, projecao, mediaDiaria };
+}
+    
     function gerarTabelaExcel(titulo, objMeta, isLoja, consultorObj) {
       const m = mesAtivo();
       const txtMeta = "META LOJA"; 
@@ -565,15 +584,19 @@
           const metaV = objMeta[key] || 0;
           const realV = isLoja ? calcLoja(key) : calcReal(consultorObj, key);
           const tipo  = TIPO_VALOR[key];
-          const pct   = metaV ? (realV / metaV) * 100 : 0;
-          const falta = Math.max(0, metaV - realV);
-          const fzdia = m.parametros.diasRestantes > 0 ? falta / m.parametros.diasRestantes : falta;
-          
-          const pctText = pct.toFixed(0) + '%';
-          
-          // Classe responsável pelas cores
-          const stsCls  = getStatusClass(pct);
-          const rowCls  = (key === 'FAT TOTAL TIM') ? 'row-destaque' : '';
+const pct   = metaV ? (realV / metaV) * 100 : 0;   // % REAL (atual)
+const falta = Math.max(0, metaV - realV);
+const fzdia = m.parametros.diasRestantes > 0 ? falta / m.parametros.diasRestantes : falta;
+
+// 👇 NOVO: tendência (projeção com base no ritmo atual)
+const tend     = calcTendencia(realV, metaV, m.parametros.diasTrabalhados, m.parametros.diasRestantes);
+const pctTend  = tend.pct;
+
+const pctText = pct.toFixed(0) + '%';
+
+// 👇 A COR agora segue a TENDÊNCIA, não o % atual
+const stsCls  = getStatusClass(pctTend);
+const rowCls  = (key === 'FAT TOTAL TIM') ? 'row-destaque' : '';
 
           html += `<tr class="${rowCls}">`;
           
@@ -591,8 +614,12 @@
           }
 
           // MODIFICAÇÃO 1: Cores aplicadas para as colunas Percent %, Falta e Fazer Por Dia
-          html += `<td class="${stsCls}">${pctText}</td>`;
-
+// % atual em destaque + tendência como subtítulo
+html += `<td class="${stsCls}" style="padding:4px 2px;line-height:1.15;">
+  <div style="font-weight:800;font-size:11px;">${pctText}</div>
+  <div style="font-size:8px;font-weight:700;opacity:0.8;">tend ${pctTend.toFixed(0)}%</div>
+</td>`;
+          
           if (pct >= 100) {
             html += `<td colspan="2" class="meta-entregue">META ENTREGUE</td>`;
           } else {
@@ -655,7 +682,7 @@
         const cIdx = parseInt(inp.dataset.c), row = inp.dataset.row, day = parseInt(inp.dataset.day);
         const val = m.consultores[cIdx].diario[row][day];
         
-        if (val === '' || val === null || val === undefined) {
+        if (val === '' || val == null) {
           inp.value = '';
         } else {
           inp.value = TIPO_VALOR[row] === 'moeda' ? Number(val).toLocaleString('pt-BR',{minimumFractionDigits:2}) : val;
@@ -665,7 +692,8 @@
         if(val !== '') inp.classList.add('filled');
         
         inp.addEventListener('change', onEditCell);
-        inp.addEventListener('focus', e=>e.target.select());
+inp.addEventListener('input', onCellInput);  
+inp.addEventListener('focus', e=>e.target.select());
       });
       
       m.consultores.forEach((_, i) => { for(let d=0;d<DIAS_NO_MES;d++) atualizaFatTotal(i,d); });
@@ -698,6 +726,44 @@
       salvarEstado(); renderDashboardExcel();
     }
 
+/* =========================================================
+   AUTOSAVE — chamado a cada tecla, com debounce de 700ms.
+   Salva inclusive o valor 0 (zero), porque checa null/undefined,
+   NÃO usa '|| null' (que transformaria 0 em null).
+   ========================================================= */
+let _cellSaveTimer = null;
+
+function onCellInput(e) {
+  const inp  = e.target;
+  const cIdx = parseInt(inp.dataset.c);
+  const row  = inp.dataset.row;
+  const day  = parseInt(inp.dataset.day);
+  const raw  = String(inp.value).trim();
+
+  // 👇 0 é VÁLIDO — só string vazia vira ''
+  let v;
+  if (raw === '') {
+    v = '';
+  } else {
+    v = parseFloat(raw.replace(/[^\d,-]/g, '').replace(',', '.'));
+    if (isNaN(v)) v = '';
+  }
+
+  // Atualiza o estado em memória IMEDIATAMENTE (0 incluído)
+  mesAtivo().consultores[cIdx].diario[row][day] = v;
+
+  // Feedback visual imediato
+  inp.classList.toggle('filled', v !== '');
+  atualizaFatTotal(cIdx, day);
+
+  // Agenda o save + refresh (evita spam de requests enquanto digita)
+  clearTimeout(_cellSaveTimer);
+  _cellSaveTimer = setTimeout(async () => {
+    await salvarEstado();
+    renderDashboardExcel();
+  }, 700);
+}
+    
     function atualizaFatTotal(cIdx, day) {
       const m = mesAtivo().consultores[cIdx];
       const v1 = m.diario['CONTROLE FAT.'][day];
