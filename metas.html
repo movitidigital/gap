@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +13,7 @@
   
   <style>
     :root {
-      /* Cores exatas do Excel / Identidade Visual */
+      /* Identidade Visual INFORTECA e Cores Excel */
       --tim-blue:      #002060;
       --tim-blue-light:#1F4E78;
       --excel-border:  #000000;
@@ -24,41 +24,34 @@
       --status-red:    #FF9999;
       --status-yellow: #FFC000;
       --status-green:  #92D050;
+      
+      --bg-body:       #eef2f7;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
       font-family: 'Inter', sans-serif;
-      background: #eef2f7;
+      background: var(--bg-body);
       font-feature-settings: 'tnum' 1;
       -webkit-font-smoothing: antialiased;
       margin: 0; padding: 0;
     }
 
-    /* BARRA DE CONTROLES (Não sai na foto) */
-    .control-bar {
-      background: #ffffff;
-      border-bottom: 1px solid #cbd5e1;
-      padding: 12px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      position: sticky;
-      top: 0;
-      z-index: 50;
-    }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-    /* ÁREA DO DASHBOARD (O que será exportado) */
+    /* =========================================
+       ÁREA DO DASHBOARD EXCEL (Para Exportação)
+       ========================================= */
     #export-area {
-      background: #ffffff;
+      background: var(--bg-body);
       width: 100%;
       max-width: 1600px;
       margin: 0 auto;
-      padding-bottom: 24px;
+      padding: 16px;
     }
 
-    /* CABEÇALHO DO DASHBOARD */
     .dash-header {
       background-color: var(--tim-blue);
       color: white;
@@ -73,14 +66,12 @@
     .dash-header .title-area h1 { font-size: 22px; font-weight: 900; margin: 0; letter-spacing: 0.05em; text-transform: uppercase; }
     .dash-header .metrics-area { text-align: right; font-size: 11px; font-weight: 700; line-height: 1.6; }
 
-    /* TABELA EXCEL-LIKE */
     .excel-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 11px;
       border: 2px solid var(--excel-border);
     }
-    
     .excel-table th, .excel-table td {
       border: 1px solid var(--excel-border);
       padding: 6px 4px;
@@ -88,7 +79,6 @@
       white-space: nowrap;
     }
 
-    /* Cabeçalho das Tabelas (Nome do Consultor / INFORTECA) */
     .excel-table thead .card-title {
       background-color: var(--tim-blue);
       color: white;
@@ -99,8 +89,6 @@
       padding: 8px;
       letter-spacing: 0.05em;
     }
-
-    /* Sub-cabeçalhos (META LOJA, REALIZADO...) */
     .excel-table thead .col-headers th {
       background-color: #ffffff;
       color: #000;
@@ -110,7 +98,6 @@
       text-transform: uppercase;
     }
 
-    /* Categorias Verticais */
     .cat-vertical {
       writing-mode: vertical-rl;
       transform: rotate(180deg);
@@ -126,35 +113,16 @@
     .cat-gross   { background-color: var(--cat-gross); }
     .cat-produto { background-color: var(--cat-produto); }
 
-    /* Células de Dados */
-    .td-label {
-      font-weight: 700;
-      color: #000;
-      text-align: right;
-      padding-right: 8px !important;
-      background: #ffffff;
-    }
-    .td-value {
-      font-weight: 700;
-      text-align: center;
-      background: #ffffff;
-      font-variant-numeric: tabular-nums;
-    }
-    .td-money {
-      display: flex;
-      justify-content: space-between;
-      padding: 6px 8px !important;
-    }
+    .td-label { font-weight: 700; color: #000; text-align: right; padding-right: 8px !important; background: #ffffff; }
+    .td-value { font-weight: 700; text-align: center; background: #ffffff; font-variant-numeric: tabular-nums; }
+    .td-money { display: flex; justify-content: space-between; padding: 6px 8px !important; }
     
-    /* Linha Destaque FAT TOTAL TIM */
     .row-destaque td { background-color: #F2F2F2; }
     
-    /* Cores de Status (%) */
     .status-red    { background-color: var(--status-red); color: #000; font-weight: 800; text-align: center; }
     .status-yellow { background-color: var(--status-yellow); color: #000; font-weight: 800; text-align: center; }
     .status-green  { background-color: var(--status-green); color: #000; font-weight: 800; text-align: center; }
 
-    /* Célula Meta Entregue */
     .meta-entregue {
       background-color: var(--status-green);
       color: #000;
@@ -164,16 +132,15 @@
       letter-spacing: 0.05em;
     }
 
-    /* LEGENDA INFERIOR */
     .dash-legend {
       display: flex;
       width: 100%;
       border: 2px solid var(--excel-border);
-      border-top: none;
       font-size: 10px;
       font-weight: 700;
       color: #000;
       text-transform: uppercase;
+      margin-top: 16px;
     }
     .leg-title  { background: var(--tim-blue); color: #fff; padding: 6px 16px; text-align: center; }
     .leg-red    { background: var(--status-red); flex: 1; padding: 6px; text-align: center; border-left: 1px solid #000; }
@@ -181,7 +148,7 @@
     .leg-green  { background: var(--status-green); flex: 1; padding: 6px; text-align: center; border-left: 1px solid #000; }
 
     /* =========================================
-       ABAS DIÁRIO E CONFIG (Ocultas no Dashboard)
+       ABAS DIÁRIO E CONFIG 
        ========================================= */
     .tab-btn { transition: all 0.2s ease; cursor: pointer; }
     .tab-btn.active { background: #0e8890; color: #fff; border-color: #0e8890; }
@@ -207,71 +174,117 @@
     .toast.show { opacity: 1; transform: translateY(0); }
   </style>
 </head>
-<body>
+<body class="flex h-screen overflow-hidden">
 
-  <!-- BARRA DE CONTROLES DO SISTEMA -->
-  <div class="control-bar">
-    <div class="flex items-center gap-2">
-      <a href="dashboard.html" class="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors" title="Voltar ao Início">
-        <i data-lucide="home" class="w-5 h-5"></i>
-      </a>
-      <div class="w-px h-6 bg-slate-300 mx-1"></div>
-      <button data-tab="resumo" class="tab-btn active px-4 py-2 rounded-md text-xs font-bold uppercase border">
-        Dashboard Excel
-      </button>
-      <button data-tab="diario" class="tab-btn px-4 py-2 rounded-md text-xs font-bold uppercase border">
-        Lançamentos Diários
-      </button>
-      <button data-tab="config" class="tab-btn px-4 py-2 rounded-md text-xs font-bold uppercase border">
-        Parâmetros
+  <!-- BARRA LATERAL (SIDEBAR) -->
+  <aside id="sidebar" class="w-64 bg-[#000033] text-white flex flex-col justify-between hidden md:flex transition-all duration-300 z-30 shadow-xl shrink-0">
+    <div>
+      <div class="h-20 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
+        <div class="flex items-center gap-2 min-w-0">
+          <img src="/LOGOINFORTECATIM2026.png" alt="Inforteca" class="h-9 w-auto object-contain shrink-0" onerror="this.style.display='none'">
+          <div class="min-w-0">
+            <h1 class="text-sm font-black tracking-tight leading-none truncate">PORTAL INFORTECA</h1>
+            <p class="text-[9px] text-[#0e8890] font-bold uppercase tracking-widest mt-1 truncate">Loja TIM Dom José</p>
+          </div>
+        </div>
+      </div>
+      <nav class="p-4 space-y-1.5 mt-2">
+        <p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Menu Principal</p>
+        <a href="dashboard.html" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer">
+          <i data-lucide="layout-dashboard" class="w-5 h-5 shrink-0"></i>
+          <span class="text-sm font-medium">Dashboard</span>
+        </a>
+        <a href="metas.html" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium shadow-md shadow-[#0e8890]/20 cursor-pointer">
+          <i data-lucide="target" class="w-5 h-5 shrink-0"></i>
+          <span class="text-sm font-medium">Acompanhamento de Metas</span>
+        </a>
+      </nav>
+    </div>
+    <div class="p-4 border-t border-white/10">
+      <button onclick="terminarSessao()" class="flex items-center gap-3 px-3 py-2.5 w-full text-slate-300 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors text-sm font-medium cursor-pointer">
+        <i data-lucide="log-out" class="w-5 h-5 shrink-0"></i>
+        <span>Encerrar Sessão</span>
       </button>
     </div>
+  </aside>
 
-    <div class="flex items-center gap-2">
-      <select id="selectMes" onchange="selecionarMes(this.value)" class="bg-slate-50 border border-slate-300 text-slate-800 font-bold rounded-md px-3 py-2 text-xs focus:outline-none focus:border-[#0e8890]"></select>
-      <button onclick="adicionarMes()" class="bg-[#0e8890] hover:bg-[#0b6c72] text-white px-3 py-2 rounded-md text-xs font-bold transition-colors" title="Novo Mês">
-        <i data-lucide="calendar-plus" class="w-4 h-4"></i>
-      </button>
-      <div class="w-px h-6 bg-slate-300 mx-2"></div>
-      <button onclick="exportarImagem()" id="btnExport" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-xs font-bold flex items-center gap-2 transition-colors">
-        <i data-lucide="camera" class="w-4 h-4"></i> Exportar Imagem
-      </button>
-    </div>
-  </div>
-
-  <!-- CONTEÚDO PRINCIPAL -->
-  <main class="w-full max-w-[1600px] mx-auto p-4">
+  <!-- CONTENTOR PRINCIPAL -->
+  <main class="flex-1 flex flex-col h-screen min-w-0 relative overflow-hidden">
     
-    <!-- ABA 1: DASHBOARD EXCEL-LIKE (VISÃO PRINCIPAL) -->
-    <div id="tab-resumo" class="tab-content">
-      <div id="export-area">
-        <!-- HEADER ESTILO EXCEL -->
-        <div class="dash-header">
-          <div class="logo-area">
-            <div class="bg-white p-1 rounded w-12 h-12 flex items-center justify-center">
-              <img src="/LOGOINFORTECATIM2026.png" alt="Logo" class="max-w-full max-h-full" onerror="this.style.display='none'">
-            </div>
-          </div>
-          <div class="title-area">
-            <h1>ACOMPANHAMENTO DE VENDAS DIÁRIO</h1>
-            <div class="flex justify-center gap-8 mt-2 text-xs font-bold uppercase tracking-wider text-blue-100">
-              <span id="headerSub1">RESULTADO LOJA DE 01 A 29</span>
-              <span id="headerSub2">MÊS: SETEMBRO / 2026</span>
-            </div>
-          </div>
-          <div class="metrics-area text-blue-100">
-            <div>QUALIDADE CONTROLE | <span class="text-white" id="headerQC">58,18%</span></div>
-            <div>QUALIDADE PÓS | <span class="text-white" id="headerQP">85%</span></div>
-          </div>
+    <!-- CABEÇALHO SUPERIOR -->
+    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10 shrink-0">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+        <h2 class="text-lg font-bold text-[#000033]">Acompanhamento de Vendas Diário</h2>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="text-right hidden sm:block">
+          <p id="userName" class="text-sm font-semibold text-slate-700 leading-none">A Carregar...</p>
+          <p id="userPerm" class="text-xs text-slate-500 mt-1">...</p>
+        </div>
+        <div class="w-10 h-10 rounded-full bg-[#0e8890]/10 border border-[#0e8890]/20 flex items-center justify-center text-[#0e8890] font-bold">
+          <i data-lucide="user" class="w-5 h-5"></i>
+        </div>
+      </div>
+    </header>
+
+    <!-- ÁREA DE SCROLL (Dashboard, Controles, Diário) -->
+    <div class="flex-1 overflow-y-auto">
+      
+      <!-- BARRA DE CONTROLO DE ABAS -->
+      <div class="bg-white border-b border-slate-200 px-6 py-4 flex flex-wrap gap-4 items-center justify-between shadow-sm sticky top-0 z-20">
+        <div class="flex flex-wrap items-center gap-2">
+          <button data-tab="resumo" class="tab-btn active px-4 py-2 rounded-md text-xs font-bold uppercase border">
+            Dashboard Excel
+          </button>
+          <button data-tab="diario" class="tab-btn px-4 py-2 rounded-md text-xs font-bold uppercase border">
+            Lançamentos Diários
+          </button>
+          <button data-tab="config" class="tab-btn px-4 py-2 rounded-md text-xs font-bold uppercase border">
+            Parâmetros
+          </button>
         </div>
 
-        <!-- GRID 2x2 DAS TABELAS -->
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 p-4" id="dashboard-grid">
-          <!-- Gerado via JavaScript -->
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="selectMes" onchange="selecionarMes(this.value)" class="bg-slate-50 border border-slate-300 text-slate-800 font-bold rounded-md px-3 py-2 text-xs focus:outline-none focus:border-[#0e8890]"></select>
+          <button onclick="adicionarMes()" class="bg-[#0e8890] hover:bg-[#0b6c72] text-white px-3 py-2 rounded-md text-xs font-bold transition-colors" title="Novo Mês">
+            <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+          </button>
+          <div class="w-px h-6 bg-slate-300 mx-2 hidden sm:block"></div>
+          <button onclick="exportarImagem()" id="btnExport" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-xs font-bold flex items-center gap-2 transition-colors">
+            <i data-lucide="camera" class="w-4 h-4"></i> Exportar Imagem
+          </button>
         </div>
+      </div>
 
-        <!-- LEGENDA INFERIOR -->
-        <div class="px-4 pb-4">
+      <!-- ABA 1: DASHBOARD EXCEL-LIKE (VISÃO PRINCIPAL) -->
+      <div id="tab-resumo" class="tab-content">
+        <div id="export-area">
+          <div class="dash-header">
+            <div class="logo-area">
+              <div class="bg-white p-1 rounded w-12 h-12 flex items-center justify-center">
+                <img src="/LOGOINFORTECATIM2026.png" alt="Logo" class="max-w-full max-h-full" onerror="this.style.display='none'">
+              </div>
+            </div>
+            <div class="title-area">
+              <h1>ACOMPANHAMENTO DE VENDAS DIÁRIO</h1>
+              <div class="flex justify-center gap-8 mt-2 text-xs font-bold uppercase tracking-wider text-blue-100">
+                <span id="headerSub1">RESULTADO LOJA DE 01 A 29</span>
+                <span id="headerSub2">MÊS: SETEMBRO / 2026</span>
+              </div>
+            </div>
+            <div class="metrics-area text-blue-100">
+              <div>QUALIDADE CONTROLE | <span class="text-white" id="headerQC">58,18%</span></div>
+              <div>QUALIDADE PÓS | <span class="text-white" id="headerQP">85%</span></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4" id="dashboard-grid">
+            <!-- Gerado via JavaScript -->
+          </div>
+
           <div class="dash-legend">
             <div class="leg-title">LEGENDA</div>
             <div class="leg-red">FORA DA TENDÊNCIA &lt;70%</div>
@@ -280,88 +293,91 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- ABA 2: DIÁRIO (LANÇAMENTOS) -->
-    <div id="tab-diario" class="tab-content hidden">
-      <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 mb-4">
-        <h2 class="text-sm font-black text-slate-800 uppercase">Lançamentos Diários</h2>
-        <p class="text-xs text-slate-500 mt-1">Preencha os resultados do dia. A linha FAT TOTAL TIM calcula automaticamente.</p>
+      <!-- ABA 2: DIÁRIO (LANÇAMENTOS) -->
+      <div id="tab-diario" class="tab-content hidden p-6">
+        <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 mb-4">
+          <h2 class="text-sm font-black text-slate-800 uppercase">Lançamentos Diários</h2>
+          <p class="text-xs text-slate-500 mt-1">Preencha os resultados do dia. A linha FAT TOTAL TIM calcula automaticamente.</p>
+        </div>
+        <div id="gridDiario" class="space-y-6"></div>
       </div>
-      <div id="gridDiario" class="space-y-6"></div>
-    </div>
 
-    <!-- ABA 3: CONFIGURAÇÕES -->
-    <div id="tab-config" class="tab-content hidden">
-      <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-        <h2 class="text-sm font-black text-slate-800 uppercase mb-4">Parâmetros e Metas do Mês</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1">Mês Ref.</label>
-            <input type="text" id="cfgMes" class="w-full border border-slate-300 rounded p-2 text-sm font-bold">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1">Dias Trab.</label>
-            <input type="number" id="cfgDiasTrab" class="w-full border border-slate-300 rounded p-2 text-sm font-bold text-right">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1">Dias Rest.</label>
-            <input type="number" id="cfgDiasRest" class="w-full border border-slate-300 rounded p-2 text-sm font-bold text-right">
-          </div>
-          <div class="flex gap-2">
-            <div class="w-1/2">
-              <label class="block text-xs font-bold text-slate-600 mb-1">Q. Controle</label>
-              <input type="text" id="cfgQualControle" class="w-full border border-slate-300 rounded p-2 text-sm font-bold text-right">
+      <!-- ABA 3: CONFIGURAÇÕES -->
+      <div id="tab-config" class="tab-content hidden p-6">
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+          <h2 class="text-sm font-black text-slate-800 uppercase mb-4">Parâmetros e Metas do Mês</h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Mês Ref.</label>
+              <input type="text" id="cfgMes" class="w-full border border-slate-300 rounded p-2 text-sm font-bold">
             </div>
-            <div class="w-1/2">
-              <label class="block text-xs font-bold text-slate-600 mb-1">Q. Pós</label>
-              <input type="text" id="cfgQualPos" class="w-full border border-slate-300 rounded p-2 text-sm font-bold text-right">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Dias Trab.</label>
+              <input type="number" id="cfgDiasTrab" class="w-full border border-slate-300 rounded p-2 text-sm font-bold text-right">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Dias Rest.</label>
+              <input type="number" id="cfgDiasRest" class="w-full border border-slate-300 rounded p-2 text-sm font-bold text-right">
+            </div>
+            <div class="flex gap-2">
+              <div class="w-1/2">
+                <label class="block text-xs font-bold text-slate-600 mb-1">Q. Controle</label>
+                <input type="text" id="cfgQualControle" class="w-full border border-slate-300 rounded p-2 text-sm font-bold text-right">
+              </div>
+              <div class="w-1/2">
+                <label class="block text-xs font-bold text-slate-600 mb-1">Q. Pós</label>
+                <input type="text" id="cfgQualPos" class="w-full border border-slate-300 rounded p-2 text-sm font-bold text-right">
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="mb-8">
-          <div class="flex justify-between items-center mb-3">
-            <h3 class="text-xs font-bold text-slate-700 uppercase">Consultores da Equipe</h3>
-            <button onclick="adicionarConsultor()" class="bg-slate-800 text-white px-3 py-1.5 text-xs font-bold rounded">Adicionar</button>
+          <div class="mb-8">
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="text-xs font-bold text-slate-700 uppercase">Consultores da Equipa</h3>
+              <button onclick="adicionarConsultor()" class="bg-slate-800 text-white px-3 py-1.5 text-xs font-bold rounded">Adicionar</button>
+            </div>
+            <div id="listaConsultores" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
           </div>
-          <div id="listaConsultores" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
-        </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div>
-            <h4 class="bg-emerald-600 text-white text-xs font-bold uppercase text-center py-2 rounded-t">Meta Loja</h4>
-            <table class="w-full border-collapse border border-slate-300 text-xs">
-              <tbody id="tbody-meta-loja"></tbody>
-            </table>
-          </div>
-          <div>
-            <h4 class="bg-amber-500 text-white text-xs font-bold uppercase text-center py-2 rounded-t">Meta Consultor</h4>
-            <table class="w-full border-collapse border border-slate-300 text-xs">
-              <tbody id="tbody-meta-consultor"></tbody>
-            </table>
-          </div>
-          <div>
-            <h4 class="bg-indigo-600 text-white text-xs font-bold uppercase text-center py-2 rounded-t">Meta Pós</h4>
-            <table class="w-full border-collapse border border-slate-300 text-xs">
-              <tbody id="tbody-meta-pos"></tbody>
-            </table>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div>
+              <h4 class="bg-emerald-600 text-white text-xs font-bold uppercase text-center py-2 rounded-t">Meta Loja</h4>
+              <table class="w-full border-collapse border border-slate-300 text-xs">
+                <tbody id="tbody-meta-loja"></tbody>
+              </table>
+            </div>
+            <div>
+              <h4 class="bg-amber-500 text-white text-xs font-bold uppercase text-center py-2 rounded-t">Meta Consultor</h4>
+              <table class="w-full border-collapse border border-slate-300 text-xs">
+                <tbody id="tbody-meta-consultor"></tbody>
+              </table>
+            </div>
+            <div>
+              <h4 class="bg-indigo-600 text-white text-xs font-bold uppercase text-center py-2 rounded-t">Meta Pós</h4>
+              <table class="w-full border-collapse border border-slate-300 text-xs">
+                <tbody id="tbody-meta-pos"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
+    </div>
   </main>
 
   <div id="toast" class="toast">
     <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400"></i>
-    <span id="toastText">Salvo!</span>
+    <span id="toastText">Salvo com sucesso!</span>
   </div>
 
   <script>
-    // Configurações Básicas
-    const STORAGE_KEY = 'inforteca_metas_v10'; // Alterado para garantir limpeza do cache
+    const SUPABASE_URL = 'https://zldugoqlcrzarpqvtaoh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const STORAGE_KEY = 'inforteca_metas_v11';
     const DIAS_NO_MES = 30;
 
     const TIPO_VALOR = {
@@ -405,32 +421,17 @@
     }
 
     function gerarEstadoPadrao() {
-      const setembro = criarMes('SETEMBRO / 2026');
-      const dDaniel = setembro.consultores[0].diario;
-      const dGabriel = setembro.consultores[1].diario;
-      const dJean = setembro.consultores[2].diario;
-      
-      // Simulando dados para bater com seu print
-      dDaniel['CONTROLE FAT.'] = [1107.81]; dDaniel['PÓS FAT.'] = [1159.95];
-      dDaniel['CONTROLE'] = [20]; dDaniel['PÓS'] = [8]; dDaniel['PORTABILIDADE'] = [9];
-      dDaniel['APARELHO'] = [8896.00]; dDaniel['ACESSÓRIOS'] = [5320.00];
-
-      dGabriel['CONTROLE FAT.'] = [1124.82]; dGabriel['PÓS FAT.'] = [429.96];
-      dGabriel['CONTROLE'] = [20]; dGabriel['PÓS'] = [4]; dGabriel['PORTABILIDADE'] = [9];
-      dGabriel['APARELHO'] = [5467.00]; dGabriel['ACESSÓRIOS'] = [3031.10];
-
-      dJean['CONTROLE FAT.'] = [464.92]; dJean['PÓS FAT.'] = [384.99];
-      dJean['CONTROLE'] = [9]; dJean['PÓS'] = [3]; dJean['PORTABILIDADE'] = [3];
-      dJean['APARELHO'] = [0]; dJean['ACESSÓRIOS'] = [3360.00];
-
-      return { versao: 10, mesAtual: 'SETEMBRO / 2026', meses: { 'SETEMBRO / 2026': setembro } };
+      const outubro = criarMes('OUTUBRO / 2026');
+      return { versao: 11, mesAtual: 'OUTUBRO / 2026', meses: { 'OUTUBRO / 2026': outubro } };
     }
 
-    function carregarEstado() {
+    // Integração Supabase + LocalStorage Fallback
+    async function carregarEstado() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
+        const { data, error } = await supabaseClient.from('metas_dados').select('json_state').eq('id', 1).single();
+        if (data && data.json_state) {
+          const parsed = data.json_state;
+          // Garantir integridade dos arrays diários no JSON carregado
           Object.keys(parsed.meses).forEach(nm => {
             parsed.meses[nm].consultores.forEach(c => {
               LINHAS_DIARIO.forEach(k => {
@@ -441,15 +442,30 @@
           });
           return parsed;
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn("Aviso: Falha ao carregar do Supabase. A tentar backup local...", e);
+      }
+      
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+      
       return gerarEstadoPadrao();
     }
     
-    function salvarEstado() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    async function salvarEstado() {
+      // Backup Local imediato
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); 
+      
+      // Salvar de forma assíncrona no Supabase (Requer tabela 'metas_dados' com id=1 e json_state)
+      try {
+        await supabaseClient.from('metas_dados').upsert({ id: 1, json_state: state });
+      } catch (e) {
+        console.error("Erro ao sincronizar com Supabase:", e);
+      }
+    }
+    
     function mesAtivo() { return state.meses[state.mesAtual]; }
 
-    // Funções de Cálculo e Formatação
-    const fmtM = (v) => 'R$ ' + (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const fmtN = (v) => String(Number(v) || 0);
     const fmtVal = (v, t) => t === 'moeda' ? `<div class="td-money"><span>R$</span> <span>${(Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>` : fmtN(v);
     
@@ -468,10 +484,13 @@
       return mesAtivo().consultores.reduce((s, c) => s + calcReal(c, key), 0);
     }
 
-    // Geração do HTML Tabela Padrão (Loja e Consultores)
     function gerarTabelaExcel(titulo, objMeta, isLoja, consultorObj) {
       const m = mesAtivo();
-      const txtMeta = isLoja ? "META LOJA" : "META LOJA"; // No print o consultor tbm diz META LOJA na header col
+      const txtMeta = "META LOJA"; 
+      
+      // Inclusão dos emojis no título
+      const icon = isLoja ? '🏢 ' : '👨‍💼 ';
+      const titleWithIcon = icon + titulo;
 
       let html = `
       <table class="excel-table">
@@ -485,7 +504,7 @@
           <col style="width:110px;">
         </colgroup>
         <thead>
-          <tr><th colspan="7" class="card-title">${titulo}</th></tr>
+          <tr><th colspan="7" class="card-title">${titleWithIcon}</th></tr>
           <tr class="col-headers">
             <th></th><th></th>
             <th>${txtMeta}</th>
@@ -508,7 +527,6 @@
           
           const pctText = pct.toFixed(0) + '%';
           const stsCls  = getStatusClass(pct);
-          const isFat   = key === 'FAT TOTAL TIM' || key === 'CONTROLE FAT.' || key === 'PÓS FAT.';
           const rowCls  = (key === 'FAT TOTAL TIM') ? 'row-destaque' : '';
 
           html += `<tr class="${rowCls}">`;
@@ -520,7 +538,6 @@
           html += `<td class="td-label">${key}</td>`;
           html += `<td class="td-value" style="padding:0;">${fmtVal(metaV, tipo)}</td>`;
           
-          // Tratamento para Realizado Zerado (na imagem, o Jean Breno tem - ao invés de R$ 0,00)
           if(realV === 0 && tipo === 'moeda') {
             html += `<td class="td-value" style="text-align:center;">-</td>`;
           } else {
@@ -551,35 +568,26 @@
       const grid = document.getElementById('dashboard-grid');
       const m = mesAtivo();
       
-      // Atualiza Header
       document.getElementById('headerSub1').textContent = `RESULTADO LOJA DE 01 A ${String(m.parametros.diasTrabalhados).padStart(2,'0')}`;
       document.getElementById('headerSub2').textContent = `MÊS: ${m.parametros.mes}`;
       document.getElementById('headerQC').textContent = m.parametros.qualControle;
       document.getElementById('headerQP').textContent = m.parametros.qualPos;
 
       let html = '';
-      
-      // 1. Loja
       html += `<div>${gerarTabelaExcel('INFORTECA', m.metaLoja, true, null)}</div>`;
-      
-      // 2. Consultores
       m.consultores.forEach(c => {
         html += `<div>${gerarTabelaExcel(c.nome, m.metaConsultor, false, c)}</div>`;
       });
-      
       grid.innerHTML = html;
     }
 
-    // ----------------------------------------------------
-    // FUNÇÕES DE DIÁRIO E CONFIG (MANTIDAS COMO SUPORTE)
-    // ----------------------------------------------------
     function renderDiario() {
       const grid = document.getElementById('gridDiario');
       const m = mesAtivo();
       let html = '';
       m.consultores.forEach((c, cIdx) => {
         html += `<div class="bg-slate-50 p-2 rounded border border-slate-200 mb-4 overflow-x-auto">
-          <h3 class="font-bold text-xs uppercase mb-2 px-2">${c.nome}</h3>
+          <h3 class="font-bold text-xs uppercase mb-2 px-2">👨‍💼 ${c.nome}</h3>
           <table class="table-diario">
             <thead><tr><th class="label-col">DIAS</th>`;
         for(let d=1; d<=DIAS_NO_MES; d++) html += `<th>${String(d).padStart(2,'0')}</th>`;
@@ -657,15 +665,16 @@
       const c = document.getElementById('listaConsultores');
       c.innerHTML = mesAtivo().consultores.map((x,i) => `
         <div class="flex items-center gap-2 border border-slate-300 p-1.5 rounded">
-          <input type="text" class="flex-1 text-xs font-bold outline-none px-1" value="${x.nome}" onchange="renomearC('${x.id}', this.value)">
+          <input type="text" class="flex-1 text-xs font-bold outline-none px-1 bg-transparent" value="${x.nome}" onchange="renomearC('${x.id}', this.value)">
           <button onclick="removerC('${x.id}')" class="text-red-500 px-1 hover:bg-red-50 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
         </div>
       `).join('');
       lucide.createIcons();
     }
+    
     function adicionarConsultor() { mesAtivo().consultores.push({id:'c'+Date.now(), nome:'NOVO', diario:criarDiarioZerado()}); salvarEstado(); recalcAll(); }
     function renomearC(id, n) { mesAtivo().consultores.find(x=>x.id===id).nome = n.trim(); salvarEstado(); renderDashboardExcel(); }
-    function removerC(id) { if(confirm('Excluir?')) { mesAtivo().consultores = mesAtivo().consultores.filter(x=>x.id!==id); salvarEstado(); recalcAll(); } }
+    function removerC(id) { if(confirm('Excluir este consultor permanentemente?')) { mesAtivo().consultores = mesAtivo().consultores.filter(x=>x.id!==id); salvarEstado(); recalcAll(); } }
 
     function renderConfigMeta(tbId, stKey) {
       const tb = document.getElementById(tbId);
@@ -675,6 +684,7 @@
         <td class="p-0 border border-slate-300"><input type="text" class="w-full h-full p-1 text-right outline-none text-xs" value="${obj[k]||0}" onchange="altMeta('${stKey}','${k}',this.value)"></td></tr>
       `).join('');
     }
+    
     function altMeta(st, k, v) {
       let val = parseFloat(String(v).replace(/[^\d,-]/g,'').replace(',','.'));
       if(isNaN(val)) val=0;
@@ -687,9 +697,11 @@
       const s = document.getElementById('selectMes');
       s.innerHTML = Object.keys(state.meses).sort().map(m => `<option value="${m}" ${m===state.mesAtual?'selected':''}>${m}</option>`).join('');
     }
+    
     function selecionarMes(v) { state.mesAtual = v; salvarEstado(); recalcAll(); }
+    
     function adicionarMes() {
-      const n = prompt('Nome do novo Mês (Ex: OUTUBRO / 2026):');
+      const n = prompt('Nome do novo Mês (Ex: NOVEMBRO / 2026):');
       if(!n || !n.trim() || state.meses[n]) return;
       const at = mesAtivo();
       state.meses[n] = criarMes(n, {
@@ -701,7 +713,6 @@
       state.mesAtual = n; salvarEstado(); recalcAll();
     }
 
-    // Controle de Abas
     document.querySelectorAll('.tab-btn').forEach(b => {
       b.onclick = () => {
         document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
@@ -721,14 +732,15 @@
 
     async function exportarImagem() {
       const btn = document.getElementById('btnExport');
-      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Aguarde...`;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> A Aguardar...`;
       
       const area = document.getElementById('export-area');
       
       try {
         const canvas = await html2canvas(area, {
-          scale: 2,
-          backgroundColor: '#ffffff',
+          scale: 2, // Garante alta definição 
+          backgroundColor: '#eef2f7', // Fundo que simula a página
+          useCORS: true,
           logging: false
         });
         
@@ -737,7 +749,7 @@
         link.href = canvas.toDataURL('image/png');
         link.click();
       } catch (e) {
-        alert('Erro ao gerar a imagem.');
+        alert('Erro ao gerar o ficheiro.');
         console.error(e);
       } finally {
         btn.innerHTML = `<i data-lucide="camera" class="w-4 h-4"></i> Exportar Imagem`;
@@ -745,8 +757,35 @@
       }
     }
 
-    window.onload = () => {
-      state = carregarEstado();
+    async function verificarAuth() {
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) { window.location.href = 'index.html'; return; }
+        const { data: perfil } = await supabaseClient.from('perfis').select('*').eq('id', session.user.id).single();
+        document.getElementById('userName').textContent = perfil?.nome_completo || session.user.email;
+        document.getElementById('userPerm').textContent = perfil?.permissao || 'Operador';
+      } catch (e) {
+        console.warn('Sessão local (desenvolvimento) detetada, ou erro no Supabase.');
+      }
+    }
+
+    async function terminarSessao() {
+      await supabaseClient.auth.signOut();
+      window.location.href = 'index.html';
+    }
+
+    function toggleSidebar() {
+      const s = document.getElementById('sidebar');
+      s.classList.toggle('hidden');
+      s.classList.toggle('absolute');
+      s.classList.toggle('inset-y-0');
+      s.classList.toggle('z-40');
+    }
+
+    window.onload = async () => {
+      lucide.createIcons();
+      await verificarAuth();
+      state = await carregarEstado(); // Carrega da base de dados e/ou localStorage
       recalcAll();
     };
   </script>
