@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão de Usuários — PORTAL INFORTECA</title>
+  <link rel="icon" type="image/png" href="/favicon-portalinforteca.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+    .nav-item { cursor: pointer; }
+    .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      background: #0f172a; color: #fff; padding: 12px 18px;
+      border-radius: 8px; display: flex; align-items: center; gap: 10px;
+      font-size: 13px; font-weight: 600; opacity: 0; transform: translateY(20px);
+      transition: all 0.3s ease; pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    #sidebar { transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1); overflow-x: hidden; }
+    #sidebar.collapsed { width: 72px !important; }
+    #sidebar.collapsed .nav-label,
+    #sidebar.collapsed #sidebarBrand > div > h1,
+    #sidebar.collapsed #sidebarBrand > div > p,
+    #sidebar.collapsed .menu-section-title { display: none; }
+    #sidebar.collapsed .nav-item { justify-content: center; padding-left: 0; padding-right: 0; gap: 0; }
+    #sidebar.collapsed #sidebarBrand { justify-content: center; }
+    #sidebar.collapsed #sidebarBrand > div { display: none; }
+    #sidebar.collapsed #sidebarBrand img { height: 36px; }
+    #sidebar.collapsed #sidebarToggleIcon { transform: rotate(180deg); }
+  </style>
+</head>
+<body class="text-slate-800 h-screen flex overflow-hidden">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside id="sidebar"
+    class="w-64 bg-[#000033] text-white flex flex-col justify-between hidden md:flex transition-all duration-300 z-30 shadow-xl shrink-0">
+    <div>
+      <div class="h-20 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
+        <div id="sidebarBrand" class="flex items-center gap-2 overflow-hidden transition-all duration-300 min-w-0">
+          <img src="/LOGOINFORTECATIM2026.png" alt="Inforteca"
+            class="h-9 w-auto object-contain shrink-0"
+            onerror="this.style.display='none'; this.parentElement.querySelector('.fallback-logo').style.display='flex';">
+          <div class="min-w-0">
+            <h1 class="text-sm font-black tracking-tight leading-none truncate">PORTAL INFORTECA</h1>
+            <p class="text-[9px] text-slate-400 font-medium uppercase tracking-widest mt-1 truncate">Loja TIM Dom José</p>
+          </div>
+          <div class="fallback-logo hidden items-center gap-2">
+            <span class="text-[#E60000] text-2xl leading-none font-black">==</span>
+            <div>
+              <h1 class="text-sm font-black tracking-tight leading-none">INFORTECA</h1>
+              <p class="text-[9px] text-slate-400 font-medium uppercase tracking-widest mt-1">Loja TIM Dom José</p>
+            </div>
+          </div>
+        </div>
+        <button id="sidebarToggle" onclick="toggleSidebarCollapse()"
+          class="hidden md:flex p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+          title="Recolher / expandir menu">
+          <i data-lucide="panel-left-close" id="sidebarToggleIcon" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <nav class="p-4 space-y-1.5 mt-2">
+        <p class="menu-section-title px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Menu Principal</p>
+
+        <a href="dashboard.html" data-nav="dashboard"
+          class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+          <i data-lucide="layout-dashboard" class="w-5 h-5 shrink-0"></i>
+          <span class="nav-label text-sm font-medium">Dashboard</span>
+        </a>
+
+        <a href="dashboard.html#clientes" data-nav="clientes"
+          class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+          <i data-lucide="search" class="w-5 h-5 shrink-0"></i>
+          <span class="nav-label text-sm font-medium">Clientes TIM</span>
+        </a>
+
+        <a href="dashboard.html#portabilidades" data-nav="portabilidades"
+          class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+          <i data-lucide="arrow-left-right" class="w-5 h-5 shrink-0"></i>
+          <span class="nav-label text-sm font-medium">Portabilidades</span>
+        </a>
+
+        <a href="dashboard.html#faturas" data-nav="faturas"
+          class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+          <i data-lucide="file-text" class="w-5 h-5 shrink-0"></i>
+          <span class="nav-label text-sm font-medium">Faturas</span>
+        </a>
+
+        <a href="dashboard.html#suspensoes" data-nav="suspensoes"
+          class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+          <i data-lucide="shield-alert" class="w-5 h-5 shrink-0"></i>
+          <span class="nav-label text-sm font-medium">Gestão de Acessos</span>
+        </a>
+
+        <a href="dashboard.html#gestao" data-nav="gestao"
+          class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+          <i data-lucide="file-check-2" class="w-5 h-5 shrink-0"></i>
+          <span class="nav-label text-sm font-medium">Gestão de Clientes</span>
+        </a>
+
+        <a href="dashboard.html#prospeccao" data-nav="prospeccao"
+          class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+          <i data-lucide="users" class="w-5 h-5 shrink-0"></i>
+          <span class="nav-label text-sm font-medium">Prospecção</span>
+        </a>
+
+        <a id="btnMenuMetas" href="metas.html" data-nav="metas"
+          class="hidden nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+          <i data-lucide="target" class="w-5 h-5 shrink-0"></i>
+          <span class="nav-label text-sm font-medium">Acompanhamento de Metas</span>
+        </a>
+
+        <!-- 👇 ATIVO NESTA PÁGINA -->
+        <a id="btnMenuUsuarios" href="usuarios.html" data-nav="usuarios"
+          class="hidden nav-item w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium shadow-md shadow-[#0e8890]/20">
+          <i data-lucide="user-cog" class="w-5 h-5 shrink-0"></i>
+          <span class="nav-label text-sm font-medium">Gestão de Usuários</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="p-4 border-t border-white/10">
+      <button onclick="terminarSessao()"
+        class="flex items-center gap-3 px-3 py-2.5 w-full text-slate-300 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors text-sm font-medium">
+        <i data-lucide="log-out" class="w-5 h-5 shrink-0"></i>
+        <span class="logout-label">Encerrar Sessão</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="flex-1 flex flex-col h-screen min-w-0 relative">
+
+    <header class="h-16 md:h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 z-10 shrink-0">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+        <h2 class="text-lg font-bold text-[#000033]">Gestão de Usuários & Permissões</h2>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="text-right hidden sm:block">
+          <p id="userName" class="text-sm font-semibold text-slate-700 leading-none">Carregando...</p>
+          <p id="userPerm" class="text-xs text-slate-500 mt-1">...</p>
+        </div>
+        <div class="w-10 h-10 rounded-full bg-[#0e8890]/10 border border-[#0e8890]/20 flex items-center justify-center text-[#0e8890] font-bold">
+          <i data-lucide="user" class="w-5 h-5"></i>
+        </div>
+      </div>
+    </header>
+
+    <div class="flex-1 overflow-y-auto p-4 md:p-8">
+
+      <!-- ACESSO NEGADO (só aparece se não for admin) -->
+      <div id="acessoNegado" class="hidden">
+        <div class="bg-white rounded-2xl border border-red-200 shadow-sm p-12 text-center max-w-lg mx-auto">
+          <div class="w-16 h-16 mx-auto rounded-full bg-red-50 flex items-center justify-center mb-4">
+            <i data-lucide="shield-x" class="w-8 h-8 text-red-500"></i>
+          </div>
+          <h3 class="text-lg font-black text-slate-800 mb-2">Acesso Restrito</h3>
+          <p class="text-sm text-slate-500">Esta área é exclusiva para administradores.</p>
+          <a href="dashboard.html" class="inline-block mt-5 bg-slate-900 hover:bg-[#000033] text-white px-5 py-2.5 rounded-lg text-sm font-bold">
+            Voltar ao Dashboard
+          </a>
+        </div>
+      </div>
+
+      <!-- CONTEÚDO PRINCIPAL -->
+      <div id="conteudoPrincipal" class="hidden animate-fade-in">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <!-- Abas -->
+          <div class="border-b border-slate-100 flex">
+            <button id="aba-usr-lista" onclick="trocarAbaUsr('lista')"
+              class="flex-1 px-6 py-4 text-sm font-black uppercase tracking-tight flex items-center justify-center gap-2 border-b-2 border-indigo-600 text-indigo-700 bg-indigo-50/50 transition-all">
+              <i data-lucide="users" class="w-4 h-4"></i>
+              <span>Usuários</span>
+              <span id="countUsuarios" class="bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+            </button>
+            <button id="aba-usr-cargos" onclick="trocarAbaUsr('cargos')"
+              class="flex-1 px-6 py-4 text-sm font-black uppercase tracking-tight flex items-center justify-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-teal-600 hover:bg-teal-50/30 transition-all">
+              <i data-lucide="shield" class="w-4 h-4"></i>
+              <span>Cargos</span>
+              <span id="countCargos" class="bg-teal-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+            </button>
+          </div>
+
+          <!-- Aba 1: USUÁRIOS -->
+          <div id="usrContent-lista" class="p-6">
+            <div class="flex flex-col md:flex-row gap-3 justify-between items-center mb-5">
+              <div class="relative w-full md:w-96">
+                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                <input type="text" id="inputBuscaUsuario" oninput="filtrarUsuarios()"
+                  placeholder="Buscar por nome..."
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-[#0e8890]">
+              </div>
+              <button onclick="carregarUsuarios()"
+                class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-2">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Atualizar
+              </button>
+            </div>
+
+            <div class="overflow-x-auto rounded-2xl border border-slate-200">
+              <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="bg-slate-800 text-white text-[10px] uppercase tracking-widest">
+                  <tr>
+                    <th class="px-4 py-3">Nome</th>
+                    <th class="px-4 py-3">ID</th>
+                    <th class="px-4 py-3">Cargo</th>
+                    <th class="px-4 py-3 text-center">Módulos Liberados</th>
+                    <th class="px-4 py-3 text-center">Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="tabelaUsuarios" class="divide-y divide-slate-100">
+                  <tr><td colspan="5" class="px-6 py-12 text-center text-slate-500">A carregar…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Aba 2: CARGOS -->
+          <div id="usrContent-cargos" class="hidden p-6">
+            <div class="flex justify-between items-center mb-5">
+              <div>
+                <h3 class="text-lg font-black text-[#000033]">Cargos & Permissões Padrão</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Um usuário herda as permissões do seu cargo. Overrides individuais sobrescrevem.</p>
+              </div>
+              <button onclick="abrirModalCargo(null)"
+                class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i> Novo Cargo
+              </button>
+            </div>
+
+            <div id="listaCargos" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ============ MODAL: Editar Permissões do Usuário ============ -->
+  <div id="modalUsuario" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden max-h-[92vh] flex flex-col">
+      <div class="bg-[#000033] px-6 py-4 flex justify-between items-center shrink-0">
+        <div>
+          <h3 class="text-white font-black text-xs uppercase tracking-widest">Permissões do Usuário</h3>
+          <p id="muNome" class="text-[11px] text-indigo-300 font-bold mt-1">—</p>
+        </div>
+        <button onclick="fecharModalUsuario()" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-5 overflow-y-auto flex-1">
+        <input type="hidden" id="muUserId">
+
+        <div>
+          <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Cargo</label>
+          <select id="muCargoId" onchange="onTrocarCargoUsuario()"
+            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:border-indigo-500">
+          </select>
+          <p class="text-[10px] text-slate-400 mt-1">O usuário herda as permissões deste cargo, salvo onde houver override individual.</p>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Permissões por Módulo</label>
+            <button onclick="resetarOverridesUsuario()"
+              class="text-[10px] text-slate-400 hover:text-indigo-600 font-bold uppercase">
+              ↺ Resetar overrides
+            </button>
+          </div>
+          <div id="muPermissoes" class="space-y-2"></div>
+        </div>
+
+        <div id="muAlert" class="hidden text-xs p-3 rounded-xl border font-medium"></div>
+      </div>
+
+      <div class="px-6 py-4 bg-slate-50 border-t flex justify-end gap-3 shrink-0">
+        <button onclick="fecharModalUsuario()" class="px-4 py-2 text-sm font-medium text-slate-600">Cancelar</button>
+        <button id="muBtnSalvar" onclick="salvarUsuario()"
+          class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
+          <i data-lucide="save" class="w-4 h-4"></i> Gravar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: Editar/Criar Cargo ============ -->
+  <div id="modalCargo" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden max-h-[92vh] flex flex-col">
+      <div class="bg-teal-700 px-6 py-4 flex justify-between items-center shrink-0">
+        <div>
+          <h3 id="mcTitulo" class="text-white font-black text-xs uppercase tracking-widest">Novo Cargo</h3>
+          <p class="text-[10px] text-teal-200 font-bold mt-1">Defina as permissões padrão deste cargo</p>
+        </div>
+        <button onclick="fecharModalCargo()" class="text-white/70 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-5 overflow-y-auto flex-1">
+        <input type="hidden" id="mcCargoId">
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="md:col-span-2">
+            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Nome do Cargo</label>
+            <input type="text" id="mcNome" placeholder="Ex: Consultor, Supervisor, Operador..."
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:border-teal-500">
+          </div>
+          <div>
+            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Cor</label>
+            <input type="color" id="mcCor" value="#0e8890"
+              class="w-full h-[46px] bg-slate-50 border border-slate-200 rounded-xl p-1 cursor-pointer">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Descrição</label>
+          <input type="text" id="mcDescricao" placeholder="Opcional"
+            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-teal-500">
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-3">Permissões Padrão</label>
+          <div id="mcPermissoes" class="space-y-2"></div>
+        </div>
+
+        <div id="mcAlert" class="hidden text-xs p-3 rounded-xl border font-medium"></div>
+      </div>
+
+      <div class="px-6 py-4 bg-slate-50 border-t flex justify-between gap-3 shrink-0">
+        <button id="mcBtnExcluir" onclick="excluirCargo()"
+          class="hidden bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg text-sm font-bold">
+          Excluir Cargo
+        </button>
+        <div class="flex gap-3 ml-auto">
+          <button onclick="fecharModalCargo()" class="px-4 py-2 text-sm font-medium text-slate-600">Cancelar</button>
+          <button id="mcBtnSalvar" onclick="salvarCargo()"
+            class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
+            <i data-lucide="save" class="w-4 h-4"></i> Gravar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast">
+    <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400"></i>
+    <span id="toastText">Salvo com sucesso!</span>
+  </div>
+
+  <script>
+    /* ==========================================================
+       CONFIG
+       ========================================================== */
+    const SUPABASE_URL = 'https://zldugoqlcrzarpqvtaoh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZHVnb3FsY3J6YXJwcXZ0YW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NTU5NzUsImV4cCI6MjEwNjAzMTk3NX0.wUzL7ZmMdoksTVC_PlIiT1nDkhJnf7l0UYMcY-NShWA';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const $ = (id) => document.getElementById(id);
+    const escapeHTML = (s) => String(s || '').replace(/[&<>"']/g,
+      m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    const capitalizar = (s) => String(s || '').toLowerCase()
+      .split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+    /* ==========================================================
+       MODULOS E NIVEIS
+       ========================================================== */
+    const MODULOS_SISTEMA = [
+      { id: 'dashboard',      nome: 'Dashboard',              icon: 'layout-dashboard' },
+      { id: 'clientes',       nome: 'Clientes TIM',           icon: 'search' },
+      { id: 'portabilidades', nome: 'Portabilidades',         icon: 'arrow-left-right' },
+      { id: 'faturas',        nome: 'Faturas',                icon: 'file-text' },
+      { id: 'suspensoes',     nome: 'Gestão de Acessos',      icon: 'shield-alert' },
+      { id: 'gestao',         nome: 'Gestão de Clientes',     icon: 'file-check-2' },
+      { id: 'prospeccao',     nome: 'Prospecção',             icon: 'users' },
+      { id: 'metas',          nome: 'Acompanhamento de Metas', icon: 'target' },
+    ];
+
+    const NIVEIS = [
+      { v: 'nenhum', label: 'Sem acesso', cor: 'slate' },
+      { v: 'ver',    label: 'Ver',        cor: 'amber' },
+      { v: 'editar', label: 'Editar',     cor: 'emerald' },
+    ];
+
+    let _usrAbaAtual = 'lista';
+    let _usuarios    = [];
+    let _cargos      = [];
+    let _cargoEdit   = null;
+    let _userEdit    = null;
+    let _currentUser = null;
+    let _currentPerfil = null;
+
+    /* ==========================================================
+       TOAST
+       ========================================================== */
+    let _toastTimer = null;
+    function toast(msg) {
+      const t = $('toast');
+      $('toastText').textContent = msg;
+      t.classList.add('show');
+      clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    /* ==========================================================
+       AUTH
+       ========================================================== */
+    async function verificarAuth() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) { window.location.href = 'index.html'; return false; }
+
+      _currentUser = session.user;
+
+      const { data: perfil } = await supabaseClient
+        .from('perfis').select('*').eq('id', session.user.id).single();
+      _currentPerfil = perfil;
+
+      $('userName').textContent = perfil?.nome_completo || session.user.email;
+      $('userPerm').textContent = perfil?.permissao || 'Operador';
+
+      // Carrega cargos pra saber se é admin
+      const { data: cargos } = await supabaseClient.from('cargos').select('*');
+      _cargos = cargos || [];
+
+      const meuCargo = _cargos.find(c => c.id === perfil?.cargo_id);
+      const isAdmin = meuCargo?.is_admin === true;
+
+      // Esconde botão de metas se não for admin
+      if (isAdmin) $('btnMenuMetas').classList.remove('hidden');
+
+      // Aplica visibilidade dos módulos na sidebar
+      const cargoPerms = meuCargo
+        ? (await supabaseClient.from('cargo_permissoes').select('*').eq('cargo_id', meuCargo.id)).data || []
+        : [];
+      const userPerms = (await supabaseClient.from('usuario_permissoes').select('*').eq('user_id', session.user.id)).data || [];
+
+      const perms = {};
+      MODULOS_SISTEMA.forEach(m => {
+        if (isAdmin) { perms[m.id] = 'editar'; return; }
+        const ov = userPerms.find(o => o.modulo === m.id);
+        if (ov) { perms[m.id] = ov.nivel; return; }
+        const cp = cargoPerms.find(p => p.modulo === m.id);
+        perms[m.id] = cp ? cp.nivel : 'nenhum';
+      });
+
+      document.querySelectorAll('.nav-item[data-nav]').forEach(el => {
+        const modId = el.dataset.nav;
+        if (modId === 'usuarios' || modId === 'metas') return; // já são controlados à parte
+        if (!MODULOS_SISTEMA.some(m => m.id === modId)) return;
+        el.classList.toggle('hidden', perms[modId] === 'nenhum');
+      });
+
+      // 👇 GATE DE ADMIN: se não for admin, bloqueia tudo e mostra aviso
+      if (!isAdmin) {
+        $('acessoNegado').classList.remove('hidden');
+        $('conteudoPrincipal').classList.add('hidden');
+        document.querySelector('main h2').textContent = 'Acesso Restrito';
+        lucide.createIcons();
+        return false;
+      }
+
+      // Admin: mostra conteúdo
+      $('btnMenuUsuarios').classList.remove('hidden');
+      $('conteudoPrincipal').classList.remove('hidden');
+      $('acessoNegado').classList.add('hidden');
+      return true;
+    }
+
+    async function terminarSessao() {
+      await supabaseClient.auth.signOut();
+      window.location.href = 'index.html';
+    }
+
+    /* ==========================================================
+       ABAS
+       ========================================================== */
+    function trocarAbaUsr(aba) {
+      _usrAbaAtual = aba;
+      $('usrContent-lista').classList.toggle('hidden', aba !== 'lista');
+      $('usrContent-cargos').classList.toggle('hidden', aba !== 'cargos');
+
+      const tabL = $('aba-usr-lista'), tabC = $('aba-usr-cargos');
+      if (aba === 'lista') {
+        tabL.className = 'flex-1 px-6 py-4 text-sm font-black uppercase tracking-tight flex items-center justify-center gap-2 border-b-2 border-indigo-600 text-indigo-700 bg-indigo-50/50 transition-all';
+        tabC.className = 'flex-1 px-6 py-4 text-sm font-black uppercase tracking-tight flex items-center justify-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-teal-600 hover:bg-teal-50/30 transition-all';
+      } else {
+        tabL.className = 'flex-1 px-6 py-4 text-sm font-black uppercase tracking-tight flex items-center justify-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-indigo-600 hover:bg-indigo-50/30 transition-all';
+        tabC.className = 'flex-1 px-6 py-4 text-sm font-black uppercase tracking-tight flex items-center justify-center gap-2 border-b-2 border-teal-600 text-teal-700 bg-teal-50/50 transition-all';
+      }
+    }
+
+    /* ==========================================================
+       CARREGAR DADOS
+       ========================================================== */
+    async function carregarUsuarios() {
+      const tbody = $('tabelaUsuarios');
+      tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-slate-500">
+        <i data-lucide="loader-2" class="w-6 h-6 animate-spin inline-block mr-2 text-[#0e8890]"></i>
+        A carregar usuários…
+      </td></tr>`;
+      lucide.createIcons();
+
+      const { data: cargos } = await supabaseClient.from('cargos').select('*').order('nome');
+      _cargos = cargos || [];
+
+      const { data: perfis, error } = await supabaseClient
+        .from('perfis')
+        .select('id, nome_completo, permissao, cargo_id')
+        .order('nome_completo');
+
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-red-500">Erro: ${escapeHTML(error.message)}</td></tr>`;
+        return;
+      }
+
+      const ids = (perfis || []).map(p => p.id);
+      let overrides = [];
+      if (ids.length) {
+        const { data: ov } = await supabaseClient
+          .from('usuario_permissoes').select('*').in('user_id', ids);
+        overrides = ov || [];
+      }
+
+      const cargoIds = _cargos.map(c => c.id);
+      let cargoPerms = [];
+      if (cargoIds.length) {
+        const { data: cp } = await supabaseClient
+          .from('cargo_permissoes').select('*').in('cargo_id', cargoIds);
+        cargoPerms = cp || [];
+      }
+
+      _usuarios = (perfis || []).map(p => {
+        const cargo = _cargos.find(c => c.id === p.cargo_id);
+        const isAdmin = cargo?.is_admin === true;
+        const overridesUser = overrides.filter(o => o.user_id === p.id);
+        const permissoes = {};
+
+        MODULOS_SISTEMA.forEach(m => {
+          if (isAdmin) { permissoes[m.id] = 'editar'; return; }
+          const ov = overridesUser.find(o => o.modulo === m.id);
+          if (ov) { permissoes[m.id] = ov.nivel; return; }
+          const cp = cargoPerms.find(x => x.cargo_id === p.cargo_id && x.modulo === m.id);
+          permissoes[m.id] = cp ? cp.nivel : 'nenhum';
+        });
+
+        return { ...p, _cargo: cargo, _isAdmin: isAdmin, _permissoes: permissoes, _overrides: overridesUser };
+      });
+
+      $('countUsuarios').textContent = _usuarios.length;
+      $('countCargos').textContent = _cargos.length;
+
+      renderTabelaUsuarios();
+      renderListaCargos();
+    }
+
+    function renderTabelaUsuarios() {
+      const tbody = $('tabelaUsuarios');
+      if (!_usuarios.length) {
+        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-slate-500">Nenhum usuário cadastrado.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = _usuarios.map(u => linhaUsuarioHTML(u)).join('');
+      lucide.createIcons();
+    }
+
+    function linhaUsuarioHTML(u) {
+      const cargoNome = u._cargo?.nome || '—';
+      const cargoCor  = u._cargo?.cor  || '#94a3b8';
+      const modulosLiberados = MODULOS_SISTEMA
+        .filter(m => (u._permissoes[m.id] || 'nenhum') !== 'nenhum').length;
+
+      const badgeAdmin = u._isAdmin
+        ? `<span class="ml-2 inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded text-[9px] font-black uppercase">
+             <i data-lucide="crown" class="w-3 h-3"></i> MASTER
+           </span>` : '';
+
+      return `
+        <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100 text-xs">
+          <td class="px-4 py-3">
+            <div class="font-bold text-slate-800 uppercase flex items-center">${escapeHTML(u.nome_completo || '—')}${badgeAdmin}</div>
+            <div class="text-[10px] text-slate-400 mt-0.5">${escapeHTML(u.permissao || 'Operador')}</div>
+          </td>
+          <td class="px-4 py-3 text-slate-600 font-mono text-[10px]">${escapeHTML(u.id.slice(0, 8))}…</td>
+          <td class="px-4 py-3">
+            <span class="inline-block px-2 py-1 rounded border text-[10px] font-black uppercase"
+                  style="background:${cargoCor}15; color:${cargoCor}; border-color:${cargoCor}40;">
+              ${escapeHTML(cargoNome)}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-center">
+            <span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-bold">
+              <i data-lucide="check-circle-2" class="w-3 h-3"></i>
+              ${modulosLiberados} / ${MODULOS_SISTEMA.length}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-center">
+            <button onclick="abrirModalUsuario('${u.id}')"
+              class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-tighter">
+              Gerenciar
+            </button>
+          </td>
+        </tr>`;
+    }
+
+    function filtrarUsuarios() {
+      const termo = $('inputBuscaUsuario').value.toLowerCase().trim();
+      const tbody = $('tabelaUsuarios');
+      const lista = _usuarios.filter(u =>
+        !termo || String(u.nome_completo || '').toLowerCase().includes(termo));
+      tbody.innerHTML = lista.map(u => linhaUsuarioHTML(u)).join('');
+      lucide.createIcons();
+    }
+
+    /* ==========================================================
+       MODAL USUÁRIO
+       ========================================================== */
+    function abrirModalUsuario(userId) {
+      const u = _usuarios.find(x => x.id === userId);
+      if (!u) return;
+
+      _userEdit = u;
+      $('muUserId').value = u.id;
+      $('muNome').textContent = (u.nome_completo || '—').toUpperCase();
+      $('muAlert').classList.add('hidden');
+
+      const sel = $('muCargoId');
+      sel.innerHTML = `<option value="">— Sem cargo —</option>` +
+        _cargos.map(c =>
+          `<option value="${c.id}" ${u.cargo_id === c.id ? 'selected' : ''}>
+            ${escapeHTML(c.nome)}${c.is_admin ? ' (ADMIN)' : ''}
+          </option>`).join('');
+      sel.disabled = u._isAdmin;
+
+      renderPermissoesModalUsuario(u);
+      $('modalUsuario').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function renderPermissoesModalUsuario(u) {
+      const container = $('muPermissoes');
+      if (u._isAdmin) {
+        container.innerHTML = `
+          <div class="bg-red-50 border-2 border-red-200 rounded-xl p-4 text-center">
+            <p class="text-red-700 font-black text-sm flex items-center justify-center gap-2">
+              <i data-lucide="crown" class="w-4 h-4"></i> ADMIN MASTER
+            </p>
+            <p class="text-xs text-red-600 mt-1">Acesso TOTAL a todos os módulos. Permissões não podem ser alteradas.</p>
+          </div>`;
+        lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = MODULOS_SISTEMA.map(m => {
+        const nivelAtual = u._permissoes[m.id] || 'nenhum';
+        const temOverride = u._overrides.some(o => o.modulo === m.id);
+
+        return `
+          <div class="flex items-center gap-3 p-2.5 bg-slate-50 rounded-xl border border-slate-200" data-mod-row="${m.id}">
+            <i data-lucide="${m.icon}" class="w-4 h-4 text-slate-500 shrink-0"></i>
+            <span class="flex-1 text-xs font-bold text-slate-700">${escapeHTML(m.nome)}</span>
+            ${temOverride ? `<span class="text-[9px] font-black text-amber-600 uppercase">override</span>` : ''}
+            <div class="flex gap-1">
+              ${NIVEIS.map(nv => {
+                const ativo = nivelAtual === nv.v;
+                const cls = ativo
+                  ? `bg-${nv.cor}-600 text-white border-${nv.cor}-700`
+                  : `bg-white text-slate-500 border-slate-200 hover:border-slate-400`;
+                return `<button onclick="setNivelUsuario('${m.id}','${nv.v}')"
+                  class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase border transition-all ${cls}">
+                  ${nv.label}
+                </button>`;
+              }).join('')}
+            </div>
+          </div>`;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function setNivelUsuario(modulo, nivel) {
+      if (!_userEdit) return;
+      _userEdit._permissoes[modulo] = nivel;
+
+      const jaExiste = _userEdit._overrides.find(o => o.modulo === modulo);
+      if (!jaExiste) _userEdit._overrides.push({ user_id: _userEdit.id, modulo, nivel });
+      else jaExiste.nivel = nivel;
+
+      renderPermissoesModalUsuario(_userEdit);
+    }
+
+    async function onTrocarCargoUsuario() {
+      const novoCargoId = $('muCargoId').value;
+      if (!_userEdit) return;
+
+      _userEdit.cargo_id = novoCargoId || null;
+      _userEdit._overrides = [];
+
+      const cargo = _cargos.find(c => c.id === novoCargoId);
+      _userEdit._cargo = cargo;
+      _userEdit._isAdmin = cargo?.is_admin === true;
+
+      const perms = novoCargoId
+        ? (await supabaseClient.from('cargo_permissoes').select('*').eq('cargo_id', novoCargoId)).data || []
+        : [];
+
+      MODULOS_SISTEMA.forEach(m => {
+        const p = perms.find(x => x.modulo === m.id);
+        _userEdit._permissoes[m.id] = p ? p.nivel : 'nenhum';
+      });
+
+      renderPermissoesModalUsuario(_userEdit);
+    }
+
+    function resetarOverridesUsuario() {
+      if (!_userEdit || _userEdit._isAdmin) return;
+      if (!confirm('Remover todos os overrides individuais? O usuário voltará a herdar 100% do cargo.')) return;
+      _userEdit._overrides = [];
+      onTrocarCargoUsuario();
+    }
+
+    async function salvarUsuario() {
+      if (!_userEdit) return;
+      const btn = $('muBtnSalvar');
+      const alertBox = $('muAlert');
+
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Gravando…`;
+      lucide.createIcons();
+
+      try {
+        const { error: errPerfil } = await supabaseClient
+          .from('perfis').update({ cargo_id: _userEdit.cargo_id || null }).eq('id', _userEdit.id);
+        if (errPerfil) throw errPerfil;
+
+        await supabaseClient.from('usuario_permissoes').delete().eq('user_id', _userEdit.id);
+
+        if (!_userEdit._isAdmin && _userEdit._overrides.length) {
+          const inserts = _userEdit._overrides.map(o => ({
+            user_id: _userEdit.id, modulo: o.modulo, nivel: o.nivel,
+          }));
+          const { error: errOv } = await supabaseClient.from('usuario_permissoes').insert(inserts);
+          if (errOv) throw errOv;
+        }
+
+        fecharModalUsuario();
+        await carregarUsuarios();
+        toast('Permissões salvas!');
+      } catch (err) {
+        alertBox.textContent = 'Erro: ' + err.message;
+        alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+        alertBox.classList.remove('hidden');
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Gravar';
+        lucide.createIcons();
+      }
+    }
+
+    function fecharModalUsuario() {
+      $('modalUsuario').classList.add('hidden');
+      _userEdit = null;
+    }
+
+    /* ==========================================================
+       CARGOS
+       ========================================================== */
+    async function renderListaCargos() {
+      const cont = $('listaCargos');
+      if (!_cargos.length) {
+        cont.innerHTML = `<p class="col-span-3 text-center text-slate-500 py-8">Nenhum cargo cadastrado.</p>`;
+        return;
+      }
+
+      // Pra cada cargo, conta módulos com permissão != 'nenhum'
+      const cargoIds = _cargos.map(c => c.id);
+      const { data: allPerms } = await supabaseClient
+        .from('cargo_permissoes').select('*').in('cargo_id', cargoIds);
+      const perms = allPerms || [];
+
+      cont.innerHTML = _cargos.map(c => {
+        const isAdmin = c.is_admin;
+        const count = perms.filter(p => p.cargo_id === c.id && p.nivel !== 'nenhum').length;
+
+        return `
+          <div class="bg-white rounded-2xl border-2 ${isAdmin ? 'border-red-200' : 'border-slate-200'} shadow-sm p-5 hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-3">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full" style="background:${c.cor || '#0e8890'};"></span>
+                  <h4 class="font-black text-slate-800 uppercase text-sm">${escapeHTML(c.nome)}</h4>
+                  ${isAdmin ? `<i data-lucide="crown" class="w-4 h-4 text-red-500"></i>` : ''}
+                </div>
+                <p class="text-[10px] text-slate-400 mt-1">${escapeHTML(c.descricao || 'Sem descrição')}</p>
+              </div>
+            </div>
+            ${isAdmin
+              ? `<p class="text-[11px] text-red-600 font-bold bg-red-50 border border-red-200 rounded-lg p-2 text-center">🔓 Acesso TOTAL — não editável</p>`
+              : `<p class="text-[11px] text-slate-500 mb-3">${count} ${count === 1 ? 'módulo liberado' : 'módulos liberados'}</p>`}
+            <button onclick="abrirModalCargo('${c.id}')"
+              class="w-full mt-3 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg text-[10px] font-black uppercase">
+              ${isAdmin ? 'Ver detalhes' : 'Editar Cargo'}
+            </button>
+          </div>`;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    async function abrirModalCargo(cargoId) {
+      const isNovo = !cargoId;
+      _cargoEdit = cargoId ? _cargos.find(c => c.id === cargoId) : null;
+      const isAdmin = _cargoEdit?.is_admin === true;
+
+      $('mcTitulo').textContent = isNovo ? 'Novo Cargo' : (isAdmin ? 'Cargo ADMIN' : 'Editar Cargo');
+      $('mcCargoId').value = cargoId || '';
+      $('mcNome').value = _cargoEdit?.nome || '';
+      $('mcDescricao').value = _cargoEdit?.descricao || '';
+      $('mcCor').value = _cargoEdit?.cor || '#0e8890';
+      $('mcAlert').classList.add('hidden');
+
+      ['mcNome','mcDescricao','mcCor'].forEach(id => $(id).disabled = isAdmin);
+      $('mcBtnExcluir').classList.toggle('hidden', isNovo || isAdmin);
+
+      let perms = [];
+      if (!isNovo) {
+        const { data } = await supabaseClient.from('cargo_permissoes').select('*').eq('cargo_id', cargoId);
+        perms = data || [];
+      }
+
+      // Guarda permissões temporárias em memória
+      _cargoEdit = _cargoEdit || {};
+      _cargoEdit._permTemp = {};
+      MODULOS_SISTEMA.forEach(m => {
+        _cargoEdit._permTemp[m.id] = isAdmin
+          ? 'editar'
+          : (perms.find(p => p.modulo === m.id)?.nivel || 'nenhum');
+      });
+
+      const container = $('mcPermissoes');
+      container.innerHTML = MODULOS_SISTEMA.map(m => {
+        const nivelAtual = _cargoEdit._permTemp[m.id];
+        return `
+          <div class="flex items-center gap-3 p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+            <i data-lucide="${m.icon}" class="w-4 h-4 text-slate-500 shrink-0"></i>
+            <span class="flex-1 text-xs font-bold text-slate-700">${escapeHTML(m.nome)}</span>
+            <div class="flex gap-1">
+              ${NIVEIS.map(nv => {
+                const ativo = nivelAtual === nv.v;
+                const cls = ativo
+                  ? `bg-${nv.cor}-600 text-white border-${nv.cor}-700`
+                  : `bg-white text-slate-500 border-slate-200 hover:border-slate-400`;
+                return `<button ${isAdmin ? 'disabled' : ''} onclick="setNivelCargo('${m.id}','${nv.v}')"
+                  class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase border transition-all ${cls} ${isAdmin ? 'opacity-60 cursor-not-allowed' : ''}">
+                  ${nv.label}
+                </button>`;
+              }).join('')}
+            </div>
+          </div>`;
+      }).join('');
+
+      $('modalCargo').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function setNivelCargo(modulo, nivel) {
+      if (!_cargoEdit || !_cargoEdit._permTemp) return;
+      _cargoEdit._permTemp[modulo] = nivel;
+      // Re-renderiza o modal inteiro (mais simples e confiável)
+      const container = $('mcPermissoes');
+      const mod = MODULOS_SISTEMA.find(m => m.id === modulo);
+      const idx = MODULOS_SISTEMA.findIndex(m => m.id === modulo);
+      const divs = container.querySelectorAll(':scope > div');
+      if (!divs[idx]) return;
+
+      divs[idx].innerHTML = `
+        <i data-lucide="${mod.icon}" class="w-4 h-4 text-slate-500 shrink-0"></i>
+        <span class="flex-1 text-xs font-bold text-slate-700">${escapeHTML(mod.nome)}</span>
+        <div class="flex gap-1">
+          ${NIVEIS.map(nv => {
+            const ativo = nivel === nv.v;
+            const cls = ativo
+              ? `bg-${nv.cor}-600 text-white border-${nv.cor}-700`
+              : `bg-white text-slate-500 border-slate-200 hover:border-slate-400`;
+            return `<button onclick="setNivelCargo('${modulo}','${nv.v}')"
+              class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase border transition-all ${cls}">
+              ${nv.label}
+            </button>`;
+          }).join('')}
+        </div>`;
+      lucide.createIcons();
+    }
+
+    async function salvarCargo() {
+      const btn = $('mcBtnSalvar');
+      const alertBox = $('mcAlert');
+      const id = $('mcCargoId').value;
+      const nome = $('mcNome').value.trim();
+      const desc = $('mcDescricao').value.trim();
+      const cor = $('mcCor').value;
+
+      if (!nome) {
+        alertBox.textContent = 'Informe o nome do cargo.';
+        alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+        alertBox.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Gravando…`;
+      lucide.createIcons();
+
+      try {
+        let cargoId = id;
+
+        if (id) {
+          const { error } = await supabaseClient.from('cargos')
+            .update({ nome, descricao: desc, cor }).eq('id', id);
+          if (error) throw error;
+        } else {
+          const { data, error } = await supabaseClient.from('cargos')
+            .insert({ nome, descricao: desc, cor }).select().single();
+          if (error) throw error;
+          cargoId = data.id;
+        }
+
+        await supabaseClient.from('cargo_permissoes').delete().eq('cargo_id', cargoId);
+        const inserts = Object.entries(_cargoEdit._permTemp || {})
+          .filter(([, n]) => n && n !== 'nenhum')
+          .map(([modulo, nivel]) => ({ cargo_id: cargoId, modulo, nivel }));
+
+        if (inserts.length) {
+          const { error } = await supabaseClient.from('cargo_permissoes').insert(inserts);
+          if (error) throw error;
+        }
+
+        fecharModalCargo();
+        await carregarUsuarios();
+        toast('Cargo salvo!');
+      } catch (err) {
+        alertBox.textContent = 'Erro: ' + err.message;
+        alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+        alertBox.classList.remove('hidden');
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Gravar';
+        lucide.createIcons();
+      }
+    }
+
+    async function excluirCargo() {
+      const id = $('mcCargoId').value;
+      if (!id) return;
+
+      const cargo = _cargos.find(c => c.id === id);
+      if (cargo?.is_admin) { alert('Não é possível excluir o cargo ADMIN.'); return; }
+
+      const usos = _usuarios.filter(u => u.cargo_id === id).length;
+      const msg = usos > 0
+        ? `⚠️ ${usos} usuário(s) usam este cargo. Eles ficarão sem cargo ("Sem acesso"). Continuar?`
+        : 'Excluir este cargo permanentemente?';
+
+      if (!confirm(msg)) return;
+
+      try {
+        const { error } = await supabaseClient.from('cargos').delete().eq('id', id);
+        if (error) throw error;
+        fecharModalCargo();
+        await carregarUsuarios();
+        toast('Cargo excluído!');
+      } catch (err) {
+        alert('Erro: ' + err.message);
+      }
+    }
+
+    function fecharModalCargo() {
+      $('modalCargo').classList.add('hidden');
+      _cargoEdit = null;
+    }
+
+    /* ==========================================================
+       SIDEBAR COLAPSÁVEL
+       ========================================================== */
+    const SIDEBAR_KEY = 'inforteca_sidebar_collapsed';
+    function aplicarEstadoSidebar(c) {
+      const s = $('sidebar'); if (!s) return;
+      if (c) s.classList.add('collapsed'); else s.classList.remove('collapsed');
+      document.documentElement.style.setProperty('--sidebar-width', c ? '72px' : '256px');
+    }
+    function toggleSidebarCollapse() {
+      const s = $('sidebar'); if (!s) return;
+      const vai = !s.classList.contains('collapsed');
+      aplicarEstadoSidebar(vai);
+      localStorage.setItem(SIDEBAR_KEY, vai ? '1' : '0');
+      lucide.createIcons();
+    }
+    function autoAjustarSidebar() {
+      const saved = localStorage.getItem(SIDEBAR_KEY);
+      const w = window.innerWidth;
+      if (saved === null) { aplicarEstadoSidebar(w < 1280); return; }
+      if (w < 900) aplicarEstadoSidebar(true);
+      else aplicarEstadoSidebar(saved === '1');
+    }
+    let _sbTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(_sbTimer); _sbTimer = setTimeout(autoAjustarSidebar, 150);
+    });
+
+    function toggleSidebar() {
+      const s = $('sidebar');
+      s.classList.toggle('hidden');
+      s.classList.toggle('absolute');
+      s.classList.toggle('inset-y-0');
+      s.classList.toggle('z-40');
+    }
+
+    /* ==========================================================
+       BOOT
+       ========================================================== */
+    window.addEventListener('DOMContentLoaded', async () => {
+      lucide.createIcons();
+      autoAjustarSidebar();
+
+      const ok = await verificarAuth();
+      if (!ok) return;
+
+      await carregarUsuarios();
+    });
+  </script>
+</body>
+</html>
