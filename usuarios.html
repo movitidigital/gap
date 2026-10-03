@@ -460,21 +460,18 @@ async function verificarAuth() {
   $('userName').textContent = perfil?.nome_completo || session.user.email;
   $('userPerm').textContent = perfil?.permissao || 'Operador';
 
-  // Carrega cargos pra saber se é admin
   const { data: cargos } = await supabaseClient.from('cargos').select('*');
   _cargos = cargos || [];
 
   const meuCargo = _cargos.find(c => c.id === perfil?.cargo_id);
   const isAdmin = meuCargo?.is_admin === true;
 
-  // 👇 Menu sempre completo pra todo mundo (o bloqueio é só no conteúdo)
+  // 👇 Menu sempre completo — o bloqueio é por gate abaixo
   document.querySelectorAll('.nav-item[data-nav]').forEach(el => {
     el.classList.remove('hidden');
   });
 
-  // ─────────────────────────────────────────────────────────
-  // GATE: só ADMIN vê o conteúdo de Gestão de Usuários
-  // ─────────────────────────────────────────────────────────
+  // 🔒 GATE: só ADMIN vê a página de usuários
   if (!isAdmin) {
     $('acessoNegado').classList.remove('hidden');
     $('conteudoPrincipal').classList.add('hidden');
@@ -483,7 +480,6 @@ async function verificarAuth() {
     return false;
   }
 
-  // Admin: mostra conteúdo
   $('conteudoPrincipal').classList.remove('hidden');
   $('acessoNegado').classList.add('hidden');
   return true;
