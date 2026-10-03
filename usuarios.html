@@ -263,11 +263,33 @@
         </button>
       </div>
 
-      <div class="p-6 space-y-5 overflow-y-auto flex-1">
-        <input type="hidden" id="muUserId">
+     <div class="p-6 space-y-5 overflow-y-auto flex-1">
+  <input type="hidden" id="muUserId">
 
-        <div>
-          <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Cargo</label>
+  <!-- 👇 NOVO — Dados Cadastrais -->
+  <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+    <p class="text-[10px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+      <i data-lucide="id-card" class="w-3.5 h-3.5"></i>
+      Dados Cadastrais
+    </p>
+    <div>
+      <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nome Completo</label>
+      <input type="text" id="muNomeCompleto" placeholder="Nome do usuário"
+        class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-indigo-500">
+    </div>
+    <div>
+      <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">E-mail</label>
+      <input type="email" id="muEmail" placeholder="email@exemplo.com"
+        class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-mono focus:outline-none focus:border-indigo-500">
+      <p class="text-[9px] text-slate-400 mt-1 flex items-center gap-1">
+        <i data-lucide="info" class="w-3 h-3"></i>
+        Alterar aqui não troca o e-mail de login. Fale com o TI pra mudar o acesso.
+      </p>
+    </div>
+  </div>
+
+  <div>
+    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Cargo</label>
           <select id="muCargoId" onchange="onTrocarCargoUsuario()"
             class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:border-indigo-500">
           </select>
@@ -288,14 +310,19 @@
         <div id="muAlert" class="hidden text-xs p-3 rounded-xl border font-medium"></div>
       </div>
 
-      <div class="px-6 py-4 bg-slate-50 border-t flex justify-end gap-3 shrink-0">
-        <button onclick="fecharModalUsuario()" class="px-4 py-2 text-sm font-medium text-slate-600">Cancelar</button>
-        <button id="muBtnSalvar" onclick="salvarUsuario()"
-          class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
-          <i data-lucide="save" class="w-4 h-4"></i> Gravar
-        </button>
-      </div>
-    </div>
+   <div class="px-6 py-4 bg-slate-50 border-t flex justify-between gap-3 shrink-0">
+  <button id="muBtnExcluir" onclick="excluirCadastroUsuario()"
+    class="hidden bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
+    <i data-lucide="trash-2" class="w-4 h-4"></i> Excluir Cadastro
+  </button>
+  <div class="flex gap-3 ml-auto">
+    <button onclick="fecharModalUsuario()" class="px-4 py-2 text-sm font-medium text-slate-600">Cancelar</button>
+    <button id="muBtnSalvar" onclick="salvarUsuario()"
+      class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
+      <i data-lucide="save" class="w-4 h-4"></i> Gravar
+    </button>
+  </div>
+</div>
   </div>
 
   <!-- ============ MODAL: Editar/Criar Cargo ============ -->
@@ -638,17 +665,40 @@
       $('muNome').textContent = (u.nome_completo || '—').toUpperCase();
       $('muAlert').classList.add('hidden');
 
+        $('muNomeCompleto').value = u.nome_completo || '';
+  $('muEmail').value = u.email || '';
+
       const sel = $('muCargoId');
       sel.innerHTML = `<option value="">— Sem cargo —</option>` +
         _cargos.map(c =>
           `<option value="${c.id}" ${u.cargo_id === c.id ? 'selected' : ''}>
             ${escapeHTML(c.nome)}${c.is_admin ? ' (ADMIN)' : ''}
           </option>`).join('');
-      sel.disabled = u._isAdmin;
+  sel.disabled = u._isAdmin;
 
-      renderPermissoesModalUsuario(u);
-      $('modalUsuario').classList.remove('hidden');
-      lucide.createIcons();
+  // 👇 Admin não pode trocar o próprio nome/email (evita auto-bloqueio)
+  const ehProprioUsuario = u.id === _currentUser?.id;
+  const bloquearNomeEmail = u._isAdmin && ehProprioUsuario;
+
+  $('muNomeCompleto').disabled = bloquearNomeEmail;
+  $('muEmail').disabled = bloquearNomeEmail;
+
+  if (bloquearNomeEmail) {
+    $('muNomeCompleto').classList.add('bg-slate-100', 'cursor-not-allowed');
+    $('muEmail').classList.add('bg-slate-100', 'cursor-not-allowed');
+  } else {
+    $('muNomeCompleto').classList.remove('bg-slate-100', 'cursor-not-allowed');
+    $('muEmail').classList.remove('bg-slate-100', 'cursor-not-allowed');
+  }
+
+  renderPermissoesModalUsuario(u);
+const btnExcluir = $('muBtnExcluir');
+if (btnExcluir) {
+  btnExcluir.classList.toggle('hidden', u._isAdmin || ehProprioUsuario);
+}
+
+$('modalUsuario').classList.remove('hidden');
+lucide.createIcons();
     }
 
     function renderPermissoesModalUsuario(u) {
@@ -732,48 +782,90 @@
       onTrocarCargoUsuario();
     }
 
-    async function salvarUsuario() {
-      if (!_userEdit) return;
-      const btn = $('muBtnSalvar');
-      const alertBox = $('muAlert');
+async function salvarUsuario() {
+  if (!_userEdit) return;
+  const btn = $('muBtnSalvar');
+  const alertBox = $('muAlert');
 
-      btn.disabled = true;
-      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Gravando…`;
-      lucide.createIcons();
+  // 👇 NOVO — Lê os campos editáveis antes de qualquer coisa
+  const nomeCompleto = $('muNomeCompleto').value.trim();
+  const email        = $('muEmail').value.trim();
 
-      try {
-const { error: errPerfil } = await supabaseClient
-  .from('perfis')
-  .update({ 
-    cargo_id: _userEdit.cargo_id || null,
-    permissao: _userEdit._cargo?.nome || 'Operador',  
-  })
-  .eq('id', _userEdit.id);
-        if (errPerfil) throw errPerfil;
+  // Validação do nome (não pode ficar vazio)
+  if (!nomeCompleto) {
+    alertBox.textContent = 'Informe o nome completo.';
+    alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+    alertBox.classList.remove('hidden');
+    return;
+  }
 
-        await supabaseClient.from('usuario_permissoes').delete().eq('user_id', _userEdit.id);
+  btn.disabled = true;
+  btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Gravando…`;
+  lucide.createIcons();
 
-        if (!_userEdit._isAdmin && _userEdit._overrides.length) {
-          const inserts = _userEdit._overrides.map(o => ({
-            user_id: _userEdit.id, modulo: o.modulo, nivel: o.nivel,
-          }));
-          const { error: errOv } = await supabaseClient.from('usuario_permissoes').insert(inserts);
-          if (errOv) throw errOv;
-        }
+  try {
+    const { error: errPerfil } = await supabaseClient
+      .from('perfis')
+      .update({ 
+        cargo_id: _userEdit.cargo_id || null,
+        permissao: _userEdit._cargo?.nome || 'Operador',
+        nome_completo: nomeCompleto,   // 👈 NOVO
+        email: email || null,           // 👈 NOVO
+      })
+      .eq('id', _userEdit.id);
+    if (errPerfil) throw errPerfil;
 
-        fecharModalUsuario();
-        await carregarUsuarios();
-        toast('Permissões salvas!');
-      } catch (err) {
-        alertBox.textContent = 'Erro: ' + err.message;
-        alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
-        alertBox.classList.remove('hidden');
-        btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Gravar';
-        lucide.createIcons();
-      }
+    await supabaseClient.from('usuario_permissoes').delete().eq('user_id', _userEdit.id);
+
+    if (!_userEdit._isAdmin && _userEdit._overrides.length) {
+      const inserts = _userEdit._overrides.map(o => ({
+        user_id: _userEdit.id, modulo: o.modulo, nivel: o.nivel,
+      }));
+      const { error: errOv } = await supabaseClient.from('usuario_permissoes').insert(inserts);
+      if (errOv) throw errOv;
     }
 
+    fecharModalUsuario();
+    await carregarUsuarios();
+    toast('Dados salvos!');
+  } catch (err) {
+    alertBox.textContent = 'Erro: ' + err.message;
+    alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+    alertBox.classList.remove('hidden');
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Gravar';
+    lucide.createIcons();
+  }
+}
+
+async function excluirCadastroUsuario() {
+  if (!_userEdit) return;
+  if (_userEdit._isAdmin) { alert('Não é possível excluir um ADMIN.'); return; }
+  if (_userEdit.id === _currentUser?.id) { alert('Você não pode excluir a si mesmo.'); return; }
+
+  const confirmar = confirm(
+    `⚠️ Excluir o cadastro de "${_userEdit.nome_completo}"?\n\n` +
+    `Isso remove o PERFIL do banco. O login continua existindo (auth.users), ` +
+    `mas o usuário não vai conseguir mais acessar o sistema.`
+  );
+  if (!confirmar) return;
+
+  try {
+    // 1. Remove overrides individuais
+    await supabaseClient.from('usuario_permissoes').delete().eq('user_id', _userEdit.id);
+
+    // 2. Remove o perfil
+    const { error } = await supabaseClient.from('perfis').delete().eq('id', _userEdit.id);
+    if (error) throw error;
+
+    fecharModalUsuario();
+    await carregarUsuarios();
+    toast('Cadastro excluído!');
+  } catch (err) {
+    alert('Erro: ' + err.message);
+  }
+}
+    
     function fecharModalUsuario() {
       $('modalUsuario').classList.add('hidden');
       _userEdit = null;
