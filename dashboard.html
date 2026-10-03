@@ -3575,9 +3575,14 @@ async function processarDatasys(input) {
       // Filtro E-SIM
       if (modalidade.includes('E-SIM') || modalidade.includes('ESIM')) { ignorados.esim++; continue; }
 
-      // Filtro modalidades inválidas
-      const invalidas = ['ATIVAÇÃO PRÉ-PAGO', 'TROCA DE CHIP POS', 'TROCA DE CHIP PRÉ'];
-      if (invalidas.some(inv => modalidade.includes(inv))) { ignorados.invalido++; continue; }
+     // Filtro modalidades inválidas
+const invalidas = [
+  'ATIVAÇÃO PRÉ-PAGO',
+  'TROCA DE CHIP POS',
+  'TROCA DE CHIP PRÉ',
+  'TROCA DE CHIP CLIENTE EX-OI',   // 👈 NOVO
+];
+if (invalidas.some(inv => modalidade.includes(inv))) { ignorados.invalido++; continue; }
 
       // Data da venda
       const rawData = r[COL.dataVenda];
