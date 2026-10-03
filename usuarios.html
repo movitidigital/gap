@@ -593,7 +593,7 @@
         <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100 text-xs">
           <td class="px-4 py-3">
             <div class="font-bold text-slate-800 uppercase flex items-center">${escapeHTML(u.nome_completo || '—')}${badgeAdmin}</div>
-            <div class="text-[10px] text-slate-400 mt-0.5">${escapeHTML(u.permissao || 'Operador')}</div>
+            <div class="text-[10px] text-slate-500 mt-0.5 uppercase font-bold">${escapeHTML(u._cargo?.nome || '— Sem cargo —')}</div>
           </td>
           <td class="px-4 py-3 text-slate-600 font-mono text-[10px]">${escapeHTML(u.id.slice(0, 8))}…</td>
           <td class="px-4 py-3">
@@ -742,8 +742,13 @@
       lucide.createIcons();
 
       try {
-        const { error: errPerfil } = await supabaseClient
-          .from('perfis').update({ cargo_id: _userEdit.cargo_id || null }).eq('id', _userEdit.id);
+const { error: errPerfil } = await supabaseClient
+  .from('perfis')
+  .update({ 
+    cargo_id: _userEdit.cargo_id || null,
+    permissao: _userEdit._cargo?.nome || 'Operador',  
+  })
+  .eq('id', _userEdit.id);
         if (errPerfil) throw errPerfil;
 
         await supabaseClient.from('usuario_permissoes').delete().eq('user_id', _userEdit.id);
