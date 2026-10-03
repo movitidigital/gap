@@ -117,14 +117,14 @@
         </a>
 
         <a id="btnMenuMetas" href="metas.html" data-nav="metas"
-          class="hidden nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
-          <i data-lucide="target" class="w-5 h-5 shrink-0"></i>
-          <span class="nav-label text-sm font-medium">Acompanhamento de Metas</span>
-        </a>
+  class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+  <i data-lucide="target" class="w-5 h-5 shrink-0"></i>
+  <span class="nav-label text-sm font-medium">Acompanhamento de Metas</span>
+</a>
 
         <!-- 👇 ATIVO NESTA PÁGINA -->
         <a id="btnMenuUsuarios" href="usuarios.html" data-nav="usuarios"
-          class="hidden nav-item w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium shadow-md shadow-[#0e8890]/20">
+  class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
           <i data-lucide="user-cog" class="w-5 h-5 shrink-0"></i>
           <span class="nav-label text-sm font-medium">Gestão de Usuários</span>
         </a>
@@ -447,67 +447,47 @@
     /* ==========================================================
        AUTH
        ========================================================== */
-    async function verificarAuth() {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (!session) { window.location.href = 'index.html'; return false; }
+async function verificarAuth() {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return false; }
 
-      _currentUser = session.user;
+  _currentUser = session.user;
 
-      const { data: perfil } = await supabaseClient
-        .from('perfis').select('*').eq('id', session.user.id).single();
-      _currentPerfil = perfil;
+  const { data: perfil } = await supabaseClient
+    .from('perfis').select('*').eq('id', session.user.id).single();
+  _currentPerfil = perfil;
 
-      $('userName').textContent = perfil?.nome_completo || session.user.email;
-      $('userPerm').textContent = perfil?.permissao || 'Operador';
+  $('userName').textContent = perfil?.nome_completo || session.user.email;
+  $('userPerm').textContent = perfil?.permissao || 'Operador';
 
-      // Carrega cargos pra saber se é admin
-      const { data: cargos } = await supabaseClient.from('cargos').select('*');
-      _cargos = cargos || [];
+  // Carrega cargos pra saber se é admin
+  const { data: cargos } = await supabaseClient.from('cargos').select('*');
+  _cargos = cargos || [];
 
-      const meuCargo = _cargos.find(c => c.id === perfil?.cargo_id);
-      const isAdmin = meuCargo?.is_admin === true;
+  const meuCargo = _cargos.find(c => c.id === perfil?.cargo_id);
+  const isAdmin = meuCargo?.is_admin === true;
 
-      // Esconde botão de metas se não for admin
-      if (isAdmin) $('btnMenuMetas').classList.remove('hidden');
+  // 👇 Menu sempre completo pra todo mundo (o bloqueio é só no conteúdo)
+  document.querySelectorAll('.nav-item[data-nav]').forEach(el => {
+    el.classList.remove('hidden');
+  });
 
-      // Aplica visibilidade dos módulos na sidebar
-      const cargoPerms = meuCargo
-        ? (await supabaseClient.from('cargo_permissoes').select('*').eq('cargo_id', meuCargo.id)).data || []
-        : [];
-      const userPerms = (await supabaseClient.from('usuario_permissoes').select('*').eq('user_id', session.user.id)).data || [];
+  // ─────────────────────────────────────────────────────────
+  // GATE: só ADMIN vê o conteúdo de Gestão de Usuários
+  // ─────────────────────────────────────────────────────────
+  if (!isAdmin) {
+    $('acessoNegado').classList.remove('hidden');
+    $('conteudoPrincipal').classList.add('hidden');
+    document.querySelector('main h2').textContent = 'Acesso Restrito';
+    lucide.createIcons();
+    return false;
+  }
 
-      const perms = {};
-      MODULOS_SISTEMA.forEach(m => {
-        if (isAdmin) { perms[m.id] = 'editar'; return; }
-        const ov = userPerms.find(o => o.modulo === m.id);
-        if (ov) { perms[m.id] = ov.nivel; return; }
-        const cp = cargoPerms.find(p => p.modulo === m.id);
-        perms[m.id] = cp ? cp.nivel : 'nenhum';
-      });
-
-      document.querySelectorAll('.nav-item[data-nav]').forEach(el => {
-        const modId = el.dataset.nav;
-        if (modId === 'usuarios' || modId === 'metas') return; // já são controlados à parte
-        if (!MODULOS_SISTEMA.some(m => m.id === modId)) return;
-        el.classList.toggle('hidden', perms[modId] === 'nenhum');
-      });
-
-      // 👇 GATE DE ADMIN: se não for admin, bloqueia tudo e mostra aviso
-      if (!isAdmin) {
-        $('acessoNegado').classList.remove('hidden');
-        $('conteudoPrincipal').classList.add('hidden');
-        document.querySelector('main h2').textContent = 'Acesso Restrito';
-        lucide.createIcons();
-        return false;
-      }
-
-      // Admin: mostra conteúdo
-      $('btnMenuUsuarios').classList.remove('hidden');
-      $('conteudoPrincipal').classList.remove('hidden');
-      $('acessoNegado').classList.add('hidden');
-      return true;
-    }
-
+  // Admin: mostra conteúdo
+  $('conteudoPrincipal').classList.remove('hidden');
+  $('acessoNegado').classList.add('hidden');
+  return true;
+}
     async function terminarSessao() {
       await supabaseClient.auth.signOut();
       window.location.href = 'index.html';
