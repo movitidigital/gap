@@ -546,9 +546,9 @@
       _cargos = cargos || [];
 
       const { data: perfis, error } = await supabaseClient
-        .from('perfis')
-        .select('id, nome_completo, permissao, cargo_id')
-        .order('nome_completo');
+  .from('perfis')
+  .select('id, nome_completo, email, permissao, cargo_id')
+  .order('nome_completo');
 
       if (error) {
         tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-red-500">Erro: ${escapeHTML(error.message)}</td></tr>`;
