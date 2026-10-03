@@ -273,7 +273,7 @@
             <div class="p-3 bg-emerald-50 text-emerald-500 rounded-xl"><i data-lucide="server" class="w-6 h-6"></i></div>
           </div>
         </div>
-      </div>
+      </div>  
 
       <!-- ===== FATURAS ===== -->
       <div id="view-faturas" class="hidden animate-fade-in">
@@ -823,6 +823,23 @@
           <p class="text-sm mt-1">Em construção.</p>
         </div>
       </div>
+
+      <!-- ===== ACESSO BLOQUEADO ===== -->
+<div id="view-bloqueado" class="hidden animate-fade-in">
+  <div class="bg-white rounded-2xl border border-red-200 shadow-sm p-12 text-center max-w-lg mx-auto">
+    <div class="w-16 h-16 mx-auto rounded-full bg-red-50 flex items-center justify-center mb-4">
+      <i data-lucide="lock" class="w-8 h-8 text-red-500"></i>
+    </div>
+    <h3 class="text-lg font-black text-slate-800 mb-2">Acesso Bloqueado</h3>
+    <p class="text-sm text-slate-500 leading-relaxed">
+      Você não tem permissão para acessar o módulo
+      <strong id="bloqueadoNome" class="text-slate-800">—</strong>.
+    </p>
+    <p class="text-xs text-slate-400 mt-3">
+      Fale com um administrador se precisar de acesso.
+    </p>
+  </div>
+</div>
 
     </div>
   </main>
@@ -1640,16 +1657,45 @@ async function verificarAuth() {
   $('userPerm').textContent = state.perfil.permissao;
 
   // ─────────────────────────────────────────────────────────
-  // 👇 NOVO — Carrega cargos e decide o que mostrar no menu
+  // Carrega cargos e permissões do usuário
   // ─────────────────────────────────────────────────────────
   const { data: cargos } = await supabaseClient.from('cargos').select('*');
   const meuCargo = (cargos || []).find(c => c.id === state.perfil.cargo_id);
   const isAdmin = meuCargo?.is_admin === true;
 
+  // Carrega permissões padrão do cargo + overrides individuais
+  const cargoPerms = meuCargo
+    ? (await supabaseClient.from('cargo_permissoes').select('*').eq('cargo_id', meuCargo.id)).data || []
+    : [];
+  const userPerms = (await supabaseClient.from('usuario_permissoes').select('*').eq('user_id', session.user.id)).data || [];
+
+  const MODULOS = ['dashboard','clientes','portabilidades','faturas','suspensoes','gestao','prospeccao','metas'];
+
+  const perms = {};
+  MODULOS.forEach(m => {
+    if (isAdmin) { perms[m] = 'editar'; return; }
+    const ov = userPerms.find(o => o.modulo === m);
+    if (ov) { perms[m] = ov.nivel; return; }
+    const cp = cargoPerms.find(p => p.modulo === m);
+    perms[m] = cp ? cp.nivel : 'nenhum';
+  });
+
+  // Guarda no state (usado pelo navegar() pra bloquear módulos sem acesso)
+  state._permissoes = perms;
+  state._isAdmin = isAdmin;
+
   // Botões restritos: só aparecem pra quem é ADMIN
   if (isAdmin) {
     document.getElementById('btnMenuMetas')?.classList.remove('hidden');
     document.getElementById('btnMenuUsuarios')?.classList.remove('hidden');
+  }
+
+  // Esconde badges de módulos sem acesso
+  if (perms.suspensoes === 'nenhum') {
+    document.getElementById('badgeSuspensoes')?.classList.add('hidden');
+  }
+  if (perms.gestao === 'nenhum') {
+    document.getElementById('badgeGestao')?.classList.add('hidden');
   }
 
   navegar('dashboard');
@@ -1674,34 +1720,56 @@ async function verificarAuth() {
       prospeccao: 'Prospecção de Clientes',
     };
 
-    function navegar(destino) {
-      Object.keys(TITULOS).forEach(id => {
-        const view = $(`view-${id}`);
-        if (view) view.classList.toggle('hidden', id !== destino);
-      });
+function navegar(destino) {
+  // 1. Esconde TODAS as views (incluindo a de bloqueio)
+  Object.keys(TITULOS).forEach(id => {
+    const view = $(`view-${id}`);
+    if (view) view.classList.add('hidden');
+  });
+  $('view-bloqueado')?.classList.add('hidden');
 
-      if (destino === 'portabilidades') carregarPortabilidades();
-      if (destino === 'gestao') { carregarGestao(); atualizarBadgeGestao(); }
-      
-      document.querySelectorAll('.nav-item').forEach(btn => {
-          if (btn.dataset.nav === 'usuarios') return;   
-  if (btn.dataset.nav === 'metas') return;      
-        const ativo = btn.dataset.nav === destino;
-        btn.className = ativo
-          ? 'nav-item w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium transition-colors shadow-md shadow-[#0e8890]/20 cursor-pointer'
-          : 'nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer';
-      });
+  // 2. Verifica permissão (dashboard é sempre liberado)
+  const nivel = state._permissoes?.[destino] || 'nenhum';
+  const temAcesso = destino === 'dashboard' || nivel !== 'nenhum';
 
-      $('headerTitle').textContent = TITULOS[destino];
-if (destino === 'suspensoes') {
-  trocarAbaSusp('registrar');
-  atualizarBadgeSuspensoes();
-}
-      if (destino === 'faturas') carregarClientes();
-      if (destino === 'clientes') {
-        setTimeout(() => $('inputBuscaClientes')?.focus(), 100);
-      }
+  // 3. Renderiza o que for
+  if (!temAcesso) {
+    // 🚫 Usuário sem permissão → mostra tela de bloqueio
+    const bloqueio = $('view-bloqueado');
+    if (bloqueio) {
+      bloqueio.classList.remove('hidden');
+      const nomeEl = $('bloqueadoNome');
+      if (nomeEl) nomeEl.textContent = TITULOS[destino] || destino;
     }
+  } else {
+    // ✅ Usuário com permissão → mostra a view normal
+    const view = $(`view-${destino}`);
+    if (view) view.classList.remove('hidden');
+
+    // Carregamentos específicos de cada módulo
+    if (destino === 'portabilidades') carregarPortabilidades();
+    if (destino === 'gestao')         { carregarGestao(); atualizarBadgeGestao(); }
+    if (destino === 'faturas')        carregarClientes();
+    if (destino === 'suspensoes')     { trocarAbaSusp('registrar'); atualizarBadgeSuspensoes(); }
+    if (destino === 'clientes') {
+      setTimeout(() => $('inputBuscaClientes')?.focus(), 100);
+    }
+  }
+
+  // 4. Atualiza estilo dos botões do menu
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    if (btn.dataset.nav === 'usuarios') return;
+    if (btn.dataset.nav === 'metas') return;
+
+    const ativo = btn.dataset.nav === destino;
+    btn.className = ativo
+      ? 'nav-item w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium transition-colors shadow-md shadow-[#0e8890]/20 cursor-pointer'
+      : 'nav-item w-full flex items-center gap-3 px-3 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors group cursor-pointer';
+  });
+
+  // 5. Atualiza o título do header
+  $('headerTitle').textContent = TITULOS[destino] || 'Portal';
+}
 
     function toggleSidebar() {
       const s = $('sidebar');
