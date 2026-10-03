@@ -3063,16 +3063,16 @@ async function salvarSaneamento() {
   const alertBox = $('saneamentoAlert');
   const btn = $('btnSalvarSaneamento');
 
-  const combo = !$('secaoCombo').classList.contains('hidden');
-  const troca = !$('secaoTroca').classList.contains('hidden');
+  const combo  = !$('secaoCombo').classList.contains('hidden');
+  const troca  = !$('secaoTroca').classList.contains('hidden');
   const martim = !$('secaoMartim').classList.contains('hidden');
   const padrao = !$('camposPadraoModal').classList.contains('hidden');
 
   let update = {};
 
   if (padrao) {
-    const venc = $('modalVencimento').value;
-    const nasc = $('modalNascimento').value.trim();
+    const venc   = $('modalVencimento').value;
+    const nasc   = $('modalNascimento').value.trim();
     const status = $('modalStatus').value;
 
     if (!venc || !nasc || !status) {
@@ -3093,10 +3093,10 @@ async function salvarSaneamento() {
       status_saneamento: status === 'LIBERADO' ? 'SANEADO' : 'PENDENTE'
     };
   } else if (combo) {
-    const cbcf = document.querySelector('input[name="comboCbcf"]:checked')?.value;
-    const venc = $('comboVencimento').value;
-    const nasc = $('comboNascimento').value.trim();
-    const sPlano = $('comboStatusPlano').value;
+    const cbcf    = document.querySelector('input[name="comboCbcf"]:checked')?.value;
+    const venc    = $('comboVencimento').value;
+    const nasc    = $('comboNascimento').value.trim();
+    const sPlano  = $('comboStatusPlano').value;
     const sThales = $('comboStatusThales').value;
 
     if (!cbcf || !venc || !nasc || !sPlano || !sThales) {
@@ -3117,7 +3117,7 @@ async function salvarSaneamento() {
       status_saneamento: statusFinal === 'LIBERADO' ? 'SANEADO' : 'PENDENTE'
     };
   } else if (troca) {
-    const cbcf = document.querySelector('input[name="checkCbcf"]:checked')?.value;
+    const cbcf   = document.querySelector('input[name="checkCbcf"]:checked')?.value;
     const thales = document.querySelector('input[name="checkThales"]:checked')?.value;
 
     if (!cbcf || !thales) {
@@ -3151,21 +3151,68 @@ async function salvarSaneamento() {
     };
   }
 
+  // 🛡️ Proteção: se nada foi montado, aborta
+  if (!update || Object.keys(update).length === 0) {
+    console.warn('[SANEAMENTO] update vazio — nenhuma seção detectada');
+    alertBox.textContent = 'Nada para salvar. Verifique o formulário.';
+    alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+    alertBox.classList.remove('hidden');
+    return;
+  }
+
+  // 🛡️ Proteção: se id não existe, aborta
+  if (c.id === null || c.id === undefined) {
+    console.error('[SANEAMENTO] c.id inválido:', c);
+    alertBox.textContent = 'Erro: ID do cliente inválido. Recarregue a lista.';
+    alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
+    alertBox.classList.remove('hidden');
+    return;
+  }
+
   btn.disabled = true;
   btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Gravando…`;
   lucide.createIcons();
 
   try {
-    const { error } = await supabaseClient
+    console.log('[SANEAMENTO] Enviando update:', update);
+    console.log('[SANEAMENTO] Para cliente ID:', c.id);
+
+    // 👇 Adicionado .select() — retorna as linhas atualizadas
+    //    Se voltar array vazio → RLS bloqueou ou ID não existe
+    const { data, error, count } = await supabaseClient
       .from('clientes_faturas')
       .update(update)
-      .eq('id', c.id);
-    if (error) throw error;
+      .eq('id', c.id)
+      .select();
+
+    if (error) {
+      console.error('[SANEAMENTO] ❌ Erro Supabase:', error);
+      throw error;
+    }
+
+    console.log('[SANEAMENTO] ✅ Retorno Supabase:', data);
+    console.log('[SANEAMENTO] Linhas afetadas:', data?.length ?? 0);
+
+    // ⚠️ Se RLS bloqueou silenciosamente, o array volta vazio
+    if (!data || data.length === 0) {
+      throw new Error(
+        'Nenhuma linha foi atualizada. Provavelmente RLS bloqueando UPDATE na tabela "clientes_faturas". ' +
+        'Rode no SQL Editor: CREATE POLICY "clientes_update_auth" ON clientes_faturas FOR UPDATE TO authenticated USING (true) WITH CHECK (true);'
+      );
+    }
+
+    // Remove da lista local pra não depender só do reload
+    if (state.contratos) {
+      state.contratos = state.contratos.filter(x => x.id !== c.id);
+    }
 
     fecharModalSaneamento();
     await carregarGestao();
+    atualizarBadgeGestao();
+
   } catch (err) {
-    alertBox.textContent = 'Erro: ' + err.message;
+    console.error('[SANEAMENTO] ❌ Exceção capturada:', err);
+    alertBox.textContent = 'Erro: ' + (err.message || err);
     alertBox.className = 'text-xs p-3 rounded-xl border font-medium bg-red-50 border-red-200 text-red-600';
     alertBox.classList.remove('hidden');
     btn.disabled = false;
