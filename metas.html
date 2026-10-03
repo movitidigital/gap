@@ -17,7 +17,7 @@
       --tim-blue:      #002060;
       --tim-blue-light:#1F4E78;
       --excel-border:  #000000;
-      --cat-faturam:   #8EA9DB;
+      --cat-fatura:   #8EA9DB;
       --cat-gross:     #B4C6E7;
       --cat-produto:   #D9D9D9;
       
@@ -115,7 +115,7 @@
       color: #000;
     }
     
-    .cat-faturam { background-color: var(--cat-faturam); }
+    .cat-fatura { background-color: var(--cat-fatura); }
     .cat-gross   { background-color: var(--cat-gross); }
     .cat-produto { background-color: var(--cat-produto); }
 
@@ -394,7 +394,7 @@
     
     const LINHAS_DIARIO = ['CONTROLE FAT.', 'PÓS FAT.', 'CONTROLE', 'PÓS', 'PORTABILIDADE', 'APARELHO', 'ACESSÓRIOS'];
     const CATEGORIAS = [
-      { id: 'faturam', nome: 'FATURAM.', cls: 'cat-faturam', rows: 3, keys: ['FAT TOTAL TIM', 'CONTROLE FAT.', 'PÓS FAT.'] },
+      { id: 'fatura', nome: 'fatura.', cls: 'cat-fatura', rows: 3, keys: ['FAT TOTAL TIM', 'CONTROLE FAT.', 'PÓS FAT.'] },
       { id: 'gross',   nome: 'GROSS',    cls: 'cat-gross',   rows: 3, keys: ['CONTROLE', 'PÓS', 'PORTABILIDADE'] },
       { id: 'produto', nome: 'PRODUTO',  cls: 'cat-produto', rows: 2, keys: ['APARELHO', 'ACESSÓRIOS'] }
     ];
