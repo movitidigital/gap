@@ -1145,15 +1145,23 @@ async function excluirCadastroUsuario() {
     /* ==========================================================
        BOOT
        ========================================================== */
-    window.addEventListener('DOMContentLoaded', async () => {
-      lucide.createIcons();
-      autoAjustarSidebar();
+window.addEventListener('DOMContentLoaded', async () => {
+  // 🔧 FIX: move o modalCargo pra fora do modalUsuario (estavam aninhados errado)
+  const modalCargo = document.getElementById('modalCargo');
+  const modalUsuario = document.getElementById('modalUsuario');
+  if (modalCargo && modalUsuario && modalUsuario.contains(modalCargo)) {
+    document.body.appendChild(modalCargo);
+    console.log('[fix] modalCargo movido pra fora do modalUsuario ✅');
+  }
 
-      const ok = await verificarAuth();
-      if (!ok) return;
+  lucide.createIcons();
+  autoAjustarSidebar();
 
-      await carregarUsuarios();
-    });
+  const ok = await verificarAuth();
+  if (!ok) return;
+
+  await carregarUsuarios();
+});
   </script>
 </body>
 </html>
