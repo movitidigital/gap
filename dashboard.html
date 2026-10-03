@@ -1626,28 +1626,37 @@ function clientePassaFiltroVencimento(c, rangeFiltro, diaFiltro) {
     /* ==========================================================
        AUTH / NAVEGAÇÃO
        ========================================================== */
-    async function verificarAuth() {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (!session) { window.location.href = 'index.html'; return; }
+async function verificarAuth() {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return; }
 
-      state.user = session.user;
+  state.user = session.user;
 
-      const { data: perfil } = await supabaseClient
-        .from('perfis').select('*').eq('id', session.user.id).single();
-      state.perfil = perfil || { nome_completo: session.user.email, permissao: 'Operador' };
+  const { data: perfil } = await supabaseClient
+    .from('perfis').select('*').eq('id', session.user.id).single();
+  state.perfil = perfil || { nome_completo: session.user.email, permissao: 'Operador' };
 
-      $('userName').textContent = state.perfil.nome_completo || session.user.email;
-      $('userPerm').textContent = state.perfil.permissao;
+  $('userName').textContent = state.perfil.nome_completo || session.user.email;
+  $('userPerm').textContent = state.perfil.permissao;
 
-       if (state.perfil.permissao === 'Admin' || state.perfil.permissao === 'Administrador') {
-        document.getElementById('btnMenuMetas').classList.remove('hidden');
-      }
-      
-      navegar('dashboard');
-      carregarClientes();
-      atualizarBadgeGestao();
-      atualizarBadgeSuspensoes();
-    }
+  // ─────────────────────────────────────────────────────────
+  // 👇 NOVO — Carrega cargos e decide o que mostrar no menu
+  // ─────────────────────────────────────────────────────────
+  const { data: cargos } = await supabaseClient.from('cargos').select('*');
+  const meuCargo = (cargos || []).find(c => c.id === state.perfil.cargo_id);
+  const isAdmin = meuCargo?.is_admin === true;
+
+  // Botões restritos: só aparecem pra quem é ADMIN
+  if (isAdmin) {
+    document.getElementById('btnMenuMetas')?.classList.remove('hidden');
+    document.getElementById('btnMenuUsuarios')?.classList.remove('hidden');
+  }
+
+  navegar('dashboard');
+  carregarClientes();
+  atualizarBadgeGestao();
+  atualizarBadgeSuspensoes();
+}
 
     async function terminarSessao() {
       await supabaseClient.auth.signOut();
@@ -1675,6 +1684,8 @@ function clientePassaFiltroVencimento(c, rangeFiltro, diaFiltro) {
       if (destino === 'gestao') { carregarGestao(); atualizarBadgeGestao(); }
       
       document.querySelectorAll('.nav-item').forEach(btn => {
+          if (btn.dataset.nav === 'usuarios') return;   
+  if (btn.dataset.nav === 'metas') return;      
         const ativo = btn.dataset.nav === destino;
         btn.className = ativo
           ? 'nav-item w-full flex items-center gap-3 px-3 py-2.5 bg-[#0e8890] text-white rounded-lg font-medium transition-colors shadow-md shadow-[#0e8890]/20 cursor-pointer'
