@@ -3046,6 +3046,13 @@ function abrirModalSaneamento(id) {
     }
   }
 
+  // 🔧 Reseta o botão SEMPRE ao abrir
+  const btn = $('btnSalvarSaneamento');
+  if (btn) {
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Gravar Dados';
+  }
+
   $('saneamentoAlert').classList.add('hidden');
   $('modalSaneamento').classList.remove('hidden');
   lucide.createIcons();
@@ -3054,6 +3061,14 @@ function abrirModalSaneamento(id) {
 function fecharModalSaneamento() {
   $('modalSaneamento').classList.add('hidden');
   state.saneamentoAtual = null;
+
+  // 🔧 Reseta o botão SEMPRE que fechar o modal
+  const btn = $('btnSalvarSaneamento');
+  if (btn) {
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Gravar Dados';
+    lucide.createIcons();
+  }
 }
 
 async function salvarSaneamento() {
