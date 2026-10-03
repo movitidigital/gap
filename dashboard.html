@@ -1684,11 +1684,9 @@ async function verificarAuth() {
   state._permissoes = perms;
   state._isAdmin = isAdmin;
 
-  // Botões restritos: só aparecem pra quem é ADMIN
-  if (isAdmin) {
+// Menu sempre completo — o bloqueio é no clique (navegar() / gate das páginas externas)
 document.getElementById('btnMenuMetas')?.classList.remove('hidden');
 document.getElementById('btnMenuUsuarios')?.classList.remove('hidden');
-  }
 
   // Esconde badges de módulos sem acesso
   if (perms.suspensoes === 'nenhum') {
