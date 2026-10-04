@@ -248,9 +248,12 @@
     <p id="greetingData" class="text-sm text-slate-500 mt-1">—</p>
   </div>
 
+<!-- 📊 META + 🏆 RANKING (lado a lado em telas grandes) -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
   <!-- 🎯 META PESSOAL -->
-  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-6">
-    <div class="flex justify-between items-start mb-5">
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col">
+    <div class="flex justify-between items-start mb-4">
       <div>
         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
           <i data-lucide="target" class="w-3 h-3"></i> Meta Pessoal
@@ -263,10 +266,40 @@
       </a>
     </div>
 
-    <div id="metaProgresso" class="space-y-3.5">
+    <div id="metaProgresso" class="space-y-3 flex-1">
       <p class="text-sm text-slate-400 text-center py-6">Carregando metas…</p>
     </div>
   </div>
+
+  <!-- 🏆 RANKING DA EQUIPE -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col">
+    <div class="flex justify-between items-start mb-4 flex-wrap gap-2">
+      <div>
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+          <i data-lucide="trophy" class="w-3 h-3 text-amber-500"></i> Ranking da Equipe
+        </p>
+        <h3 id="rankingMesNome" class="text-base font-black text-[#000033] mt-1.5">—</h3>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <label class="text-[10px] font-black text-slate-400 uppercase">Métrica:</label>
+        <select id="rankingKpi" onchange="renderRanking()"
+          class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-lg px-2 py-1 focus:outline-none focus:border-[#0e8890]">
+          <option value="FAT TOTAL TIM">Fat. Total TIM</option>
+          <option value="APARELHO">Aparelho</option>
+          <option value="CONTROLE">Controle</option>
+          <option value="PORTABILIDADE">Portabilidade</option>
+          <option value="ACESSÓRIOS">Acessórios</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="rankingLista" class="space-y-2 flex-1">
+      <p class="text-sm text-slate-400 text-center py-6">Carregando ranking…</p>
+    </div>
+  </div>
+
+</div>
 
   <!-- 🚨 CARDS INFERIORES -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -293,35 +326,6 @@
 
     <!-- (espaço pra futuros cards) -->
 
-  </div>
-
-
-    <!-- 🏆 RANKING DA EQUIPE -->
-  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mt-6 max-w-2xl">
-    <div class="flex justify-between items-start mb-5 flex-wrap gap-2">
-      <div>
-        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-          <i data-lucide="trophy" class="w-3 h-3 text-amber-500"></i> Ranking da Equipe
-        </p>
-        <h3 id="rankingMesNome" class="text-base font-black text-[#000033] mt-1.5">—</h3>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <label class="text-[10px] font-black text-slate-400 uppercase">Métrica:</label>
-        <select id="rankingKpi" onchange="renderRanking()"
-          class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#0e8890]">
-          <option value="FAT TOTAL TIM">Fat. Total TIM</option>
-          <option value="APARELHO">Aparelho</option>
-          <option value="CONTROLE">Controle</option>
-          <option value="PORTABILIDADE">Portabilidade</option>
-          <option value="ACESSÓRIOS">Acessórios</option>
-        </select>
-      </div>
-    </div>
-
-    <div id="rankingLista" class="space-y-2">
-      <p class="text-sm text-slate-400 text-center py-6">Carregando ranking…</p>
-    </div>
   </div>
 
 </div>
