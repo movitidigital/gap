@@ -220,6 +220,15 @@
         <h2 id="headerTitle" class="text-lg font-bold text-[#000033]">Visão Geral</h2>
       </div>
       <div class="flex items-center gap-4 ml-auto">
+
+          <!-- 🔍 BOTÃO DE BUSCA GLOBAL -->
+  <button onclick="abrirBuscaGlobal()"
+    class="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 transition-colors">
+    <i data-lucide="search" class="w-4 h-4"></i>
+    <span class="text-xs font-bold">Buscar</span>
+    <kbd class="px-1.5 py-0.5 bg-white border border-slate-300 rounded text-[10px] font-mono text-slate-500">Ctrl K</kbd>
+  </button>
+        
         <button class="relative p-2 text-slate-400 hover:text-[#0e8890] transition-colors rounded-full hover:bg-slate-50">
           <i data-lucide="bell" class="w-5 h-5"></i>
         </button>
@@ -899,6 +908,42 @@
     </div>
   </main>
 
+<!-- ============ BUSCA GLOBAL (Ctrl+K) ============ -->
+<div id="cmdPalette" class="fixed inset-0 z-[100] hidden bg-slate-900/60 backdrop-blur-sm flex items-start justify-center p-4 pt-24">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[70vh] animate-fade-in">
+    <!-- Input -->
+    <div class="flex items-center gap-3 px-5 py-4 border-b border-slate-100">
+      <i data-lucide="search" class="w-5 h-5 text-[#0e8890] shrink-0"></i>
+      <input type="text" id="cmdInput"
+        placeholder="Buscar cliente por nome, CPF ou número da linha..."
+        class="flex-1 bg-transparent text-base font-medium text-slate-800 focus:outline-none placeholder:text-slate-400 placeholder:font-normal"
+        autocomplete="off" spellcheck="false">
+      <kbd class="hidden md:inline-flex items-center px-2 py-1 rounded bg-slate-100 text-[10px] font-black text-slate-500 shrink-0">ESC</kbd>
+    </div>
+
+    <!-- Resultados -->
+    <div id="cmdResultados" class="flex-1 overflow-y-auto p-2">
+      <!-- Dinâmico -->
+    </div>
+
+    <!-- Rodapé com atalhos -->
+    <div class="px-5 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+      <div class="flex items-center gap-4">
+        <span class="flex items-center gap-1.5">
+          <kbd class="px-1.5 py-0.5 bg-white border border-slate-200 rounded text-slate-600 font-mono">↑↓</kbd> navegar
+        </span>
+        <span class="flex items-center gap-1.5">
+          <kbd class="px-1.5 py-0.5 bg-white border border-slate-200 rounded text-slate-600 font-mono">↵</kbd> abrir
+        </span>
+        <span class="flex items-center gap-1.5">
+          <kbd class="px-1.5 py-0.5 bg-white border border-slate-200 rounded text-slate-600 font-mono">ESC</kbd> fechar
+        </span>
+      </div>
+      <span id="cmdTotal">—</span>
+    </div>
+  </div>
+</div>
+  
   <!-- ============ MODAL CONFIRMA ENVIO ============ -->
 <div id="modalConfirmaEnvio" class="fixed inset-0 z-[60] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
@@ -5105,6 +5150,231 @@ async function salvarPortabilidade() {
     lucide.createIcons();
   }
 }
+
+    /* ==========================================================
+   BUSCA GLOBAL (Ctrl+K)
+   ========================================================== */
+
+let _cmdTimer = null;
+let _cmdResultados = [];
+let _cmdIdx = -1;
+
+function abrirBuscaGlobal() {
+  const palette = $('cmdPalette');
+  const input = $('cmdInput');
+  if (!palette || !input) return;
+
+  palette.classList.remove('hidden');
+  input.value = '';
+  input.focus();
+
+  _cmdResultados = [];
+  _cmdIdx = -1;
+  renderCmdVazio();
+}
+
+function fecharBuscaGlobal() {
+  $('cmdPalette')?.classList.add('hidden');
+  clearTimeout(_cmdTimer);
+  _cmdResultados = [];
+  _cmdIdx = -1;
+}
+
+function renderCmdVazio() {
+  const box = $('cmdResultados');
+  if (!box) return;
+  box.innerHTML = `
+    <div class="p-8 text-center">
+      <i data-lucide="search" class="w-10 h-10 mx-auto text-slate-300 mb-2"></i>
+      <p class="text-sm text-slate-500 font-medium">Digite nome, CPF ou número da linha</p>
+      <p class="text-[10px] text-slate-400 mt-1">Busca em toda a base de clientes TIM</p>
+    </div>`;
+  lucide.createIcons();
+  const total = $('cmdTotal');
+  if (total) total.textContent = '—';
+}
+
+function onCmdInput(e) {
+  const termo = e.target.value.trim();
+  clearTimeout(_cmdTimer);
+  if (termo.length < 2) { renderCmdVazio(); return; }
+  _cmdTimer = setTimeout(() => buscarCmd(termo), 250);
+}
+
+async function buscarCmd(termo) {
+  const box = $('cmdResultados');
+  if (!box) return;
+
+  box.innerHTML = `
+    <div class="p-6 text-center">
+      <i data-lucide="loader-2" class="w-6 h-6 mx-auto text-[#0e8890] animate-spin"></i>
+      <p class="text-xs text-slate-400 mt-2">Buscando…</p>
+    </div>`;
+  lucide.createIcons();
+
+  const termoNum = termo.replace(/\D/g, '');
+  const termoSeguro = termo.replace(/[%,]/g, '');
+
+  let query = supabaseClient
+    .from('clientes_faturas')
+    .select('id, nome, cpf, telefone, telefone_alt, plano, consultor, modalidade, ano_base');
+
+  if (termoNum.length >= 3 && /^\d+$/.test(termoNum)) {
+    query = query.or(
+      `cpf.ilike.%${termoNum}%,telefone.ilike.%${termoNum}%,telefone_alt.ilike.%${termoNum}%,nome.ilike.%${termoSeguro}%`
+    );
+  } else {
+    query = query.ilike('nome', `%${termoSeguro}%`);
+  }
+
+  const { data, error } = await query.limit(30);
+
+  if (error) {
+    box.innerHTML = `<div class="p-6 text-center text-red-500 text-sm font-medium">Erro: ${escapeHTML(error.message)}</div>`;
+    return;
+  }
+
+  _cmdResultados = data || [];
+  _cmdIdx = -1;
+
+  const total = $('cmdTotal');
+  if (total) total.textContent = `${_cmdResultados.length} resultado${_cmdResultados.length === 1 ? '' : 's'}`;
+
+  if (!_cmdResultados.length) {
+    box.innerHTML = `
+      <div class="p-8 text-center">
+        <i data-lucide="user-x" class="w-10 h-10 mx-auto text-slate-300 mb-2"></i>
+        <p class="text-sm text-slate-500 font-medium">Nenhum cliente encontrado</p>
+        <p class="text-[10px] text-slate-400 mt-1">Tente outro nome, CPF ou número</p>
+      </div>`;
+    lucide.createIcons();
+    return;
+  }
+
+  renderCmdResultados();
+}
+
+function renderCmdResultados() {
+  const box = $('cmdResultados');
+  if (!box) return;
+
+  const termo = $('cmdInput').value.trim();
+  const esc = termo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  const highlight = (txt) => {
+    if (!txt) return '';
+    const safe = escapeHTML(String(txt));
+    if (!termo) return safe;
+    try {
+      return safe.replace(new RegExp(`(${esc})`, 'ig'), '<mark class="bg-amber-200 text-amber-900 rounded px-0.5">$1</mark>');
+    } catch { return safe; }
+  };
+
+  box.innerHTML = _cmdResultados.map((c, i) => {
+    const ativo = i === _cmdIdx;
+    const cpf = normalizarCPF(c.cpf);
+    const tel = normalizarTelefone(c.telefone);
+    const telFmt = tel.length === 11 ? `(${tel.slice(0,2)}) ${tel.slice(2,7)}-${tel.slice(7)}` : tel;
+
+    const cls = ativo ? 'bg-[#0e8890] text-white' : 'hover:bg-slate-50 text-slate-800';
+    const subCls = ativo ? 'text-white/80' : 'text-slate-500';
+    const tagCls = ativo ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600';
+
+    return `
+      <div data-idx="${i}" onclick="irParaCliente('${c.id}')"
+        onmouseenter="_cmdIdx=${i}; renderCmdResultados();"
+        class="cursor-pointer rounded-lg px-3 py-2.5 transition-colors ${cls}">
+        <div class="flex items-center justify-between gap-3">
+          <div class="min-w-0 flex-1">
+            <p class="font-bold text-sm truncate">${highlight(capitalizar(c.nome))}</p>
+            <div class="flex items-center gap-2 mt-0.5 text-[11px] ${subCls}">
+              <span class="font-mono">${highlight(cpf)}</span>
+              <span>·</span>
+              <span class="font-mono">${highlight(telFmt)}</span>
+            </div>
+          </div>
+          <div class="flex flex-col items-end shrink-0 gap-1">
+            ${c.plano ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${tagCls} max-w-[140px] truncate">${escapeHTML(c.plano)}</span>` : ''}
+            ${c.consultor ? `<span class="text-[9px] font-bold uppercase ${subCls} truncate max-w-[140px]">${escapeHTML(c.consultor)}</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  if (_cmdIdx >= 0) {
+    const el = box.querySelector(`[data-idx="${_cmdIdx}"]`);
+    el?.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+function irParaCliente(id) {
+  const c = _cmdResultados.find(x => String(x.id) === String(id));
+  if (!c) return;
+
+  fecharBuscaGlobal();
+
+  // Navega pro módulo Clientes TIM
+  navegar('clientes');
+
+  // Preenche a busca com o CPF (único) e dispara
+  setTimeout(() => {
+    const inp = $('inputBuscaClientes');
+    if (inp) {
+      inp.value = normalizarCPF(c.cpf);
+      buscarClientes();
+    }
+  }, 200);
+}
+
+/* ---------- Listener global de teclado ---------- */
+document.addEventListener('keydown', (e) => {
+  // Ctrl+K ou Cmd+K → abre
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    abrirBuscaGlobal();
+    return;
+  }
+
+  const palette = $('cmdPalette');
+  const aberto = palette && !palette.classList.contains('hidden');
+
+  // ESC fecha (se aberto)
+  if (e.key === 'Escape' && aberto) {
+    e.preventDefault();
+    fecharBuscaGlobal();
+    return;
+  }
+
+  if (!aberto) return;
+
+  // Navegação com setas
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    _cmdIdx = Math.min(_cmdIdx + 1, _cmdResultados.length - 1);
+    renderCmdResultados();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    _cmdIdx = Math.max(_cmdIdx - 1, 0);
+    renderCmdResultados();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (_cmdIdx >= 0 && _cmdResultados[_cmdIdx]) {
+      irParaCliente(_cmdResultados[_cmdIdx].id);
+    } else if (_cmdResultados.length > 0) {
+      irParaCliente(_cmdResultados[0].id);
+    }
+  }
+});
+
+/* ---------- Bind do input ---------- */
+(function bindCmdInput() {
+  const inp = $('cmdInput');
+  if (inp) {
+    inp.addEventListener('input', onCmdInput);
+  } else {
+    setTimeout(bindCmdInput, 100);
+  }
+})();
   </script>
 </body>
 </html>
